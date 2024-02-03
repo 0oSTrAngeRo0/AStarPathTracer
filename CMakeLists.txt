@@ -5,6 +5,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(Vulkan REQUIRED)
 
+set(GLFW_BUILD_EXAMPLES OFF)
+set(GLFW_BUILD_TESTS OFF)
 add_subdirectory(plugins/glfw-3.3.9)
 add_subdirectory(plugins/glm-0.9.9.8)
 add_subdirectory(plugins/volk-1.3.270)
