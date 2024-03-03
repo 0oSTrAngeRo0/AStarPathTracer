@@ -34,26 +34,6 @@ void VulkanApp::Create(const AppConfig& config, MainWindow* main_window) {
 	CreateCommandPool();
 	CreateCommandBuffer();
 	CreateSyncObjects();
-
-	GpuMesh gpu_mesh;
-	asset::Mesh mesh = asset::LoadModelObj((R"(D:\C++\Projects\PathTracer\models\mesh.obj)"), 1.25f);
-	{
-		VkDeviceSize size = mesh.vertices.size() * sizeof(mesh.vertices[0]);
-		VkBufferUsageFlags usage =
-			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT
-				| VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
-		gpu_mesh.vertex_buffer.Create(physical_device.device, device, size, usage);
-		gpu_mesh.vertex_count = uint32_t(mesh.vertices.size());
-	}
-	{
-		VkDeviceSize size = mesh.indices.size() * sizeof(mesh.indices[0]);
-		VkBufferUsageFlags usage =
-			VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT
-				| VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR;
-		gpu_mesh.index_buffer.Create(physical_device.device, device, size, usage);
-		gpu_mesh.index_count = uint32_t(mesh.indices.size());
-	}
-	acceleration_structure.Create(device, physical_device.device, command_buffer, { gpu_mesh });
 }
 
 void VulkanApp::OnExecute(MainWindow::OnDestroyed) {

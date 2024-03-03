@@ -27,7 +27,6 @@ add_executable(${PROJECT_NAME}
         source/vulkan-app-draw-frame.cpp
         source/vulkan-app-ray-tracing.cpp
         source/model-loader.cpp
-        source/acceleration-structure.cpp
         source/vk-debugger.cpp
         source/buffer.cpp
 )

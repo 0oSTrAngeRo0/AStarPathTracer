@@ -5,7 +5,6 @@
 #include "main-window.h"
 #include "volk.h"
 #include <vector>
-#include "acceleration-structure.h"
 
 class VulkanApp : public IEventHandler<MainWindow::OnDestroyed>, public IEventHandler<MainWindow::OnDrawFrame> {
 public:
@@ -57,7 +56,6 @@ private:
     VkSemaphore image_available_semaphore;
     VkSemaphore render_finished_semaphore;
     VkFence in_flight_fence;
-	AccelerationStructure acceleration_structure;
 
 public:
     void Create(const AppConfig &config, MainWindow *main_window);
