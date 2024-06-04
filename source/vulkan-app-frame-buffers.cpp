@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include "vulkan-app.h"
+#include "vulkan-utils.h"
 
 void VulkanApp::CreateFrameBuffers() {
     std::vector<VkImageView> &image_views = swapchain_info.image_views;
@@ -16,9 +17,6 @@ void VulkanApp::CreateFrameBuffers() {
         create_info.height = extent.height;
         create_info.layers = 1;
 
-        VkResult result = vkCreateFramebuffer(device, &create_info, nullptr, &swapchain_framebuffers[i]);
-        if (result != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create frame buffer!");
-        }
+        VK_CHECK(vkCreateFramebuffer(device, &create_info, nullptr, &swapchain_framebuffers[i]));
     }
 }

@@ -1,5 +1,6 @@
 #include "vulkan-app.h"
 #include "file-system.h"
+#include "vulkan-utils.h"
 
 VkShaderModule CreateShaderModule(const VkDevice &device, const std::vector<char> &code);
 
@@ -138,10 +139,7 @@ void VulkanApp::CreateGraphicsPipeline() {
     pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineInfo.basePipelineIndex = -1;
 
-    VkResult result = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphics_pipeline);
-    if (result != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create graphics pipelines!");
-    }
+    VK_CHECK(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphics_pipeline));
 
     vkDestroyShaderModule(device, vertex_shader, nullptr);
     vkDestroyShaderModule(device, fragment_shader, nullptr);
@@ -153,10 +151,7 @@ VkShaderModule CreateShaderModule(const VkDevice &device, const std::vector<char
     create_info.codeSize = code.size();
     create_info.pCode = reinterpret_cast<const uint32_t *>(code.data());
     VkShaderModule shader;
-    VkResult result = vkCreateShaderModule(device, &create_info, nullptr, &shader);
-    if (result != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create shader module!");
-    }
+    VK_CHECK(vkCreateShaderModule(device, &create_info, nullptr, &shader));
     return shader;
 }
 
@@ -167,11 +162,7 @@ void CreatePipelineLayout(const VkDevice &device, VkPipelineLayout *pipeline_lay
     create_info.pSetLayouts = nullptr; // Optional
     create_info.pushConstantRangeCount = 0; // Optional
     create_info.pPushConstantRanges = nullptr; // Optional
-
-    VkResult result = vkCreatePipelineLayout(device, &create_info, nullptr, pipeline_layout);
-    if (result != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create pipeline layout!");
-    }
+    VK_CHECK(vkCreatePipelineLayout(device, &create_info, nullptr, pipeline_layout));
 }
 
 void CreateRenderPass(const VkFormat &format, const VkDevice &device, VkRenderPass *render_pass) {
@@ -211,8 +202,5 @@ void CreateRenderPass(const VkFormat &format, const VkDevice &device, VkRenderPa
     render_pass_create_info.dependencyCount = 1;
     render_pass_create_info.pDependencies = &dependency;
 
-    VkResult result = vkCreateRenderPass(device, &render_pass_create_info, nullptr, render_pass);
-    if (result != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create render pass!");
-    }
+    VK_CHECK(vkCreateRenderPass(device, &render_pass_create_info, nullptr, render_pass));
 }

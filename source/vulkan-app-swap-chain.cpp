@@ -3,6 +3,7 @@
 #include <functional>
 #include "vulkan-app.h"
 #include "math-utils.h"
+#include "vulkan-utils.h"
 
 VkSurfaceFormatKHR GetSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &formats);
 
@@ -37,10 +38,7 @@ void VulkanApp::CreateSwapchain() {
     create_info.clipped = VK_TRUE;
     create_info.oldSwapchain = VK_NULL_HANDLE;
 
-    VkResult result = vkCreateSwapchainKHR(device, &create_info, nullptr, &swapchain_info.swapchain);
-    if (result != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create swapchain!");
-    }
+    VK_CHECK(vkCreateSwapchainKHR(device, &create_info, nullptr, &swapchain_info.swapchain));
 
     uint32_t runtime_image_count = 0;
     vkGetSwapchainImagesKHR(device, swapchain_info.swapchain, &runtime_image_count, nullptr);
@@ -119,9 +117,6 @@ void CreateImageViews(VulkanApp::SwapchainRuntimeInfo &info, const VkDevice &dev
         create_info.components = components;
         create_info.subresourceRange = subresource_range;
 
-        VkResult result = vkCreateImageView(device, &create_info, nullptr, &image_views[i]);
-        if (result != VK_SUCCESS) {
-            throw std::runtime_error("Failed to create image views!");
-        }
+        VK_CHECK(vkCreateImageView(device, &create_info, nullptr, &image_views[i]));
     }
 }

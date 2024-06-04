@@ -145,11 +145,7 @@ void VulkanApp::CreateDevice() {
 	create_info.pNext = &features2;
 	create_info.ppEnabledExtensionNames = extensions.data();
 	create_info.enabledExtensionCount = extensions.size();
-	printf("Start create device\n");
-	VkResult result = vkCreateDevice(info.device, &create_info, nullptr, &device);
-	if (result != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create logic device!");
-	}
+	VK_CHECK(vkCreateDevice(info.device, &create_info, nullptr, &device));
 
 	vkGetDeviceQueue(device, info.graphics_queue_index, 0, &graphics_queue);
 	vkGetDeviceQueue(device, info.present_queue_index, 0, &present_queue);

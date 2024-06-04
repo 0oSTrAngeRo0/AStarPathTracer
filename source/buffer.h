@@ -13,8 +13,7 @@ public:
 	void Create(const VkPhysicalDevice& physical_device,
 		const VkDevice& device,
 		const VkDeviceSize& size,
-		VkBufferUsageFlags usage,
-		uint64_t min_alignment = 0);
+		VkBufferUsageFlags usage);
 	void SetData(VkDevice const& device, void* data, const VkDeviceSize& size, VkMemoryMapFlags flags);
 	void Destroy(const VkDevice& device) const;
 };

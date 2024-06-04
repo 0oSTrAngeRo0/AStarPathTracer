@@ -34,10 +34,7 @@ void VulkanApp::CreateInstance() {
     create_info.enabledLayerCount = layers.size();
     create_info.ppEnabledLayerNames = layers.data();
     create_info.pNext = nullptr;
-    VkResult result = vkCreateInstance(&create_info, nullptr, &instance);
-    if (result != VkResult::VK_SUCCESS) {
-        throw std::runtime_error("Failed to create instance!");
-    }
+    VK_CHECK(vkCreateInstance(&create_info, nullptr, &instance));
 }
 
 std::vector<const char *> GetExtensions(const AppConfig &config) {

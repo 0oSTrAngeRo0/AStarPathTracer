@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include "buffer.h"
+#include "vulkan-utils.h"
 
 void Buffer::Destroy(VkDevice const& device) const {
 	vkDestroyBuffer(device, handle, nullptr);
@@ -8,8 +9,9 @@ void Buffer::Destroy(VkDevice const& device) const {
 void Buffer::Create(const VkPhysicalDevice& physical_device,
 	const VkDevice& device,
 	const VkDeviceSize& size,
-	VkBufferUsageFlags usage,
-	uint64_t min_alignment) {
+	VkBufferUsageFlags usage) {
+
+	// create buffer
 	VkBufferCreateInfo create_info;
 	create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	create_info.pNext = nullptr;
@@ -17,13 +19,10 @@ void Buffer::Create(const VkPhysicalDevice& physical_device,
 	create_info.size = size;
 	create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 	create_info.flags = 0;
-	if (vkCreateBuffer(device, &create_info, nullptr, &handle) != VK_SUCCESS) {
-		throw std::runtime_error("Failed to create buffer!");
-	}
+	VK_CHECK(vkCreateBuffer(device, &create_info, nullptr, &handle));
 
 	VkMemoryRequirements memory_requirements;
 	vkGetBufferMemoryRequirements(device, handle, &memory_requirements);
-	memory_requirements.alignment = std::max(memory_requirements.alignment, min_alignment);
 
 	VkPhysicalDeviceMemoryProperties memory_properties;
 	vkGetPhysicalDeviceMemoryProperties(physical_device, &memory_properties);
@@ -53,11 +52,9 @@ void Buffer::Create(const VkPhysicalDevice& physical_device,
 	allocate_info.allocationSize = memory_requirements.size;
 	allocate_info.memoryTypeIndex = type;
 	allocate_info.pNext = &flags_info;
-	if (vkAllocateMemory(device, &allocate_info, nullptr, &memory)) {
-		throw std::runtime_error("Failed to allocate buffer!");
-	}
+	VK_CHECK(vkAllocateMemory(device, &allocate_info, nullptr, &memory));
 
-	vkBindBufferMemory(device, handle, memory, 0);
+	VK_CHECK(vkBindBufferMemory(device, handle, memory, 0));
 
 	VkBufferDeviceAddressInfo buffer_address_info{};
 	buffer_address_info.sType = VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO;

@@ -1,15 +1,13 @@
 #include <stdexcept>
 #include "vulkan-app.h"
+#include "vulkan-utils.h"
 
 void VulkanApp::CreateCommandPool() {
     VkCommandPoolCreateInfo create_info{};
     create_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     create_info.queueFamilyIndex = physical_device.graphics_queue_index;
     create_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-    VkResult result = vkCreateCommandPool(device, &create_info, nullptr, &command_pool);
-    if (result != VK_SUCCESS) {
-        throw std::runtime_error("Failed to create command pool!");
-    }
+    VK_CHECK(vkCreateCommandPool(device, &create_info, nullptr, &command_pool));
 }
 
 void VulkanApp::CreateCommandBuffer() {
@@ -18,10 +16,7 @@ void VulkanApp::CreateCommandBuffer() {
     allocate_info.commandPool = command_pool;
     allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocate_info.commandBufferCount = 1;
-    VkResult result = vkAllocateCommandBuffers(device, &allocate_info, &command_buffer);
-    if (result != VK_SUCCESS) {
-        throw std::runtime_error("Failed to allocate command buffers!");
-    }
+    VK_CHECK(vkAllocateCommandBuffers(device, &allocate_info, &command_buffer));
 }
 
 void VulkanApp::RecordCommandBuffer(VkCommandBuffer buffer, uint32_t image_index) {
@@ -30,9 +25,7 @@ void VulkanApp::RecordCommandBuffer(VkCommandBuffer buffer, uint32_t image_index
     begin_info.flags = 0; // Optional
     begin_info.pInheritanceInfo = nullptr; // Optional
 
-    if (vkBeginCommandBuffer(buffer, &begin_info) != VK_SUCCESS) {
-        throw std::runtime_error("failed to begin recording command buffer!");
-    }
+    VK_CHECK(vkBeginCommandBuffer(buffer, &begin_info));
 
     VkClearValue clear_color = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
     VkRenderPassBeginInfo render_pass_begin_info{};
@@ -65,7 +58,5 @@ void VulkanApp::RecordCommandBuffer(VkCommandBuffer buffer, uint32_t image_index
 
     vkCmdEndRenderPass(buffer);
 
-    if (vkEndCommandBuffer(buffer) != VK_SUCCESS) {
-        throw std::runtime_error("failed to record command buffer!");
-    }
+    VK_CHECK(vkEndCommandBuffer(buffer));
 }

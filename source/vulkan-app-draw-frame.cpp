@@ -1,5 +1,6 @@
 #include <stdexcept>
 #include "vulkan-app.h"
+#include "vulkan-utils.h"
 
 void VulkanApp::CreateSyncObjects() {
     VkSemaphoreCreateInfo semaphore_create_info{};
@@ -9,11 +10,9 @@ void VulkanApp::CreateSyncObjects() {
     fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    if (vkCreateSemaphore(device, &semaphore_create_info, nullptr, &image_available_semaphore) != VK_SUCCESS ||
-        vkCreateSemaphore(device, &semaphore_create_info, nullptr, &render_finished_semaphore) != VK_SUCCESS ||
-        vkCreateFence(device, &fence_create_info, nullptr, &in_flight_fence) != VK_SUCCESS) {
-        throw std::runtime_error("failed to create semaphores!");
-    }
+    VK_CHECK(vkCreateSemaphore(device, &semaphore_create_info, nullptr, &image_available_semaphore));
+    VK_CHECK(vkCreateSemaphore(device, &semaphore_create_info, nullptr, &render_finished_semaphore));
+    VK_CHECK(vkCreateFence(device, &fence_create_info, nullptr, &in_flight_fence));
 }
 
 void VulkanApp::OnExecute(MainWindow::OnDrawFrame) {
@@ -47,9 +46,7 @@ void VulkanApp::OnExecute(MainWindow::OnDrawFrame) {
     submit_info.signalSemaphoreCount = signal_semaphores.size();
     submit_info.pSignalSemaphores = signal_semaphores.data();
 
-    if (vkQueueSubmit(graphics_queue, 1, &submit_info, in_flight_fence) != VK_SUCCESS) {
-        throw std::runtime_error("Failed to submit draw command buffer!");
-    }
+    VK_CHECK(vkQueueSubmit(graphics_queue, 1, &submit_info, in_flight_fence));
 
     std::vector<VkSwapchainKHR> swap_chains = {
             swapchain_info.swapchain
