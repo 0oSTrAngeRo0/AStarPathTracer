@@ -29,6 +29,7 @@ add_executable(${PROJECT_NAME}
         source/model-loader.cpp
         source/vk-debugger.cpp
         source/buffer.cpp
+        source/math-utils.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
