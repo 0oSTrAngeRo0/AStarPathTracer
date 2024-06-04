@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <functional>
 #include "vulkan-app.h"
+#include "math-utils.h"
 
 VkSurfaceFormatKHR GetSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &formats);
 
@@ -75,9 +76,9 @@ VkExtent2D GetSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities, const VkE
         return capabilities.currentExtent;
     }
     VkExtent2D extent{};
-    extent.width = std::clamp(preferred_extent.width, capabilities.minImageExtent.width,
+    extent.width = math::Clamp(preferred_extent.width, capabilities.minImageExtent.width,
                               capabilities.maxImageExtent.width);
-    extent.height = std::clamp(preferred_extent.height, capabilities.minImageExtent.height,
+    extent.height = math::Clamp(preferred_extent.height, capabilities.minImageExtent.height,
                                capabilities.maxImageExtent.height);
     return extent;
 }
