@@ -3,62 +3,42 @@
 #include "vulkan-utils.h"
 
 void VulkanApp::CreateSyncObjects() {
-    VkSemaphoreCreateInfo semaphore_create_info{};
-    semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-    VkFenceCreateInfo fence_create_info{};
-    fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-    VK_CHECK(vkCreateSemaphore(device, &semaphore_create_info, nullptr, &image_available_semaphore));
-    VK_CHECK(vkCreateSemaphore(device, &semaphore_create_info, nullptr, &render_finished_semaphore));
-    VK_CHECK(vkCreateFence(device, &fence_create_info, nullptr, &in_flight_fence));
+    vk::SemaphoreCreateInfo semaphore_create_info;
+    vk::FenceCreateInfo fence_create_info(vk::FenceCreateFlagBits::eSignaled);
+    image_available_semaphore = device.createSemaphore(semaphore_create_info);
+    render_finished_semaphore = device.createSemaphore(semaphore_create_info);
+    in_flight_fence = device.createFence(fence_create_info);
 }
 
 void VulkanApp::OnExecute(MainWindow::OnDrawFrame) {
-    vkWaitForFences(device, 1, &in_flight_fence, VK_TRUE, UINT64_MAX);
-    vkResetFences(device, 1, &in_flight_fence);
+    VK_CHECK(device.waitForFences({ in_flight_fence }, vk::True, UINT64_MAX));
+    device.resetFences({ in_flight_fence });
 
-    uint32_t image_index;
-    vkAcquireNextImageKHR(device, swapchain_info.swapchain, UINT64_MAX, image_available_semaphore, VK_NULL_HANDLE,
-                          &image_index);
-
-    vkResetCommandBuffer(command_buffer, 0);
+    uint32_t image_index = device.acquireNextImageKHR(swapchain_info.swapchain, UINT64_MAX, image_available_semaphore).value;;
+    command_buffer.reset();
     RecordCommandBuffer(command_buffer, image_index);
 
 
-    std::vector<VkSemaphore> wait_semaphores = {
-            image_available_semaphore
+    std::vector<vk::Semaphore> wait_semaphores = {
+        image_available_semaphore
     };
-    std::vector<VkPipelineStageFlags> wait_stages = {
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
+    std::vector<vk::PipelineStageFlags> wait_stages = {
+        vk::PipelineStageFlagBits::eColorAttachmentOutput
     };
-    std::vector<VkSemaphore> signal_semaphores = {
-            render_finished_semaphore
+    std::vector<vk::Semaphore> signal_semaphores = {
+        render_finished_semaphore
     };
-    VkSubmitInfo submit_info{};
-    submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submit_info.waitSemaphoreCount = wait_semaphores.size();
-    submit_info.pWaitSemaphores = wait_semaphores.data();
-    submit_info.pWaitDstStageMask = wait_stages.data();
-    submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &command_buffer;
-    submit_info.signalSemaphoreCount = signal_semaphores.size();
-    submit_info.pSignalSemaphores = signal_semaphores.data();
+    std::vector<vk::CommandBuffer> command_buffers = {
+        command_buffer
+    };
+    std::vector<vk::SubmitInfo> submit_infos = {
+        vk::SubmitInfo(wait_semaphores, wait_stages, command_buffers, signal_semaphores)
+    };
+    graphics_queue.submit(submit_infos, in_flight_fence);
 
-    VK_CHECK(vkQueueSubmit(graphics_queue, 1, &submit_info, in_flight_fence));
-
-    std::vector<VkSwapchainKHR> swap_chains = {
+    std::vector<vk::SwapchainKHR> swap_chains = {
             swapchain_info.swapchain
     };
-    VkPresentInfoKHR present_info{};
-    present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    present_info.waitSemaphoreCount = signal_semaphores.size();
-    present_info.pWaitSemaphores = signal_semaphores.data();
-    present_info.swapchainCount = swap_chains.size();
-    present_info.pSwapchains = swap_chains.data();
-    present_info.pImageIndices = &image_index;
-    present_info.pResults = nullptr; // Optional
-
-    vkQueuePresentKHR(present_queue, &present_info);
+    vk::PresentInfoKHR present_info(signal_semaphores, swap_chains, image_index);
+    VK_CHECK(present_queue.presentKHR(present_info));
 }

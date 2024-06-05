@@ -1,9 +1,11 @@
 #ifndef PATHTRACER_VULKAN_APP_H
 #define PATHTRACER_VULKAN_APP_H
 
+#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+
 #include "event-registry.h"
 #include "main-window.h"
-#include "volk.h"
+#include "vulkan/vulkan.hpp"
 #include <vector>
 
 class VulkanApp : public IEventHandler<MainWindow::OnDestroyed>, public IEventHandler<MainWindow::OnDrawFrame> {
@@ -16,46 +18,46 @@ public:
     };
 
     struct SwapchainSupportInfo {
-        VkSurfaceCapabilitiesKHR capabilities;
-        std::vector<VkSurfaceFormatKHR> formats;
-        std::vector<VkPresentModeKHR> present_modes;
+        vk::SurfaceCapabilitiesKHR capabilities;
+        vk::SurfaceFormatKHR formats;
+        vk::PresentModeKHR present_modes;
     };
 
     struct PhysicalDeviceInfo {
-        VkPhysicalDevice device;
+        vk::PhysicalDevice device;
         uint32_t graphics_queue_index;
         uint32_t present_queue_index;
 		SwapchainSupportInfo swapchain_info;
     };
 
     struct SwapchainRuntimeInfo {
-        VkSwapchainKHR swapchain;
-        std::vector<VkImage> images;
-        VkFormat format;
-        VkExtent2D extent;
-        std::vector<VkImageView> image_views;
+        vk::SwapchainKHR swapchain;
+        std::vector<vk::Image> images;
+        vk::Format format;
+        vk::Extent2D extent;
+        std::vector<vk::ImageView> image_views;
     };
 
 private:
-    VkInstance instance;
+    vk::Instance instance;
     AppConfig config;
-    VkDebugUtilsMessengerEXT debugger;
-    VkDevice device;
-    VkQueue graphics_queue;
-    VkQueue present_queue;
-    VkSurfaceKHR surface;
+    vk::DebugUtilsMessengerEXT debugger;
+    vk::Device device;
+    vk::Queue graphics_queue;
+    vk::Queue present_queue;
+    vk::SurfaceKHR surface;
     PhysicalDeviceInfo physical_device;
-    VkExtent2D actual_extent;
+    vk::Extent2D actual_extent;
     SwapchainRuntimeInfo swapchain_info;
-    VkPipelineLayout pipeline_layout;
-    VkRenderPass render_pass;
-    VkPipeline graphics_pipeline;
-    std::vector<VkFramebuffer> swapchain_framebuffers;
-    VkCommandPool command_pool;
-    VkCommandBuffer command_buffer;
-    VkSemaphore image_available_semaphore;
-    VkSemaphore render_finished_semaphore;
-    VkFence in_flight_fence;
+    vk::PipelineLayout pipeline_layout;
+    vk::RenderPass render_pass;
+    vk::Pipeline graphics_pipeline;
+    std::vector<vk::Framebuffer> swapchain_framebuffers;
+    vk::CommandPool command_pool;
+    vk::CommandBuffer command_buffer;
+    vk::Semaphore image_available_semaphore;
+    vk::Semaphore render_finished_semaphore;
+    vk::Fence in_flight_fence;
 
 public:
     void Create(const AppConfig &config, MainWindow *main_window);
@@ -69,13 +71,13 @@ private:
     void CreateFrameBuffers();
     void CreateCommandPool();
     void CreateCommandBuffer();
-    void RecordCommandBuffer(VkCommandBuffer buffer, uint32_t image_index);
+    void RecordCommandBuffer(vk::CommandBuffer buffer, uint32_t image_index);
     void CreateSyncObjects();
 	void CreateDebugger(bool enable_debugger);
 
 private:
 
-    static std::vector<PhysicalDeviceInfo> GetPhysicalDevices(const VkInstance &instance, const VkSurfaceKHR &surface);
+    static std::vector<PhysicalDeviceInfo> GetPhysicalDevices(const vk::Instance &instance, const vk::SurfaceKHR &surface);
 
 public:
     void OnExecute(MainWindow::OnDestroyed) override;

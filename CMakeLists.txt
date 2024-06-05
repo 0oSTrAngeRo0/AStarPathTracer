@@ -9,7 +9,6 @@ set(GLFW_BUILD_EXAMPLES OFF)
 set(GLFW_BUILD_TESTS OFF)
 add_subdirectory(plugins/glfw-3.3.9)
 add_subdirectory(plugins/glm-0.9.9.8)
-add_subdirectory(plugins/volk-1.3.270)
 
 add_executable(${PROJECT_NAME}
         source/main.cpp
@@ -30,12 +29,11 @@ add_executable(${PROJECT_NAME}
         source/vk-debugger.cpp
         source/buffer.cpp
         source/math-utils.cpp
-)
+ "source/algorithm-util.h")
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PRIVATE plugins/tiny-obj-loader-1.0.6)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE glm volk)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw ${GLFW_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PUBLIC Vulkan::Vulkan)
 target_link_libraries(${PROJECT_NAME} PRIVATE glm ${GLM_LIBRARIES})

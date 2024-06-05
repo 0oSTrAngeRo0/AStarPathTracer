@@ -2,205 +2,117 @@
 #include "file-system.h"
 #include "vulkan-utils.h"
 
-VkShaderModule CreateShaderModule(const VkDevice &device, const std::vector<char> &code);
+vk::RenderPass CreateRenderPass(const vk::Format& format, const vk::Device& device) {
+	std::vector<vk::AttachmentDescription> color_attachments = {
+		vk::AttachmentDescription(
+			{},
+			format,
+			vk::SampleCountFlagBits::e1,
+			vk::AttachmentLoadOp::eClear,
+			vk::AttachmentStoreOp::eStore,
+			vk::AttachmentLoadOp::eDontCare,
+			vk::AttachmentStoreOp::eDontCare,
+			vk::ImageLayout::eUndefined,
+			vk::ImageLayout::ePresentSrcKHR
+		)
+	};
 
-void CreatePipelineLayout(const VkDevice &device, VkPipelineLayout *pipeline_layout);
+	std::vector<vk::AttachmentReference> color_attachment_references = {
+		vk::AttachmentReference(0, vk::ImageLayout::eColorAttachmentOptimal)
+	};
+	std::vector<vk::SubpassDescription> subpasses = {
+		vk::SubpassDescription({}, vk::PipelineBindPoint::eGraphics, {}, color_attachment_references)
+	};
 
-void CreateRenderPass(const VkFormat &format, const VkDevice &device, VkRenderPass *render_pass);
+	std::vector<vk::SubpassDependency> dependencies = {
+		vk::SubpassDependency(
+			vk::SubpassExternal,
+			{},
+			vk::PipelineStageFlagBits::eColorAttachmentOutput,
+			vk::PipelineStageFlagBits::eColorAttachmentOutput,
+			{},
+			vk::AccessFlagBits::eColorAttachmentWrite,
+			{}
+		),
+	};
+
+	vk::RenderPassCreateInfo render_pass_create_info({}, color_attachments, subpasses, dependencies);
+	return device.createRenderPass(render_pass_create_info);
+}
 
 void VulkanApp::CreateGraphicsPipeline() {
-    std::vector<char> vertex_shader_code = asset::LoadBinaryFile(R"(D:\C++\Projects\PathTracer\shaders\sample-vertex.spv)");
-    std::vector<char> fragment_shader_code = asset::LoadBinaryFile(R"(D:\C++\Projects\PathTracer\shaders\sample-fragment.spv)");
+	std::vector<uint32_t> vertex_shader_code = asset::LoadBinaryFile<uint32_t>(R"(D:\C++\Projects\PathTracer\shaders\sample-vertex.spv)");
+	std::vector<uint32_t> fragment_shader_code = asset::LoadBinaryFile<uint32_t>(R"(D:\C++\Projects\PathTracer\shaders\sample-fragment.spv)");
 
-    VkShaderModule vertex_shader = CreateShaderModule(device, vertex_shader_code);
-    VkShaderModule fragment_shader = CreateShaderModule(device, fragment_shader_code);
+	vk::ShaderModule vertex_shader = device.createShaderModule(vk::ShaderModuleCreateInfo({}, vertex_shader_code));
+	vk::ShaderModule fragment_shader = device.createShaderModule(vk::ShaderModuleCreateInfo({}, fragment_shader_code));
 
-    VkPipelineShaderStageCreateInfo vertex_create_info{};
-    vertex_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    vertex_create_info.stage = VK_SHADER_STAGE_VERTEX_BIT;
-    vertex_create_info.module = vertex_shader;
-    vertex_create_info.pName = "main";
-    vertex_create_info.pSpecializationInfo = nullptr;
+	vk::PipelineShaderStageCreateInfo vertex_create_info({}, vk::ShaderStageFlagBits::eVertex, vertex_shader, "main");
+	vk::PipelineShaderStageCreateInfo fragment_create_info({}, vk::ShaderStageFlagBits::eFragment, fragment_shader, "main");
 
-    VkPipelineShaderStageCreateInfo fragment_create_info{};
-    fragment_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    fragment_create_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragment_create_info.module = fragment_shader;
-    fragment_create_info.pName = "main";
-    fragment_create_info.pSpecializationInfo = nullptr;
+	std::vector<vk::PipelineShaderStageCreateInfo> shader_stages = {
+		vertex_create_info,
+		fragment_create_info,
+	};
 
-    std::vector<VkPipelineShaderStageCreateInfo> shader_stages = {
-            vertex_create_info,
-            fragment_create_info,
-    };
+	std::vector<vk::DynamicState> dynamic_states = {
+		vk::DynamicState::eViewport,
+		vk::DynamicState::eScissor
+	};
+	vk::PipelineDynamicStateCreateInfo dynamic_state_create_info({}, dynamic_states);
+	vk::PipelineVertexInputStateCreateInfo vertex_input_create_info;
+	vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info({}, vk::PrimitiveTopology::eTriangleList, vk::False);
 
-    std::vector<VkDynamicState> dynamic_states = {
-            VK_DYNAMIC_STATE_VIEWPORT,
-            VK_DYNAMIC_STATE_SCISSOR,
-    };
-    VkPipelineDynamicStateCreateInfo dynamic_state_create_info{};
-    dynamic_state_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamic_state_create_info.dynamicStateCount = dynamic_states.size();
-    dynamic_state_create_info.pDynamicStates = dynamic_states.data();
+	std::vector<vk::Viewport> viewports = {
+		vk::Viewport(0.0f, 0.0f, (float)swapchain_info.extent.width, (float)swapchain_info.extent.height, 0.0f, 1.0f)
+	};
+	std::vector<vk::Rect2D> scissors = {
+		vk::Rect2D(vk::Offset2D(0, 0), swapchain_info.extent)
+	};
+	vk::PipelineViewportStateCreateInfo viewport_create_info({}, viewports, scissors);
 
-    VkPipelineVertexInputStateCreateInfo vertex_input_create_info{};
-    vertex_input_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    vertex_input_create_info.vertexBindingDescriptionCount = 0;
-    vertex_input_create_info.pVertexBindingDescriptions = nullptr;
-    vertex_input_create_info.vertexAttributeDescriptionCount = 0;
-    vertex_input_create_info.pVertexAttributeDescriptions = nullptr;
+	vk::PipelineRasterizationStateCreateInfo rasterization_create_info(
+		{}, vk::False, vk::False,
+		vk::PolygonMode::eFill,
+		vk::CullModeFlagBits::eBack,
+		vk::FrontFace::eClockwise,
+		vk::False, 0, 0, 0, 1);
 
-    VkPipelineInputAssemblyStateCreateInfo input_assembly_create_info{};
-    input_assembly_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    input_assembly_create_info.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    input_assembly_create_info.primitiveRestartEnable = VK_FALSE;
+	vk::PipelineMultisampleStateCreateInfo multisample_create_info({}, vk::SampleCountFlagBits::e1, vk::False, 1, {}, vk::False, vk::False);
 
-    VkViewport viewport{};
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = (float) swapchain_info.extent.width;
-    viewport.height = (float) swapchain_info.extent.height;
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
+	std::vector<vk::PipelineColorBlendAttachmentState> color_blend_attachments = {
+		vk::PipelineColorBlendAttachmentState(vk::False,
+			vk::BlendFactor::eOne, vk::BlendFactor::eZero, vk::BlendOp::eAdd,
+			vk::BlendFactor::eOne, vk::BlendFactor::eZero, vk::BlendOp::eAdd,
+			vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
+		) 
+	};
+	vk::PipelineColorBlendStateCreateInfo color_blend_create_info({}, vk::False, vk::LogicOp::eCopy, color_blend_attachments, {});
 
-    VkRect2D scissor{};
-    scissor.offset = {0, 0};
-    scissor.extent = swapchain_info.extent;
+	render_pass = CreateRenderPass(swapchain_info.format, device);
+	pipeline_layout = device.createPipelineLayout(vk::PipelineLayoutCreateInfo());
 
-    VkPipelineViewportStateCreateInfo viewport_create_info{};
-    viewport_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-    viewport_create_info.viewportCount = 1;
-    viewport_create_info.pViewports = &viewport;
-    viewport_create_info.scissorCount = 1;
-    viewport_create_info.pScissors = &scissor;
+	vk::GraphicsPipelineCreateInfo pipeline_create_info(
+		{},
+		shader_stages, 
+		&vertex_input_create_info, 
+		&input_assembly_create_info, 
+		{},
+		&viewport_create_info, 
+		&rasterization_create_info,
+		& multisample_create_info,
+		{},
+		& color_blend_create_info,
+		& dynamic_state_create_info,
+		pipeline_layout,
+		render_pass,
+		0,
+		{},
+		-1
+	);
 
-    VkPipelineRasterizationStateCreateInfo rasterization_create_info{};
-    rasterization_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    rasterization_create_info.depthClampEnable = VK_FALSE;
-    rasterization_create_info.rasterizerDiscardEnable = VK_FALSE;
-    rasterization_create_info.polygonMode = VK_POLYGON_MODE_FILL;
-    rasterization_create_info.lineWidth = 1.0f;
-    rasterization_create_info.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterization_create_info.frontFace = VK_FRONT_FACE_CLOCKWISE;
-    rasterization_create_info.depthBiasEnable = VK_FALSE;
-    rasterization_create_info.depthBiasConstantFactor = 0.0f;
-    rasterization_create_info.depthBiasClamp = 0.0f;
-    rasterization_create_info.depthBiasSlopeFactor = 0.0f;
+	graphics_pipeline = device.createGraphicsPipeline({}, pipeline_create_info).value;
 
-    VkPipelineMultisampleStateCreateInfo multisample_create_info{};
-    multisample_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-    multisample_create_info.sampleShadingEnable = VK_FALSE;
-    multisample_create_info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-    multisample_create_info.minSampleShading = 1.0f;
-    multisample_create_info.pSampleMask = nullptr;
-    multisample_create_info.alphaToCoverageEnable = VK_FALSE;
-    multisample_create_info.alphaToOneEnable = VK_FALSE;
-
-    VkPipelineColorBlendAttachmentState color_blend_attachment{};
-    color_blend_attachment.colorWriteMask =
-            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    color_blend_attachment.blendEnable = VK_FALSE;
-    color_blend_attachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-    color_blend_attachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-    color_blend_attachment.colorBlendOp = VK_BLEND_OP_ADD; // Optional
-    color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
-    color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
-    color_blend_attachment.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
-
-    VkPipelineColorBlendStateCreateInfo color_blend_create_info{};
-    color_blend_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    color_blend_create_info.logicOpEnable = VK_FALSE;
-    color_blend_create_info.logicOp = VK_LOGIC_OP_COPY; // Optional
-    color_blend_create_info.attachmentCount = 1;
-    color_blend_create_info.pAttachments = &color_blend_attachment;
-    color_blend_create_info.blendConstants[0] = 0.0f; // Optional
-    color_blend_create_info.blendConstants[1] = 0.0f; // Optional
-    color_blend_create_info.blendConstants[2] = 0.0f; // Optional
-    color_blend_create_info.blendConstants[3] = 0.0f; // Optional
-
-    CreateRenderPass(swapchain_info.format, device, &render_pass);
-    CreatePipelineLayout(device, &pipeline_layout);
-
-    VkGraphicsPipelineCreateInfo pipelineInfo{};
-    pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineInfo.stageCount = shader_stages.size();
-    pipelineInfo.pStages = shader_stages.data();
-    pipelineInfo.pVertexInputState = &vertex_input_create_info;
-    pipelineInfo.pInputAssemblyState = &input_assembly_create_info;
-    pipelineInfo.pViewportState = &viewport_create_info;
-    pipelineInfo.pRasterizationState = &rasterization_create_info;
-    pipelineInfo.pMultisampleState = &multisample_create_info;
-    pipelineInfo.pDepthStencilState = nullptr; // Optional
-    pipelineInfo.pColorBlendState = &color_blend_create_info;
-    pipelineInfo.pDynamicState = &dynamic_state_create_info;
-    pipelineInfo.layout = pipeline_layout;
-    pipelineInfo.renderPass = render_pass;
-    pipelineInfo.subpass = 0;
-    pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
-    pipelineInfo.basePipelineIndex = -1;
-
-    VK_CHECK(vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphics_pipeline));
-
-    vkDestroyShaderModule(device, vertex_shader, nullptr);
-    vkDestroyShaderModule(device, fragment_shader, nullptr);
-}
-
-VkShaderModule CreateShaderModule(const VkDevice &device, const std::vector<char> &code) {
-    VkShaderModuleCreateInfo create_info{};
-    create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    create_info.codeSize = code.size();
-    create_info.pCode = reinterpret_cast<const uint32_t *>(code.data());
-    VkShaderModule shader;
-    VK_CHECK(vkCreateShaderModule(device, &create_info, nullptr, &shader));
-    return shader;
-}
-
-void CreatePipelineLayout(const VkDevice &device, VkPipelineLayout *pipeline_layout) {
-    VkPipelineLayoutCreateInfo create_info{};
-    create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    create_info.setLayoutCount = 0; // Optional
-    create_info.pSetLayouts = nullptr; // Optional
-    create_info.pushConstantRangeCount = 0; // Optional
-    create_info.pPushConstantRanges = nullptr; // Optional
-    VK_CHECK(vkCreatePipelineLayout(device, &create_info, nullptr, pipeline_layout));
-}
-
-void CreateRenderPass(const VkFormat &format, const VkDevice &device, VkRenderPass *render_pass) {
-    VkAttachmentDescription color_attachment{};
-    color_attachment.format = format;
-    color_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-    color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    color_attachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-
-    VkAttachmentReference color_attachment_ref{};
-    color_attachment_ref.attachment = 0;
-    color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-    VkSubpassDescription subpass{};
-    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpass.colorAttachmentCount = 1;
-    subpass.pColorAttachments = &color_attachment_ref;
-
-    VkSubpassDependency dependency{};
-    dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependency.dstSubpass = 0;
-    dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.srcAccessMask = 0;
-    dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-    VkRenderPassCreateInfo render_pass_create_info{};
-    render_pass_create_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    render_pass_create_info.attachmentCount = 1;
-    render_pass_create_info.pAttachments = &color_attachment;
-    render_pass_create_info.subpassCount = 1;
-    render_pass_create_info.pSubpasses = &subpass;
-    render_pass_create_info.dependencyCount = 1;
-    render_pass_create_info.pDependencies = &dependency;
-
-    VK_CHECK(vkCreateRenderPass(device, &render_pass_create_info, nullptr, render_pass));
+	device.destroyShaderModule(vertex_shader);
+	device.destroyShaderModule(fragment_shader);
 }

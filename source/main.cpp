@@ -2,8 +2,10 @@
 #include "vulkan-app.h"
 #include "debugger.h"
 #include <vector>
+#include "vulkan-utils.h"
 
 int main() {
+
 	AppConfig config = AppConfig::CreateDefault();
 
 	Debugger* debugger = new Debugger();
@@ -19,7 +21,7 @@ int main() {
 	EventRegistry<MainWindow::OnDestroyed>::Register(vulkan_app);
 	EventRegistry<MainWindow::OnDrawFrame>::Register(vulkan_app);
 
-//    vkext::PrintInstanceExtensions();
+    //vkext::PrintInstanceExtensions();
 
 	window->Run();
 

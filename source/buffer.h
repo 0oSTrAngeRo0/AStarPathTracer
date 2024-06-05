@@ -1,13 +1,12 @@
 #ifndef PATHTRACER_SOURCE_BUFFER_H_
 #define PATHTRACER_SOURCE_BUFFER_H_
 
-#include "volk.h"
+#include "vulkan/vulkan.hpp"
 
 struct Buffer {
 	VkBuffer handle;
 	VkDeviceAddress device_address;
 	VkDeviceMemory memory;
-
 
 public:
 	void Create(const VkPhysicalDevice& physical_device,

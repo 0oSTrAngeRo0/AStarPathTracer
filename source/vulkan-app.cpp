@@ -3,21 +3,18 @@
 #include "model-loader.h"
 #include "buffer.h"
 
+VULKAN_HPP_DEFAULT_DISPATCH_LOADER_DYNAMIC_STORAGE
+
 void VulkanApp::Create(const AppConfig& config, MainWindow* main_window) {
 	this->config = config;
 
-	VkResult initialize_result = volkInitialize();
-	if (initialize_result != VK_SUCCESS) {
-		throw std::runtime_error("Failed to initialize volk!");
-	}
-
 	CreateInstance();
-
-	volkLoadInstance(instance);
 
 	CreateDebugger(config.enable_debug);
 
-	main_window->CreateWindowSurface(instance, nullptr, &surface);
+	VkSurfaceKHR raw_surface;
+	main_window->CreateWindowSurface(instance, nullptr, &raw_surface);
+	surface = vk::SurfaceKHR(raw_surface);
 	actual_extent = main_window->GetActualExtent();
 	std::vector<PhysicalDeviceInfo> physical_devices = GetPhysicalDevices(instance, surface);
 	if (physical_devices.empty()) {
@@ -25,8 +22,6 @@ void VulkanApp::Create(const AppConfig& config, MainWindow* main_window) {
 	}
 	physical_device = physical_devices[0];
 	CreateDevice();
-
-	volkLoadDevice(device);
 
 	CreateSwapchain();
 	CreateGraphicsPipeline();
@@ -54,7 +49,7 @@ void VulkanApp::OnExecute(MainWindow::OnDestroyed) {
 	vkDestroySwapchainKHR(device, swapchain_info.swapchain, nullptr);
 	vkDestroyDevice(device, nullptr);
 	if (config.enable_debug) {
-		vkDestroyDebugUtilsMessengerEXT(instance, debugger, nullptr);
+		instance.destroyDebugUtilsMessengerEXT(debugger);
 	}
 	vkDestroySurfaceKHR(instance, surface, nullptr);
 	vkDestroyInstance(instance, nullptr);
