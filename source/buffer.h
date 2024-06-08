@@ -1,20 +1,15 @@
 #ifndef PATHTRACER_SOURCE_BUFFER_H_
 #define PATHTRACER_SOURCE_BUFFER_H_
 
-#include "vulkan/vulkan.hpp"
+#include <vulkan/vulkan.hpp>
 
-struct Buffer {
-	VkBuffer handle;
-	VkDeviceAddress device_address;
-	VkDeviceMemory memory;
-
+class Buffer {
 public:
-	void Create(const VkPhysicalDevice& physical_device,
-		const VkDevice& device,
-		const VkDeviceSize& size,
-		VkBufferUsageFlags usage);
-	void SetData(VkDevice const& device, void* data, const VkDeviceSize& size, VkMemoryMapFlags flags);
-	void Destroy(const VkDevice& device) const;
+	vk::Buffer handle;
+	vk::DeviceMemory memory;
+	Buffer() {}
+	Buffer(vk::Buffer& handle, vk::DeviceMemory& memory);
+	void Destroy(const vk::Device& device);
 };
 
 #endif //PATHTRACER_SOURCE_BUFFER_H_

@@ -12,8 +12,8 @@ void VulkanApp::CreateCommandBuffer() {
     command_buffer = device.allocateCommandBuffers(allocate_info)[0];
 }
 
-void VulkanApp::RecordCommandBuffer(vk::CommandBuffer buffer, uint32_t image_index) {
-    buffer.begin(vk::CommandBufferBeginInfo());
+void VulkanApp::RecordCommandBuffer(vk::CommandBuffer cmd, uint32_t image_index) {
+    cmd.begin(vk::CommandBufferBeginInfo());
 
     std::vector<vk::ClearValue> clear_colors = {
         vk::ClearValue()
@@ -24,20 +24,22 @@ void VulkanApp::RecordCommandBuffer(vk::CommandBuffer buffer, uint32_t image_ind
         vk::Rect2D(vk::Offset2D(), swapchain_info.extent),
         clear_colors
     );
-    buffer.beginRenderPass(render_pass_begin_info, vk::SubpassContents::eInline);
-    buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, graphics_pipeline);
+    cmd.beginRenderPass(render_pass_begin_info, vk::SubpassContents::eInline);
+    cmd.bindPipeline(vk::PipelineBindPoint::eGraphics, graphics_pipeline);
 
     std::vector<vk::Viewport> viewports = {
         vk::Viewport(0, 0, swapchain_info.extent.width, swapchain_info.extent.height, 0, 1)
     };
-    buffer.setViewport(0, viewports);
+    cmd.setViewport(0, viewports);
 
     std::vector<vk::Rect2D> scissors = {
         vk::Rect2D(vk::Offset2D(), swapchain_info.extent)
     };
-    buffer.setScissor(0, scissors);
+    cmd.setScissor(0, scissors);
 
-    buffer.draw(3, 1, 0, 0);
-    buffer.endRenderPass();
-    buffer.end();
+    mesh.Draw(cmd);
+
+    cmd.draw(3, 1, 0, 0);
+    cmd.endRenderPass();
+    cmd.end();
 }

@@ -1,6 +1,7 @@
 #include "vulkan-app.h"
 #include "file-system.h"
 #include "vulkan-utils.h"
+#include "vertex.h"
 
 vk::RenderPass CreateRenderPass(const vk::Format& format, const vk::Device& device) {
 	std::vector<vk::AttachmentDescription> color_attachments = {
@@ -41,8 +42,8 @@ vk::RenderPass CreateRenderPass(const vk::Format& format, const vk::Device& devi
 }
 
 void VulkanApp::CreateGraphicsPipeline() {
-	std::vector<uint32_t> vertex_shader_code = asset::LoadBinaryFile<uint32_t>(R"(D:\C++\Projects\PathTracer\shaders\sample-vertex.spv)");
-	std::vector<uint32_t> fragment_shader_code = asset::LoadBinaryFile<uint32_t>(R"(D:\C++\Projects\PathTracer\shaders\sample-fragment.spv)");
+	std::vector<uint32_t> vertex_shader_code = asset::LoadBinaryFile<uint32_t>(R"(D:\C++\Projects\PathTracer\shaders\sample.vert.spv)");
+	std::vector<uint32_t> fragment_shader_code = asset::LoadBinaryFile<uint32_t>(R"(D:\C++\Projects\PathTracer\shaders\sample.frag.spv)");
 
 	vk::ShaderModule vertex_shader = device.createShaderModule(vk::ShaderModuleCreateInfo({}, vertex_shader_code));
 	vk::ShaderModule fragment_shader = device.createShaderModule(vk::ShaderModuleCreateInfo({}, fragment_shader_code));
@@ -60,7 +61,7 @@ void VulkanApp::CreateGraphicsPipeline() {
 		vk::DynamicState::eScissor
 	};
 	vk::PipelineDynamicStateCreateInfo dynamic_state_create_info({}, dynamic_states);
-	vk::PipelineVertexInputStateCreateInfo vertex_input_create_info;
+	vk::PipelineVertexInputStateCreateInfo vertex_input_create_info = mesh.GetVertexInputStateInfo();
 	vk::PipelineInputAssemblyStateCreateInfo input_assembly_create_info({}, vk::PrimitiveTopology::eTriangleList, vk::False);
 
 	std::vector<vk::Viewport> viewports = {
@@ -85,7 +86,7 @@ void VulkanApp::CreateGraphicsPipeline() {
 			vk::BlendFactor::eOne, vk::BlendFactor::eZero, vk::BlendOp::eAdd,
 			vk::BlendFactor::eOne, vk::BlendFactor::eZero, vk::BlendOp::eAdd,
 			vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA
-		) 
+		)
 	};
 	vk::PipelineColorBlendStateCreateInfo color_blend_create_info({}, vk::False, vk::LogicOp::eCopy, color_blend_attachments, {});
 
@@ -94,16 +95,16 @@ void VulkanApp::CreateGraphicsPipeline() {
 
 	vk::GraphicsPipelineCreateInfo pipeline_create_info(
 		{},
-		shader_stages, 
-		&vertex_input_create_info, 
-		&input_assembly_create_info, 
+		shader_stages,
+		&vertex_input_create_info,
+		&input_assembly_create_info,
 		{},
-		&viewport_create_info, 
+		&viewport_create_info,
 		&rasterization_create_info,
-		& multisample_create_info,
+		&multisample_create_info,
 		{},
-		& color_blend_create_info,
-		& dynamic_state_create_info,
+		&color_blend_create_info,
+		&dynamic_state_create_info,
 		pipeline_layout,
 		render_pass,
 		0,

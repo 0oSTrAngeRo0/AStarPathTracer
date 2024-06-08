@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(PathTracer)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 find_package(Vulkan REQUIRED)
 
@@ -29,7 +29,11 @@ add_executable(${PROJECT_NAME}
         source/vk-debugger.cpp
         source/buffer.cpp
         source/math-utils.cpp
- "source/algorithm-util.h")
+        source/vertex.cpp
+        source/temporary-command-buffer.cpp
+        source/mesh.cpp
+        source/buffer-factory.cpp
+ "source/algorithm-util.h" "source/vertex.cpp" "source/temporary-command-buffer.cpp" "source/mesh.h" "source/mesh.cpp" "source/buffer-facroty.h" "source/buffer-factory.cpp")
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PRIVATE plugins/tiny-obj-loader-1.0.6)

@@ -24,6 +24,7 @@ void VulkanApp::Create(const AppConfig& config, MainWindow* main_window) {
 	CreateDevice();
 
 	CreateSwapchain();
+	temp_cmd_pool = TemporaryCommandBufferPool(device, physical_device.graphics_queue_index, graphics_queue);
 	CreateGraphicsPipeline();
 	CreateFrameBuffers();
 	CreateCommandPool();
@@ -32,26 +33,27 @@ void VulkanApp::Create(const AppConfig& config, MainWindow* main_window) {
 }
 
 void VulkanApp::OnExecute(MainWindow::OnDestroyed) {
-	vkDeviceWaitIdle(device);
-	vkDestroySemaphore(device, image_available_semaphore, nullptr);
-	vkDestroySemaphore(device, render_finished_semaphore, nullptr);
-	vkDestroyFence(device, in_flight_fence, nullptr);
-	vkDestroyCommandPool(device, command_pool, nullptr);
-	for (VkFramebuffer framebuffer : swapchain_framebuffers) {
-		vkDestroyFramebuffer(device, framebuffer, nullptr);
+	device.waitIdle();
+	device.destroySemaphore(image_available_semaphore);
+	device.destroySemaphore(render_finished_semaphore);
+	device.destroyFence(in_flight_fence);
+	device.destroyCommandPool(command_pool);
+	temp_cmd_pool.Destroy(device);
+	mesh.Destroy(device);
+	for (vk::Framebuffer framebuffer : swapchain_framebuffers) {
+		device.destroyFramebuffer(framebuffer);
 	}
-	vkDestroyPipeline(device, graphics_pipeline, nullptr);
-	vkDestroyPipelineLayout(device, pipeline_layout, nullptr);
-	vkDestroyRenderPass(device, render_pass, nullptr);
-	for (VkImageView image_view : swapchain_info.image_views) {
-		vkDestroyImageView(device, image_view, nullptr);
+	device.destroyPipeline(graphics_pipeline);
+	device.destroyPipelineLayout(pipeline_layout);
+	device.destroyRenderPass(render_pass);
+	for (vk::ImageView image_view : swapchain_info.image_views) {
+		device.destroyImageView(image_view);
 	}
-	vkDestroySwapchainKHR(device, swapchain_info.swapchain, nullptr);
-	vkDestroyDevice(device, nullptr);
+	device.destroySwapchainKHR(swapchain_info.swapchain);
+	device.destroy();
 	if (config.enable_debug) {
 		instance.destroyDebugUtilsMessengerEXT(debugger);
 	}
-	vkDestroySurfaceKHR(instance, surface, nullptr);
-	vkDestroyInstance(instance, nullptr);
-	printf("vulkan app destroyed.");
+	instance.destroySurfaceKHR(surface);
+	instance.destroy();
 }
