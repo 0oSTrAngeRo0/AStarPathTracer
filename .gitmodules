@@ -1,0 +1,16 @@
+[submodule "plugins/entt"]
+	path = plugins/entt
+	url = https://github.com/skypjack/entt.git
+	branch = master
+[submodule "plugins/glfw"]
+	path = plugins/glfw
+	url = https://github.com/glfw/glfw.git
+	branch = master
+[submodule "plugins/glm"]
+	path = plugins/glm
+	url = https://github.com/g-truc/glm.git
+	branch = master
+[submodule "plugins/VulkanMemoryAllocator-Hpp"]
+	path = plugins/VulkanMemoryAllocator-Hpp
+	url = https://github.com/0oSTrAngeRo0/VulkanMemoryAllocator-Hpp.git
+	branch = master
