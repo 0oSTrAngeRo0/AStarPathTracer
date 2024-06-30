@@ -38,9 +38,9 @@ void VulkanApp::UploadDescriptorSet() {
 	vk::WriteDescriptorSetAccelerationStructureKHR write_tlas(scene->tlas);
 	vk::DescriptorImageInfo write_rt_image({}, rt_image_view, vk::ImageLayout::eGeneral);
 	vk::DescriptorBufferInfo write_vertex_buffer(scene->vertex_buffer, 0, vk::WholeSize);
-	vk::DescriptorBufferInfo write_index_buffer(scene->vertex_buffer, 0, vk::WholeSize);
-	vk::DescriptorBufferInfo write_material_buffer(scene->vertex_buffer, 0, vk::WholeSize);
-	vk::DescriptorBufferInfo write_instance_buffer(scene->vertex_buffer, 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_index_buffer(scene->index_buffer, 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_material_buffer(scene->material_buffer, 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_instance_buffer(scene->instance_buffer, 0, vk::WholeSize);
 	std::vector<vk::WriteDescriptorSet> writes = {
 		vk::WriteDescriptorSet(descriptor_set, 0, 0, 1, vk::DescriptorType::eAccelerationStructureKHR, {}, {}, {}, &write_tlas),
 		vk::WriteDescriptorSet(descriptor_set, 1, 0, vk::DescriptorType::eStorageImage, write_rt_image),
