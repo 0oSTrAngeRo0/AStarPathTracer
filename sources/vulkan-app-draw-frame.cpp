@@ -71,7 +71,7 @@ void VulkanApp::CreateSyncObjects() {
 	in_flight_fence = context->GetDevice().createFence(fence_create_info);
 }
 
-void VulkanApp::OnExecute(MainWindow::OnDrawFrame) {
+void VulkanApp::Update() {
 	VK_CHECK(context->GetDevice().waitForFences({ in_flight_fence }, vk::True, UINT64_MAX));
 	context->GetDevice().resetFences({ in_flight_fence });
 

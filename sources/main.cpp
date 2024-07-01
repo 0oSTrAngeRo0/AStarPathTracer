@@ -4,23 +4,28 @@
 #include "vulkan-utils.h"
 
 int main() {
-
 	try
 	{
 		AppConfig config = AppConfig::CreateDefault();
 
-		MainWindow* window = new MainWindow();
-		window->Create(config);
+		std::unique_ptr<GlfwWindow> main_window = std::make_unique<GlfwWindow>(config);
 
-		config.external_extensions = window->GetVulkanExtensions();
+		config.external_extensions = main_window->GetVulkanExtensions();
 
-		VulkanApp* vulkan_app = new VulkanApp(config, window);
-		EventRegistry<MainWindow::OnDestroyed>::Register(vulkan_app);
-		EventRegistry<MainWindow::OnDrawFrame>::Register(vulkan_app);
+		std::unique_ptr<VulkanApp> vulkan_app = std::make_unique<VulkanApp>(config, *main_window);
 
-		//vkext::PrintInstanceExtensions();
-
-		window->Run();
+		while (!main_window->ShouldClose())
+		{
+			if (!main_window->ShouldClose()) {
+				main_window->Update();
+				vulkan_app->Update();
+			}
+			else
+			{
+				vulkan_app.reset();
+				main_window.reset();
+			}
+		}
 	}
 	catch (const std::exception& e)
 	{

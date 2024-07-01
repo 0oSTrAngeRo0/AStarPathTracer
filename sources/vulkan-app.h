@@ -11,7 +11,7 @@
 
 class Scene;
 
-class VulkanApp : public IEventHandler<MainWindow::OnDestroyed>, public IEventHandler<MainWindow::OnDrawFrame> {
+class VulkanApp {
 public:
 	struct SwapchainRuntimeInfo {
 		vk::SwapchainKHR swapchain;
@@ -42,7 +42,9 @@ private:
 	std::unique_ptr<Scene> scene;
 
 public:
-	VulkanApp(const AppConfig& config, MainWindow* main_window);
+	VulkanApp(const AppConfig& config, const Window& main_window);
+	~VulkanApp();
+	void Update();
 
 private:
 	void CreateSwapchain();
@@ -51,10 +53,6 @@ private:
 	void CreateRayTracingPipeline();
 	void UploadDescriptorSet();
 	void CreateCommandBuffers();
-
-public:
-	void OnExecute(MainWindow::OnDestroyed) override;
-	void OnExecute(MainWindow::OnDrawFrame) override;
 };
 
 

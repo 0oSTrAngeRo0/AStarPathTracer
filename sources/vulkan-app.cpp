@@ -2,10 +2,10 @@
 #include "acceleration-structure.h"
 #include "Core/Scene.h"
 
-VulkanApp::VulkanApp(const AppConfig& config, MainWindow* main_window)
+VulkanApp::VulkanApp(const AppConfig& config, const Window& main_window)
 {
 	this->config = config;
-	context = std::make_unique<DeviceContext>(*main_window);
+	context = std::make_unique<DeviceContext>(main_window);
 	CreateSwapchain();
 
 	scene = std::make_unique<Scene>(*context);
@@ -28,7 +28,7 @@ VulkanApp::VulkanApp(const AppConfig& config, MainWindow* main_window)
 	CreateSyncObjects();
 }
 
-void VulkanApp::OnExecute(MainWindow::OnDestroyed) {
+VulkanApp::~VulkanApp() {
 	vk::Device device = context->GetDevice();
 	device.waitIdle();
 	device.destroySemaphore(image_available_semaphore);
