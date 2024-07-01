@@ -14,3 +14,7 @@
 	path = plugins/VulkanMemoryAllocator-Hpp
 	url = https://github.com/0oSTrAngeRo0/VulkanMemoryAllocator-Hpp.git
 	branch = master
+[submodule "plugins/imgui"]
+	path = plugins/imgui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking
