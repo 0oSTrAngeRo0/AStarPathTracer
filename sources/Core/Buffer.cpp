@@ -2,18 +2,32 @@
 #include "Core/DeviceContext.h"
 
 Buffer::Buffer(const DeviceContext& context, const vk::BufferCreateInfo& create_info, const vma::AllocationCreateInfo& allocation_info) {
-	auto pair = context.GetAllocator().createBuffer(create_info, allocation_info);
+	auto allocator = context.GetAllocator();
+
+	auto pair = allocator.createBuffer(create_info, allocation_info);
 	buffer = pair.first;
 	allocation = pair.second;
+
+	size = create_info.size;
 	if (create_info.usage & vk::BufferUsageFlagBits::eShaderDeviceAddress) {
 		address = context.GetDevice().getBufferAddress(buffer);
 	}
 }
 
 void Buffer::Destroy(const DeviceContext& context) {
+	if (!buffer) return;
 	context.GetAllocator().destroyBuffer(buffer, allocation);
 }
 
+void Buffer::SetName(const DeviceContext& context, const std::string& name) {
+	context.GetDevice().setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT(vk::ObjectType::eBuffer, (uint64_t)(VkBuffer)buffer, name.c_str()));
+	context.GetAllocator().setAllocationName(allocation, name.c_str());
+}
+
+const std::string Buffer::GetName(const DeviceContext& context) const {
+	const char* chars = context.GetAllocator().getAllocationInfo(allocation).pName;
+	return std::string(chars);
+}
 
 void Buffer::SetData(const DeviceContext& context, void* data, vk::DeviceSize size){
 	context.GetAllocator().copyMemoryToAllocation(data, allocation, 0, size);

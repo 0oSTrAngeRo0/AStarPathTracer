@@ -1,61 +1,64 @@
 #pragma once
 
 #include "Core/Buffer.h"
+#include <glm/glm.hpp>
+#include "Core/DataManager.h"
 
 class DeviceContext;
 
-class ShaderBase {
-protected:
-	Buffer material_buffer;
-	size_t material_count;
-public:
-	inline const vk::DeviceAddress GetBufferAddress() const { return material_buffer.GetDeviceAddress(); }
-	void Destroy(const DeviceContext& context) { material_buffer.Destroy(context); }
+struct LitMaterialData {
+	glm::vec4 color;
+};
+
+struct ConstantsData {
+	glm::mat4 view_inverse;
+	glm::mat4 projection_inverse;
 };
 
 class Material {
-private:
-	uint16_t index;
-	ShaderBase& shader; // Todo: maybe use unique_ptr?
 public:
-	Material(uint16_t index, ShaderBase& shader) : index(index), shader(shader) {}
-	template <typename TData> inline TData& GetData();
-	inline const vk::DeviceAddress GetBufferAddress() const { return shader.GetBufferAddress(); }
-	inline const uint16_t GetIndex() const { return index; }
+	virtual inline const vk::DeviceAddress GetBufferAddress() const = 0;
+	virtual inline const uint16_t GetIndex() const = 0;
+};
+
+class ShaderBase {
+public:
+	virtual void Destroy(const DeviceContext& context) = 0;
+	virtual void UpdateData(const DeviceContext& context) = 0;
+	virtual inline std::shared_ptr<Material> CreateMaterial() = 0;
+	virtual inline vk::DeviceAddress GetBufferAddress() = 0;
 };
 
 template <typename TData>
-class Shader : public ShaderBase {
-private:
-	std::vector<TData> materials;
-
+class Shader : public ShaderBase, public DataManager<TData> {
 public:
-	// Todo: need to broadcast when buffer realloced
-	void UpdateData(const DeviceContext& context) {
-		if (materials.size() != material_count) {
-			vk::BufferCreateInfo bci({}, {}, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eShaderDeviceAddress);
-			material_buffer = Buffer::CreateWithData<TData>(context, bci, materials);
-			material_count = materials.size();
-		}
-		else {
-			material_buffer.SetData<TData>(context, materials);
-		}
+	Shader() :DataManager<TData>(128) {}
+	void Destroy(const DeviceContext& context) override { DataManager<TData>::Destroy(context); }
+	void UpdateData(const DeviceContext& context) override { 
+		DataManager<TData>::UpdateData(context);
+		DataManager<TData>::buffer.SetName(context, "Material Buffer");
 	}
+	inline std::shared_ptr<Material> CreateMaterial() override;
+	inline vk::DeviceAddress GetBufferAddress() override { return DataManager<TData>::GetBufferAddress(); }
+	inline TData& GetData(size_t index) { return DataManager<TData>::data[index]; }
+};
 
-	inline Material CreateMaterial();
-	inline TData& GetData(size_t index) {
-		return materials[index];
-	}
+template <typename TData>
+class MaterialTemplate : public Material {
+public:
+	MaterialTemplate(std::shared_ptr<DataHandler<TData>> handler) : handler(handler) {}
+	inline TData GetData() const { return handler->GetData(); }
+	inline void SetData(const TData& data) { handler->SetData(data); }
+	inline const vk::DeviceAddress GetBufferAddress() const override { return handler->GetBufferAddress(); }
+	inline const uint16_t GetIndex() const override { return handler->GetIndex(); }
+private:
+	std::shared_ptr<DataHandler<TData>> handler;
 };
 
 template<typename TData>
-inline Material Shader<TData>::CreateMaterial() {
-	uint16_t index = materials.size();
-	materials.emplace_back(TData());
-	return Material(index, *this);
-}
-
-template<typename TData>
-inline TData& Material::GetData() {
-	return static_cast<Shader<TData>&>(shader).GetData(index);
+inline std::shared_ptr<Material> Shader<TData>::CreateMaterial() {
+	std::shared_ptr<DataHandler<TData>> data = DataManager<TData>::CreateData();
+	std::shared_ptr<MaterialTemplate<TData>> mat_template = std::make_shared<MaterialTemplate<TData>>(data);
+	std::shared_ptr<Material> material = std::static_pointer_cast<Material>(mat_template);
+	return material;
 }

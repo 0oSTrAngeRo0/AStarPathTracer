@@ -3,7 +3,6 @@
 #include "algorithm-util.h"
 #include "Core/DeviceContext.h"
 #include "Core/Buffer.h"
-#include "Core/Object.h"
 
 struct BlasInput
 {
@@ -24,7 +23,7 @@ struct BuildAccelerationStructure
 BlasInput CreateBlasInput(const DeviceContext& context, const Mesh& mesh)
 {
 	vk::AccelerationStructureGeometryTrianglesDataKHR triganles(
-		vk::Format::eR32G32B32Sfloat, vk::DeviceOrHostAddressConstKHR(mesh.GetVertexAddress()), mesh.GetVertexStride(), mesh.vertices.size(),
+		vk::Format::eR32G32B32Sfloat, vk::DeviceOrHostAddressConstKHR(mesh.GetVertexAddress()), mesh.GetVertexStride(), mesh.GetVertexCount(),
 		vk::IndexType::eUint32, vk::DeviceOrHostAddressConstKHR(mesh.GetIndexAddress()), {});
 
 	vk::AccelerationStructureGeometryKHR geometry(
@@ -32,7 +31,7 @@ BlasInput CreateBlasInput(const DeviceContext& context, const Mesh& mesh)
 		vk::AccelerationStructureGeometryDataKHR(triganles),
 		vk::GeometryFlagBitsKHR::eOpaque);
 
-	vk::AccelerationStructureBuildRangeInfoKHR offset(mesh.indices.size() / 3, 0, 0, 0);
+	vk::AccelerationStructureBuildRangeInfoKHR offset(mesh.GetTrianglesCount(), 0, 0, 0);
 
 	BlasInput input = {};
 	input.build_offset_info.push_back(offset);
@@ -94,7 +93,7 @@ std::vector<BuildAccelerationStructure> BuildBlas(
 
 	Buffer scratch_buffer(context, vk::BufferCreateInfo({}, max_scratch_size,
 		vk::BufferUsageFlagBits::eShaderDeviceAddress | vk::BufferUsageFlagBits::eStorageBuffer));
-	vk::DeviceAddress scratch_address = scratch_buffer.GetDeviceAddress();
+	scratch_buffer.SetName(context, "Blas Scratch Buffer");
 
 	// 分块避免单次Command处理过多数据
 	std::vector<uint32_t> indices;
@@ -107,7 +106,7 @@ std::vector<BuildAccelerationStructure> BuildBlas(
 		if (batch_size < batch_limit && i != end - 1) continue;
 		vk::CommandBuffer cmd = context.GetTempCmd();
 		for (uint32_t index : indices) {
-			CmdCreateBlas(context, cmd, build_as[index], scratch_address);
+			CmdCreateBlas(context, cmd, build_as[index], scratch_buffer.GetDeviceAddress());
 		}
 		context.ReleaseTempCmd(cmd);
 		indices.clear();
@@ -119,12 +118,12 @@ std::vector<BuildAccelerationStructure> BuildBlas(
 
 std::tuple<vk::AccelerationStructureKHR, Buffer, Buffer> BuildTlas(
 	const DeviceContext& context,
-	const std::vector<VkAccelerationStructureInstanceKHR>& instances,
+	const std::vector<vk::AccelerationStructureInstanceKHR>& instances,
 	vk::BuildAccelerationStructureFlagsKHR flags, bool update
 ) {
 	vk::BufferCreateInfo instance_buffer_ci({}, {},
 		vk::BufferUsageFlagBits::eShaderDeviceAddress | vk::BufferUsageFlagBits::eAccelerationStructureBuildInputReadOnlyKHR);
-	Buffer instances_buffer = Buffer::CreateWithData<VkAccelerationStructureInstanceKHR>(context, instance_buffer_ci, instances);
+	Buffer instances_buffer = Buffer::CreateWithData<vk::AccelerationStructureInstanceKHR>(context, instance_buffer_ci, instances);
 
 	auto cmd = context.GetTempCmd();
 
@@ -158,6 +157,7 @@ std::tuple<vk::AccelerationStructureKHR, Buffer, Buffer> BuildTlas(
 
 	Buffer scratch_buffer(context, vk::BufferCreateInfo({}, size_info.buildScratchSize,
 		vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eShaderDeviceAddress));
+	scratch_buffer.SetName(context, "Tlas Scratch Buffer");
 
 	build_info.dstAccelerationStructure = tlas;
 	build_info.scratchData = scratch_buffer.GetDeviceAddress();
@@ -172,14 +172,12 @@ std::tuple<vk::AccelerationStructureKHR, Buffer, Buffer> BuildTlas(
 	cmd.buildAccelerationStructuresKHR(build_infos, range_infos);
 	context.ReleaseTempCmd(cmd);
 	scratch_buffer.Destroy(context);
+
+	tlas_buffer.SetName(context, "Tlas Buffer");
 	return std::tie(tlas, tlas_buffer, instances_buffer);
 }
 
-std::tuple<vk::AccelerationStructureKHR, Buffer, Buffer> CreateAs(
-	const DeviceContext& context,
-	std::vector<std::shared_ptr<Mesh>>& meshes,
-	const std::vector<Object>& objects
-) {
+void CreateBlases(const DeviceContext& context, std::vector<std::shared_ptr<Mesh>>& meshes) {
 	std::vector<BlasInput> inputs;
 	for (const auto& mesh : meshes) {
 		inputs.emplace_back(CreateBlasInput(context, *mesh));
@@ -187,15 +185,7 @@ std::tuple<vk::AccelerationStructureKHR, Buffer, Buffer> CreateAs(
 	auto blases = BuildBlas(context, inputs, {});
 	assert(meshes.size() == blases.size());
 	for (size_t i = 0, end = meshes.size(); i < end; i++) {
+		blases[i].as_buffer.SetName(context, "Blas");
 		meshes[i]->SetAsData(blases[i].as, blases[i].as_buffer);
 	}
-	std::vector<VkAccelerationStructureInstanceKHR> instances;
-	for (const Object& obj : objects) {
-		instances.emplace_back(vk::AccelerationStructureInstanceKHR(
-			obj.GetTransformMatrixKHR(), 0, 0xFF, 0,
-			vk::GeometryInstanceFlagBitsKHR::eTriangleFacingCullDisable,
-			obj.mesh->GetAsAddress()
-		));
-	}
-	return BuildTlas(context, instances, {}, false);
 }

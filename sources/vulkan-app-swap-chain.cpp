@@ -21,15 +21,15 @@ uint32_t GetMinImageCount(const VkSurfaceCapabilitiesKHR &capabilities);
 
 void CreateImageViews(VulkanApp::SwapchainRuntimeInfo &info, const vk::Device & device);
 
-void VulkanApp::CreateSwapchain() {
-    vk::SurfaceCapabilitiesKHR capabilities = context->GetSurfaceCapabilities();
+void VulkanApp::CreateSwapchain(const DeviceContext& context) {
+    vk::SurfaceCapabilitiesKHR capabilities = context.GetSurfaceCapabilities();
 
-    vk::SurfaceFormatKHR format = context->GetSurfaceFormat();
-    vk::PresentModeKHR present_mode = context->GetSurfacePresentModes();
-    vk::Extent2D extent = GetSwapExtent(capabilities, context->GetActuralExtent());
+    vk::SurfaceFormatKHR format = context.GetSurfaceFormat();
+    vk::PresentModeKHR present_mode = context.GetSurfacePresentModes();
+    vk::Extent2D extent = GetSwapExtent(capabilities, context.GetActuralExtent());
     vk::SwapchainCreateInfoKHR create_info(
         {},
-        context->GetSurface(),
+        context.GetSurface(),
         GetMinImageCount(capabilities),
         format.format,
         format.colorSpace,
@@ -45,12 +45,12 @@ void VulkanApp::CreateSwapchain() {
         {},
         {});
 
-    swapchain_info.swapchain = context->GetDevice().createSwapchainKHR(create_info);
-    swapchain_info.extent = context->GetActuralExtent();
+    swapchain_info.swapchain = context.GetDevice().createSwapchainKHR(create_info);
+    swapchain_info.extent = context.GetActuralExtent();
     swapchain_info.format = format.format;
-    swapchain_info.images = context->GetDevice().getSwapchainImagesKHR(swapchain_info.swapchain);
+    swapchain_info.images = context.GetDevice().getSwapchainImagesKHR(swapchain_info.swapchain);
     swapchain_info.count = swapchain_info.images.size();
-    CreateImageViews(swapchain_info, context->GetDevice());
+    CreateImageViews(swapchain_info, context.GetDevice());
 }
 
 uint32_t GetMinImageCount(const VkSurfaceCapabilitiesKHR &capabilities) {

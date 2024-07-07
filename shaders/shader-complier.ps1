@@ -13,3 +13,5 @@ foreach ($file in $files) {
     & $compiler --target-env vulkan1.2 $file.FullName -o $outputFile
     Write-Host ""
 }
+
+Read-Host -Prompt "Press any key to continue"

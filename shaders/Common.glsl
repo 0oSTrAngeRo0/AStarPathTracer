@@ -24,4 +24,9 @@ struct HitPayload {
 	vec4 color;
 };
 
+struct ConstantsData {
+	mat4 view_inverse;
+	mat4 projection_inverse;
+};
+
 #endif

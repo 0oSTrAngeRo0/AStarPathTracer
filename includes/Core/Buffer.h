@@ -1,7 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-#include <vk_mem_alloc.hpp>
+#include "Core/VulkanUsages.h"
 
 class DeviceContext;
 
@@ -10,6 +9,7 @@ private:
 	vk::Buffer buffer;
 	vma::Allocation allocation;
 	vk::DeviceAddress address;
+	vk::DeviceSize size;
 public:
 	Buffer() {}
 
@@ -21,12 +21,15 @@ public:
 
 	template <typename TElement>
 	inline void SetData(const DeviceContext& context, vk::ArrayProxyNoTemporaries<TElement> data) {
-		SetData(context, data.data(), data.size());
+		SetData(context, data.data(), data.size() * sizeof(TElement));
 	}
 
 	void Destroy(const DeviceContext& context);
 	inline const vk::DeviceAddress GetDeviceAddress() const { return address; }
 	inline operator vk::Buffer()const { return buffer; }
+	inline vk::DeviceSize GetSize() const { return size; }
+	void SetName(const DeviceContext& context, const std::string& name);
+	const std::string GetName(const DeviceContext& context) const;
 
 private:
 	void SetData(const DeviceContext& context, void* data, vk::DeviceSize size);

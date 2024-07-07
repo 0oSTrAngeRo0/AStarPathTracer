@@ -1,31 +1,33 @@
+#include "Core/VulkanUsages.h"
+
 #include "vulkan-app.h"
 #include "main-window.h"
 #include <vector>
 #include "vulkan-utils.h"
+#include "Application/Systems.h"
+#include "Core/RenderContext.h"
 
 int main() {
 	try
 	{
 		AppConfig config = AppConfig::CreateDefault();
+		GlfwWindow main_window = GlfwWindow(config);
+		DeviceContext context(main_window);
+		RenderContext render(context);
+		Systems systems(render);
+		render.Update(context, systems.GetRegistry());
 
-		std::unique_ptr<GlfwWindow> main_window = std::make_unique<GlfwWindow>(config);
+		VulkanApp vulkan_app(context, render);
 
-		config.external_extensions = main_window->GetVulkanExtensions();
-
-		std::unique_ptr<VulkanApp> vulkan_app = std::make_unique<VulkanApp>(config, *main_window);
-
-		while (!main_window->ShouldClose())
+		while (!main_window.ShouldClose())
 		{
-			if (!main_window->ShouldClose()) {
-				main_window->Update();
-				vulkan_app->Update();
-			}
-			else
-			{
-				vulkan_app.reset();
-				main_window.reset();
-			}
+			main_window.Update();
+			systems.Update(0.01);
+			render.Update(context, systems.GetRegistry());
+			vulkan_app.Draw(context, render);
 		}
+		vulkan_app.Destroy(context);
+		render.Destory(context);
 	}
 	catch (const std::exception& e)
 	{

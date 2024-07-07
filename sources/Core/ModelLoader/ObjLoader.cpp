@@ -4,7 +4,7 @@
 
 #include "Core/ModelLoader/tiny_obj_loader.h"
 
-std::shared_ptr<Mesh> LoadFromFile(const std::string& path) {
+std::tuple<std::vector<glm::vec3>, std::vector<uint32_t>> LoadFromFile(const std::string& path) {
     printf("Start Loading Obj File: [%s]\n", path.c_str());
 	tinyobj::ObjReader reader;
 	tinyobj::ObjReaderConfig reader_config;
@@ -21,7 +21,7 @@ std::shared_ptr<Mesh> LoadFromFile(const std::string& path) {
     auto& shapes = reader.GetShapes();
     auto& materials = reader.GetMaterials();
 
-    std::vector<Vertex> vertices;
+    std::vector<glm::vec3> vertices;
     std::vector<uint32_t> indices;
 
     if (attrib.vertices.size() % 3 != 0)
@@ -29,12 +29,10 @@ std::shared_ptr<Mesh> LoadFromFile(const std::string& path) {
     for (size_t i = 0, end = attrib.vertices.size(); i < end; i+=3)
     {
         vertices.emplace_back(
-            Vertex(
-                glm::vec3(
-                    attrib.vertices[i + 0], // vx 
-                    attrib.vertices[i + 1], // vy
-                    attrib.vertices[i + 2]  // vz
-                )
+            glm::vec3(
+                attrib.vertices[i + 0], // vx 
+                attrib.vertices[i + 1], // vy
+                attrib.vertices[i + 2]  // vz
             )
         );
     }
@@ -49,8 +47,5 @@ std::shared_ptr<Mesh> LoadFromFile(const std::string& path) {
         printf("\n");
     }
 
-    std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>();
-    mesh->indices = indices;
-    mesh->vertices = vertices;
-    return mesh;
+    return std::tie(vertices, indices);
 }

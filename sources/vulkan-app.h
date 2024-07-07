@@ -8,8 +8,9 @@
 #include "Core/Mesh.h"
 #include "ray-tracing-shader-binding-table.h"
 #include "Core/Image.h"
+#include "entt/entt.hpp"
 
-class Scene;
+class RenderContext;
 
 class VulkanApp {
 public:
@@ -23,13 +24,10 @@ public:
 	};
 
 private:
-	AppConfig config;
-	std::unique_ptr<DeviceContext> context;
 	SwapchainRuntimeInfo swapchain_info;
 	vk::PipelineLayout pipeline_layout;
 	vk::Pipeline ray_tracing_pipeline;
 	vk::CommandPool command_pool;
-	std::vector<vk::CommandBuffer> command_buffers;
 	vk::Semaphore image_available_semaphore;
 	vk::Semaphore render_finished_semaphore;
 	vk::Fence in_flight_fence;
@@ -39,20 +37,19 @@ private:
 	vk::DescriptorSet descriptor_set;
 	std::unique_ptr<Image> rt_image;
 	vk::ImageView rt_image_view;
-	std::unique_ptr<Scene> scene;
 
 public:
-	VulkanApp(const AppConfig& config, const Window& main_window);
-	~VulkanApp();
-	void Update();
+	VulkanApp(const DeviceContext& context, const RenderContext& render);
+	void Destroy(const DeviceContext& context);
+	void Draw(const DeviceContext& context, const RenderContext& render);
 
 private:
-	void CreateSwapchain();
-	void CreateRayTracingPipelineLayout();
-	void CreateSyncObjects();
-	void CreateRayTracingPipeline();
-	void UploadDescriptorSet();
-	void CreateCommandBuffers();
+	void CreateSwapchain(const DeviceContext& context);
+	void CreateRayTracingPipelineLayout(const DeviceContext& context);
+	void CreateSyncObjects(const DeviceContext& context);
+	void CreateRayTracingPipeline(const DeviceContext& context);
+	void UploadDescriptorSet(const DeviceContext& context, const RenderContext& render);
+	vk::CommandBuffer CreateFrameCommandBuffer(const DeviceContext& context, const vk::CommandPool pool, const uint32_t index);
 };
 
 

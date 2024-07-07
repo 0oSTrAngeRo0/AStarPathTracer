@@ -1,13 +1,19 @@
 #include "Core/EngineDebugger.h"
 
-VKAPI_ATTR VkBool32 VKAPI_CALL
-DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity, VkDebugUtilsMessageTypeFlagsEXT message_type,
-    const VkDebugUtilsMessengerCallbackDataEXT* p_callback_data, void* p_user_data) {
+VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT message_severity, 
+    VkDebugUtilsMessageTypeFlagsEXT message_type,
+    const VkDebugUtilsMessengerCallbackDataEXT* p_callback_data, 
+    void* p_user_data
+) {
     std::string severity = vk::to_string(vk::DebugUtilsMessageSeverityFlagsEXT(message_severity));
     severity = severity.substr(2, severity.size() - 4);
     std::string type = vk::to_string(vk::DebugUtilsMessageTypeFlagsEXT(message_type));
     type = type.substr(2, type.size() - 4);
     printf("[%s][%s] %s\n\n", severity.data(), type.data(), p_callback_data->pMessage);
+    if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+        throw std::runtime_error("Vulkan Error");
+    }
     return VK_FALSE;
 }
 

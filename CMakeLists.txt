@@ -48,6 +48,9 @@ add_executable(${PROJECT_NAME}
     sources/Core/Image.cpp
     sources/Core/Mesh.cpp
     sources/Core/ModelLoader/ObjLoader.cpp
+    sources/Application/Systems.cpp
+    sources/Core/RenderContext.cpp
+    sources/Core/VulkanUsages.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})

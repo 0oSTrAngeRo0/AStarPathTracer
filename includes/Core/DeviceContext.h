@@ -1,8 +1,6 @@
 #pragma once
 
-#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
-#include <vulkan/vulkan.hpp>
-#include <vk_mem_alloc.hpp>
+#include "Core/VulkanUsages.h"
 
 #define ENABLE_DEBUG 1
 #define GPU_FEATURE \

@@ -49,6 +49,7 @@ RayTracingBindingTable::RayTracingBindingTable(const DeviceContext& context, vk:
 		vk::BufferUsageFlagBits::eShaderDeviceAddress |
 		vk::BufferUsageFlagBits::eShaderBindingTableKHR);
 	buffer = Buffer::CreateWithData<uint8_t>(context, buffer_ci, target);
+	buffer.SetName(context, "Shader Binding Table");
 
 	vk::DeviceAddress sbt_address = buffer.GetDeviceAddress();
 	rgen.deviceAddress = sbt_address;
