@@ -35,10 +35,10 @@ vk::CommandBuffer VulkanApp::CreateFrameCommandBuffer(const DeviceContext& conte
 		vk::Offset3D(0, 0, 0),
 		vk::ImageSubresourceLayers(vk::ImageAspectFlagBits::eColor, 0, 0, 1),
 		vk::Offset3D(0, 0, 0),
-		vk::Extent3D(swapchain_info.extent, 1)
+		vk::Extent3D(swapchain->GetExtent(), 1)
 	);
 
-	vk::Image target = swapchain_info.images[index];
+	vk::Image target = swapchain->GetImage(index);
 
 	cmd.begin(vk::CommandBufferBeginInfo());
 	CmdInsertImageBarrier(cmd, vk::ImageMemoryBarrier(
@@ -52,8 +52,8 @@ vk::CommandBuffer VulkanApp::CreateFrameCommandBuffer(const DeviceContext& conte
 		shader_binding_table->miss,
 		shader_binding_table->hit,
 		shader_binding_table->call,
-		swapchain_info.extent.width,
-		swapchain_info.extent.height,
+		swapchain->GetExtent().width,
+		swapchain->GetExtent().height,
 		1
 	);
 	CmdInsertImageBarrier(cmd, vk::ImageMemoryBarrier(
@@ -86,7 +86,7 @@ void VulkanApp::Draw(const DeviceContext& context, const RenderContext& render) 
 	context.GetDevice().resetFences({ in_flight_fence });
 
 	UpdateDescriptorSet(context, render, descriptor_set);
-	uint32_t image_index = context.GetDevice().acquireNextImageKHR(swapchain_info.swapchain, UINT64_MAX, image_available_semaphore).value;
+	uint32_t image_index = context.GetDevice().acquireNextImageKHR(*swapchain, UINT64_MAX, image_available_semaphore).value;
 	vk::CommandBuffer cmd = CreateFrameCommandBuffer(context, command_pool, image_index);
 
 	vk::PipelineStageFlags stage_mask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
@@ -98,6 +98,7 @@ void VulkanApp::Draw(const DeviceContext& context, const RenderContext& render) 
 	);
 	context.GetGraphicsQueue().submit(submit_info, in_flight_fence);
 	context.GetGraphicsQueue().waitIdle(); // 等待当前帧执行完毕， TODO: 优化之
-	vk::PresentInfoKHR present_info(render_finished_semaphore, swapchain_info.swapchain, image_index);
+	std::vector<vk::SwapchainKHR> swapchains = { *swapchain };
+	vk::PresentInfoKHR present_info(render_finished_semaphore, swapchains, image_index);
 	VK_CHECK(context.GetPresentQueue().presentKHR(present_info));
 }

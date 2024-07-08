@@ -53,6 +53,7 @@ private:
 public:
 	DeviceContext(const Window& window);
 	~DeviceContext();
+	inline vk::Instance GetInstance() const { return instance; }
 	inline vk::Device GetDevice() const { return device; }
 	inline vk::PhysicalDevice GetGpu() const { return gpu; }
 	inline vk::Queue GetGraphicsQueue() const { return graphics_queue; }

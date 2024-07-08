@@ -9,22 +9,13 @@
 #include "ray-tracing-shader-binding-table.h"
 #include "Core/Image.h"
 #include "entt/entt.hpp"
+#include "Core/Swapchain.h"
 
 class RenderContext;
 
 class VulkanApp {
-public:
-	struct SwapchainRuntimeInfo {
-		vk::SwapchainKHR swapchain;
-		std::vector<vk::Image> images;
-		vk::Format format;
-		vk::Extent2D extent;
-		std::vector<vk::ImageView> image_views;
-		uint32_t count;
-	};
-
 private:
-	SwapchainRuntimeInfo swapchain_info;
+	std::unique_ptr<Swapchain> swapchain;
 	vk::PipelineLayout pipeline_layout;
 	vk::Pipeline ray_tracing_pipeline;
 	vk::CommandPool command_pool;
@@ -44,7 +35,6 @@ public:
 	void Draw(const DeviceContext& context, const RenderContext& render);
 
 private:
-	void CreateSwapchain(const DeviceContext& context);
 	void CreateRayTracingPipelineLayout(const DeviceContext& context);
 	void CreateSyncObjects(const DeviceContext& context);
 	void CreateRayTracingPipeline(const DeviceContext& context);

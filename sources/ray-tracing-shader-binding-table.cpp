@@ -57,7 +57,6 @@ RayTracingBindingTable::RayTracingBindingTable(const DeviceContext& context, vk:
 	hit.deviceAddress = sbt_address + rgen.size + miss.size;
 }
 
-void RayTracingBindingTable::Destroy(const DeviceContext& context)
-{
+void RayTracingBindingTable::Destroy(const DeviceContext& context) {
 	buffer.Destroy(context);
 }

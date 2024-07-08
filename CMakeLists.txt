@@ -43,7 +43,7 @@ add_executable(${PROJECT_NAME}
     sources/main.cpp
     sources/main-window.cpp
     sources/vulkan-app.cpp
-    sources/vulkan-app-swap-chain.cpp
+    
     sources/vulkan-app-graphics-pipeline.cpp
     sources/vulkan-app-draw-frame.cpp
     sources/ray-tracing-shader-binding-table.cpp
@@ -58,7 +58,7 @@ add_executable(${PROJECT_NAME}
     sources/Core/RenderContext.cpp
     sources/Core/VulkanUsages.cpp
     sources/Engine/Resources/Resource.cpp
-    
+    sources/Core/Swapchain.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})

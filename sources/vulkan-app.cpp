@@ -4,10 +4,10 @@
 
 VulkanApp::VulkanApp(const DeviceContext& context, const RenderContext& render)
 {
-	CreateSwapchain(context);
+	swapchain = std::make_unique<Swapchain>(context);
 	rt_image = std::make_unique<Image>(context, vk::ImageCreateInfo(
 		{}, vk::ImageType::e2D, context.GetSurfaceFormat().format,
-		vk::Extent3D(swapchain_info.extent, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
+		vk::Extent3D(swapchain->GetExtent(), 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
 		vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferSrc));
 	rt_image_view = context.GetDevice().createImageView(vk::ImageViewCreateInfo({}, *rt_image,
 		vk::ImageViewType::e2D, context.GetSurfaceFormat().format,
@@ -37,8 +37,5 @@ void VulkanApp::Destroy(const DeviceContext& context) {
 	shader_binding_table->Destroy(context);
 	device.destroyPipeline(ray_tracing_pipeline);
 	device.destroyPipelineLayout(pipeline_layout);
-	for (vk::ImageView image_view : swapchain_info.image_views) {
-		device.destroyImageView(image_view);
-	}
-	device.destroySwapchainKHR(swapchain_info.swapchain);
+	swapchain->Descroy(context);
 }
