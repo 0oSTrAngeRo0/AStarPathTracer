@@ -18,3 +18,11 @@
 	path = plugins/imgui
 	url = https://github.com/ocornut/imgui.git
 	branch = docking
+[submodule "plugins/crossguid"]
+	path = plugins/crossguid
+	url = https://github.com/graeme-hill/crossguid.git
+	branch = master
+[submodule "plugins/nlohmann-json"]
+	path = plugins/nlohmann-json
+	url = https://github.com/nlohmann/json.git
+	branch = master

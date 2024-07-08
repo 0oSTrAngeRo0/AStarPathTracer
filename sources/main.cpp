@@ -6,6 +6,7 @@
 #include "vulkan-utils.h"
 #include "Application/Systems.h"
 #include "Core/RenderContext.h"
+#include "Engine/Resources/Resources.h"
 
 int main() {
 	try

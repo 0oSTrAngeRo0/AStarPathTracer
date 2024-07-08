@@ -13,10 +13,16 @@ find_package(Vulkan REQUIRED)
 
 set(GLFW_BUILD_EXAMPLES OFF)
 set(GLFW_BUILD_TESTS OFF)
+
 add_subdirectory(plugins/glfw)
 add_subdirectory(plugins/glm)
 add_subdirectory(plugins/VulkanMemoryAllocator-Hpp)
 add_subdirectory(plugins/entt)
+add_subdirectory(plugins/crossguid)
+
+set(JSON_BuildTests OFF CACHE INTERNAL "")
+set(JSON_ImplicitConversions  OFF)
+add_subdirectory(plugins/nlohmann-json)
 
 set(IMGUI_DIR plugins/imgui)
 set(IMGUI_SOURCE 
@@ -51,6 +57,8 @@ add_executable(${PROJECT_NAME}
     sources/Application/Systems.cpp
     sources/Core/RenderContext.cpp
     sources/Core/VulkanUsages.cpp
+    sources/Engine/Resources/Resource.cpp
+    
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
@@ -64,3 +72,5 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glfw ${GLFW_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PUBLIC Vulkan::Vulkan)
 target_link_libraries(${PROJECT_NAME} PRIVATE glm ${GLM_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanMemoryAllocator-Hpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE crossguid)
+target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
