@@ -98,6 +98,7 @@ void VulkanApp::Draw(const DeviceContext& context, const RenderContext& render) 
 	);
 	context.GetGraphicsQueue().submit(submit_info, in_flight_fence);
 	context.GetGraphicsQueue().waitIdle(); // 等待当前帧执行完毕， TODO: 优化之
+	context.GetDevice().freeCommandBuffers(command_pool, cmd);
 	std::vector<vk::SwapchainKHR> swapchains = { *swapchain };
 	vk::PresentInfoKHR present_info(render_finished_semaphore, swapchains, image_index);
 	VK_CHECK(context.GetPresentQueue().presentKHR(present_info));
