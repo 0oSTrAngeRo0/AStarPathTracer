@@ -7,7 +7,10 @@
 
 class DeviceContext;
 
-class RayTracingBindingTable {
+/// <summary>
+/// Todo: Make it more extensible
+/// </summary>
+class RayTracingShaderBindingTable {
 private:
 	Buffer buffer;
 public:
@@ -16,7 +19,7 @@ public:
 	vk::StridedDeviceAddressRegionKHR hit;
 	vk::StridedDeviceAddressRegionKHR call;
 
-	RayTracingBindingTable(const DeviceContext& context, vk::Pipeline pipeline);
+	RayTracingShaderBindingTable(const DeviceContext& context, vk::Pipeline pipeline);
 
 	void Destroy(const DeviceContext& context);
 };

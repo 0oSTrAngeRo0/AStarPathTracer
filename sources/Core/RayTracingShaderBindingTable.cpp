@@ -1,9 +1,9 @@
-#include "ray-tracing-shader-binding-table.h"
+#include "Core/RayTracingShaderBindingTable.h"
 #include "Core/DeviceContext.h"
 #include "Core/Buffer.h"
 #include "math-utils.h"
 
-RayTracingBindingTable::RayTracingBindingTable(const DeviceContext& context, vk::Pipeline pipeline) {
+RayTracingShaderBindingTable::RayTracingShaderBindingTable(const DeviceContext& context, vk::Pipeline pipeline) {
 	auto& properties = context.GetGpuProperty<vk::PhysicalDeviceRayTracingPipelinePropertiesKHR>();
 	uint32_t rgen_count = 1;
 	uint32_t miss_count = 1;
@@ -57,6 +57,6 @@ RayTracingBindingTable::RayTracingBindingTable(const DeviceContext& context, vk:
 	hit.deviceAddress = sbt_address + rgen.size + miss.size;
 }
 
-void RayTracingBindingTable::Destroy(const DeviceContext& context) {
+void RayTracingShaderBindingTable::Destroy(const DeviceContext& context) {
 	buffer.Destroy(context);
 }

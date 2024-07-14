@@ -6,7 +6,7 @@
 #include "main-window.h"
 #include <vector>
 #include "Core/Mesh.h"
-#include "ray-tracing-shader-binding-table.h"
+#include "Core/RayTracingShaderBindingTable.h"
 #include "Core/Image.h"
 #include "entt/entt.hpp"
 #include "Core/Swapchain.h"
@@ -22,7 +22,7 @@ private:
 	vk::Semaphore image_available_semaphore;
 	vk::Semaphore render_finished_semaphore;
 	vk::Fence in_flight_fence;
-	std::unique_ptr<RayTracingBindingTable> shader_binding_table;
+	std::unique_ptr<RayTracingShaderBindingTable> shader_binding_table;
 	vk::DescriptorPool descriptor_pool;
 	vk::DescriptorSetLayout descriptor_set_layout;
 	vk::DescriptorSet descriptor_set;

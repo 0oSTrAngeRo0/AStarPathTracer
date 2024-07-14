@@ -18,7 +18,7 @@ VulkanApp::VulkanApp(const DeviceContext& context, const RenderContext& render)
 	UploadDescriptorSet(context, render);
 	CreateRayTracingPipelineLayout(context);
 	CreateRayTracingPipeline(context);
-	shader_binding_table = std::make_unique<RayTracingBindingTable>(context, ray_tracing_pipeline);
+	shader_binding_table = std::make_unique<RayTracingShaderBindingTable>(context, ray_tracing_pipeline);
 	command_pool = context.GetDevice().createCommandPool(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, context.GetGrpahicsQueueIndex()));
 	CreateSyncObjects(context);
 }
