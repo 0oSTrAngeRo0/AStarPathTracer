@@ -2,7 +2,7 @@
 #include "Engine/Components/Transform.h"
 #include "Engine/Components/Camera.h"
 #include "Engine/Components/Render.h"
-#include "Core/RenderContext.h"
+#include "Application/Renderer/RenderContext.h"
 
 void UpdateLinearVelocity(entt::registry& registry, float delta) {
 	auto view = registry.view<LocalLinearVelocity, LocalPosition>();

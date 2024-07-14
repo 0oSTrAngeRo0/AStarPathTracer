@@ -76,7 +76,7 @@ Swapchain::Swapchain(const DeviceContext& context) {
     image_views = CreateImageViews(context, images, format);
 }
 
-void Swapchain::Descroy(const DeviceContext& context) {
+void Swapchain::Destroy(const DeviceContext& context) {
     vk::Device device = context.GetDevice();
     for (vk::ImageView image_view : image_views) {
         device.destroyImageView(image_view);

@@ -1,7 +1,7 @@
 #define GLFW_INCLUDE_VULKAN
 
 #include <stdexcept>
-#include "main-window.h"
+#include "Application/GlfwWindow.h"
 #include "GLFW/glfw3.h"
 #include "event-registry.h"
 

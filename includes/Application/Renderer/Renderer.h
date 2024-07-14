@@ -3,7 +3,7 @@
 #include "Core/DeviceContext.h"
 #include <vulkan/vulkan.hpp>
 #include "event-registry.h"
-#include "main-window.h"
+#include "Application/GlfwWindow.h"
 #include <vector>
 #include "Core/Mesh.h"
 #include "Core/RayTracingShaderBindingTable.h"
@@ -13,7 +13,7 @@
 
 class RenderContext;
 
-class VulkanApp {
+class Renderer {
 private:
 	std::unique_ptr<Swapchain> swapchain;
 	vk::PipelineLayout pipeline_layout;
@@ -30,7 +30,7 @@ private:
 	vk::ImageView rt_image_view;
 
 public:
-	VulkanApp(const DeviceContext& context, const RenderContext& render);
+	Renderer(const DeviceContext& context, const RenderContext& render);
 	void Destroy(const DeviceContext& context);
 	void Draw(const DeviceContext& context, const RenderContext& render);
 
@@ -40,6 +40,11 @@ private:
 	void CreateRayTracingPipeline(const DeviceContext& context);
 	void UploadDescriptorSet(const DeviceContext& context, const RenderContext& render);
 	vk::CommandBuffer CreateFrameCommandBuffer(const DeviceContext& context, const vk::CommandPool pool, const uint32_t index);
+
+	static void CmdInsertImageBarrier(const vk::CommandBuffer cmd, vk::ImageMemoryBarrier barrier);
+	static void UpdateDescriptorSet(const DeviceContext& context, const RenderContext& render, const vk::DescriptorSet& set);
+	static vk::DescriptorPool CreateDescriptorPool(const vk::Device device);
+	static vk::DescriptorSetLayout CreateDescriptorSetLayout(const vk::Device device);
 };
 
 

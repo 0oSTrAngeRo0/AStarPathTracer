@@ -1,4 +1,4 @@
-#include "Core/RenderContext.h"
+#include "Application/Renderer/RenderContext.h"
 #include "Core/DeviceContext.h"
 #include "Core/ModelLoader/ObjLoader.h"
 #include "Engine/Components/Render.h"
@@ -120,7 +120,7 @@ void RenderContext::RecreateInstances(const DeviceContext& context, entt::regist
 	instances.UpdateData(context);
 
 	Buffer buffer = instances.GetBuffer();
-	buffer.SetName(context, "Instance Data Buffer");
+	// buffer.SetName(context, "Instance Data Buffer");
 }
 
 void RenderContext::RecreateShaderBuffers(const DeviceContext& context) {

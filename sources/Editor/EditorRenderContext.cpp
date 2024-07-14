@@ -2,7 +2,7 @@
 
 #include "Core/DeviceContext.h"
 #include "Core/Swapchain.h"
-#include "vulkan-utils.h"
+#include "Core/VulkanUtils.h"
 #include "Editor/EditorUI.h"
 
 EditorFrameContext::EditorFrameContext(
@@ -21,6 +21,7 @@ void EditorFrameContext::Destroy(const DeviceContext& context) {
 	device.destroySemaphore(image_available_semaphore);
 	device.destroySemaphore(render_finished_semaphore);
 	device.destroyFence(in_flight_fence);
+	device.destroyFramebuffer(framebuffer);
 }
 
 std::vector<EditorFrameContext> EditorFrameContext::CreateFrameContext(
@@ -78,11 +79,9 @@ vk::RenderPass EditorRenderContext::CreateRenderPass(const DeviceContext& contex
 vk::DescriptorPool EditorRenderContext::CreateDescriptorPool(const DeviceContext& context) {
 	std::vector<vk::DescriptorPoolSize> sizes = {
 	};
-	vk::DescriptorPoolCreateInfo create_info({}, 1, sizes);
+	vk::DescriptorPoolCreateInfo create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 1, sizes);
 	return context.GetDevice().createDescriptorPool(create_info);
 }
-
-
 
 EditorRenderContext::EditorRenderContext(const DeviceContext& context) {
 	current_frame = 0;
@@ -136,4 +135,15 @@ void EditorRenderContext::CmdDrawUI(const EditorFrameContext& frame, EditorUI& u
 		vk::SubpassContents::eInline);
 	ui.CmdDraw(frame.command_buffer);
 	frame.command_buffer.endRenderPass();
+}
+
+void EditorRenderContext::Destroy(const DeviceContext& context) {
+	vk::Device device = context.GetDevice();
+	for (auto& frame: frames) {
+		frame.Destroy(context);
+	}
+	device.destroyRenderPass(render_pass);
+	device.destroyDescriptorPool(descriptor_pool);
+	device.destroyCommandPool(cmd_pool);
+	swapchain->Destroy(context);
 }

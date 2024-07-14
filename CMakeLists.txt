@@ -39,29 +39,33 @@ message("[AStar] ${IMGUI_DIR}")
 add_executable(${PROJECT_NAME}
     ${IMGUI_SOURCE}
     
-    sources/Core/DeviceContext.cpp
     sources/main.cpp
-    sources/main-window.cpp
-    sources/vulkan-app.cpp
-    
-    sources/vulkan-app-graphics-pipeline.cpp
-    sources/vulkan-app-draw-frame.cpp
-    sources/ray-tracing-shader-binding-table.cpp
     sources/acceleration-structure.cpp
+
+    sources/Application/GlfwWindow.cpp
+    sources/Application/Systems.cpp
+    sources/Application/Renderer/Renderer.cpp
+    sources/Application/Renderer/RenderContext.cpp
+    sources/Application/Renderer/RendererApplication.cpp
+
+    sources/Core/RayTracingShaderBindingTable.cpp
     sources/Core/EngineDebugger.cpp
     sources/Core/Buffer.cpp
     sources/Core/TemporaryCommandBufferPool.cpp
     sources/Core/Image.cpp
     sources/Core/Mesh.cpp
     sources/Core/ModelLoader/ObjLoader.cpp
-    sources/Application/Systems.cpp
-    sources/Core/RenderContext.cpp
     sources/Core/VulkanUsages.cpp
-    sources/Engine/Resources/Resource.cpp
     sources/Core/Swapchain.cpp
+    sources/Core/DeviceContext.cpp
+
+    sources/Editor/EditorUIDrawer.cpp
     sources/Editor/EditorApplication.cpp 
     sources/Editor/EditorUI.cpp
     sources/Editor/EditorRenderContext.cpp
+
+    sources/Engine/Resources/Resource.cpp
+
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})

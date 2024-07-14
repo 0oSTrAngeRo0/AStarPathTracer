@@ -51,4 +51,6 @@ public:
 	void PresentFrame(const DeviceContext& context, const EditorFrameContext& frame, const uint32_t image_index);
 	void EndFrame();
 	void CmdDrawUI(const EditorFrameContext& frame, EditorUI& ui);
+
+	void Destroy(const DeviceContext& context);
 };

@@ -12,7 +12,8 @@ private:
 public:
 	EditorUI(const DeviceContext& context, const EditorRenderContext& render_context, const GlfwWindow& window);
 	void UpdateBeginFrame();
+	void UpdateRenderData();
 	void CmdDraw(vk::CommandBuffer cmd);
 	void UpdateEndFrame();
-	~EditorUI();
+	void Destroy();
 };

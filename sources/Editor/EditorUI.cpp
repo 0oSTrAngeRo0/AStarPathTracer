@@ -5,7 +5,7 @@
 #include "Editor/EditorUI.h"
 
 #include "Core/DeviceContext.h"
-#include "main-window.h"
+#include "Application/GlfwWindow.h"
 #include "Core/Swapchain.h"
 #include "Editor/EditorRenderContext.h"
 
@@ -63,24 +63,15 @@ void EditorUI::UpdateBeginFrame() {
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
+}
 
-	ImGui::ShowDemoWindow();
+void EditorUI::UpdateRenderData() {
 	ImGui::Render();
 }
 
 void EditorUI::CmdDraw(vk::CommandBuffer cmd) {
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
 }
-
-//void EditorRenderContext::CmdDrawUI(EditorFrameContext& frame, EditorUI& ui) {
-//	vk::ClearValue clear_value = vk::ClearValue(vk::ClearColorValue());
-//	frame.command_buffer.beginRenderPass(vk::RenderPassBeginInfo(
-//		render_pass, frame.framebuffer,
-//		vk::Rect2D(vk::Offset2D(0, 0), swapchain->GetExtent()), clear_value),
-//		vk::SubpassContents::eInline);
-//	ui.CmdDraw(frame.command_buffer);
-//	frame.command_buffer.endRenderPass();
-//}
 
 void EditorUI::UpdateEndFrame() {
 	if (ImGui::GetIO().ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
@@ -89,7 +80,7 @@ void EditorUI::UpdateEndFrame() {
 	}
 }
 
-EditorUI::~EditorUI() {
+void EditorUI::Destroy() {
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();

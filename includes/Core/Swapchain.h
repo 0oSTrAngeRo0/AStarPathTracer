@@ -18,7 +18,7 @@ private:
     static std::vector<vk::ImageView> CreateImageViews(const DeviceContext& context, std::vector<vk::Image>& images, const vk::Format format);
 public:
     Swapchain(const DeviceContext& context);
-    void Descroy(const DeviceContext& context);
+    void Destroy(const DeviceContext& context);
 
     inline operator vk::SwapchainKHR() const { return swapchain; }
     inline vk::Extent2D GetExtent() const { return extent; }

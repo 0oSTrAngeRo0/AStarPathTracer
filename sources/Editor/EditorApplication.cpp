@@ -3,21 +3,30 @@
 #include "Core/DeviceContext.h"
 #include "Core/Swapchain.h"
 #include "config.h"
-#include "main-window.h"
+#include "Application/GlfwWindow.h"
 #include "Editor/EditorRenderContext.h"
 #include "Editor/EditorUI.h"
+#include "Editor/EditorUIDrawer.h"
 
 EditorApplication::EditorApplication() {
-	window = std::make_unique<GlfwWindow>(AppConfig::CreateDefault());
+	AppConfig config = AppConfig::CreateDefault();
+	config.window_title = "PathTracer Editor";
+	window = std::make_unique<GlfwWindow>(config);
 	context = std::make_unique<DeviceContext>(*window);
 	render_context = std::make_unique<EditorRenderContext>(*context);
 	ui = std::make_unique<EditorUI>(*context, *render_context, *window);
+	ui_drawer = std::make_unique<EditorUIDrawer>();
+	is_active = true;
 }
 
-void EditorApplication::Update() {
-	if (window->ShouldClose()) return;
+void EditorApplication::Update(entt::registry& registry) {
+	if (!is_active) return;
+	is_active = !window->ShouldClose();
+
 	window->Update();
 	ui->UpdateBeginFrame();
+	ui_drawer->DrawUI(registry);
+	ui->UpdateRenderData();
 	auto [frame, image_index] = render_context->BeginFrame(*context);
 	render_context->CmdDrawUI(frame, *ui);
 	render_context->SubmitFrame(*context, frame);
@@ -27,6 +36,8 @@ void EditorApplication::Update() {
 }
 
 EditorApplication::~EditorApplication() {
+	is_active = false;
 	context->GetDevice().waitIdle();
-	context->~DeviceContext();
+	ui->Destroy();
+	render_context->Destroy(*context);
 }
