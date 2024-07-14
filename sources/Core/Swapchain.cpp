@@ -49,10 +49,11 @@ Swapchain::Swapchain(const DeviceContext& context) {
     vk::SurfaceFormatKHR surface_format = context.GetSurfaceFormat();
     vk::PresentModeKHR present_mode = context.GetSurfacePresentModes();
     vk::Extent2D surface_extent = GetSwapExtent(capabilities, context.GetActuralExtent());
+    min_image_count = GetMinImageCount(capabilities);
     vk::SwapchainCreateInfoKHR create_info(
         {},
         context.GetSurface(),
-        GetMinImageCount(capabilities),
+        min_image_count,
         surface_format.format,
         surface_format.colorSpace,
         surface_extent,

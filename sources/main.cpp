@@ -7,6 +7,7 @@
 #include "Application/Systems.h"
 #include "Core/RenderContext.h"
 #include "Engine/Resources/Resources.h"
+#include "Editor/EditorApplication.h"
 
 int main() {
 	try
@@ -19,9 +20,11 @@ int main() {
 		render.Update(context, systems.GetRegistry());
 
 		VulkanApp vulkan_app(context, render);
+		EditorApplication editor;
 
 		while (!main_window.ShouldClose())
 		{
+			editor.Update();
 			main_window.Update();
 			systems.Update(0.01);
 			render.Update(context, systems.GetRegistry());

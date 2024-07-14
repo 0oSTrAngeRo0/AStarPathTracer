@@ -59,6 +59,9 @@ add_executable(${PROJECT_NAME}
     sources/Core/VulkanUsages.cpp
     sources/Engine/Resources/Resource.cpp
     sources/Core/Swapchain.cpp
+    sources/Editor/EditorApplication.cpp 
+    sources/Editor/EditorUI.cpp
+    sources/Editor/EditorRenderContext.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
