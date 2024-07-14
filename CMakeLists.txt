@@ -63,6 +63,7 @@ add_executable(${PROJECT_NAME}
     sources/Editor/EditorApplication.cpp 
     sources/Editor/EditorUI.cpp
     sources/Editor/EditorRenderContext.cpp
+    sources/Editor/UI/FileBrowser.cpp
 
     sources/Engine/Resources/Resource.cpp
 
