@@ -35,7 +35,10 @@ void FileBrowser::RecursivelyDisplayDirectoryNode(const DirectoryNode& parent) {
 	}
 	else {
 		if (ImGui::TreeNodeEx(parent.file_name.c_str(), ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_SpanFullWidth)) {
-			// ... handle file click interaction
+			if (current_selection.full_path != parent.full_path) {
+				current_selection = parent;
+				is_selection_changed = true;
+			}
 		}
 	}
 	ImGui::PopID();
@@ -46,5 +49,6 @@ FileBrowser::FileBrowser(const std::string path) {
 }
 
 void FileBrowser::OnDrawUi() {
+	is_selection_changed = false;
 	RecursivelyDisplayDirectoryNode(root);
 }

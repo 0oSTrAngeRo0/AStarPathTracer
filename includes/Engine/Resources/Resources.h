@@ -5,10 +5,11 @@ typedef xg::Guid Uuid;
 
 #include <vector>
 
-#define ASSET_SOURCES_DIR "D:\C++\Projects\PathTracer\EngineRuntime\AssetSources"
-#define RESOURCES_DIR "D:\C++\Projects\PathTracer\EngineRuntime\Resources"
+#define ASSET_SOURCES_DIR "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources"
+#define RESOURCES_DIR "D:/C++/Projects/PathTracer/EngineRuntime/Resources"
 
 enum ResourceType {
+	eUnknown,
 	eObj,
 	eMaterial
 };
@@ -22,6 +23,7 @@ public:
 	Uuid uuid;
 	std::vector<Uuid> references;
 
+	ResourceBase(ResourceType type) :resource_type(type), uuid(xg::newGuid()) {}
 	static std::string Serialize(const ResourceBase& data);
 	static std::unique_ptr<ResourceBase> Deserialize(const std::string& str);
 	virtual ~ResourceBase() = default;
@@ -30,6 +32,7 @@ public:
 template <typename TData>
 class ResourceTemplate : public ResourceBase {
 public:
+	ResourceTemplate();
 	TData resource_data;
 };
 
