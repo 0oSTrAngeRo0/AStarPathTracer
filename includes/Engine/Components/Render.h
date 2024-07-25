@@ -5,6 +5,8 @@
 #include "Core/Shader.h"
 #include "Core/Instance.h"
 
+#include "Engine/Resources/Resources.h"
+
 struct Renderable {
 	std::shared_ptr<Mesh> mesh;
 	std::shared_ptr<Material> material;

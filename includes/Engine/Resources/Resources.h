@@ -4,15 +4,28 @@
 typedef xg::Guid Uuid;
 
 #include <vector>
+#include "Engine/ShaderHostBuffer.h"
+#include <glm/glm.hpp>
 
 #define ASSET_SOURCES_DIR "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources"
 #define RESOURCES_DIR "D:/C++/Projects/PathTracer/EngineRuntime/Resources"
 
-enum ResourceType {
+enum class ResourceType {
 	eUnknown,
 	eObj,
 	eMaterial
 };
+
+enum class MaterialType {
+	eUnknown,
+	eSimpleLit
+};
+
+struct SimpleLitMaterialData {
+	glm::vec4 color;
+};
+
+template <typename TData> class ResourceTemplate;
 
 /// <summary>
 /// 不允许实例化，只能实例化其子类
@@ -24,6 +37,7 @@ public:
 	std::vector<Uuid> references;
 
 	ResourceBase(ResourceType type) :resource_type(type), uuid(xg::newGuid()) {}
+
 	static std::string Serialize(const ResourceBase& data);
 	static std::unique_ptr<ResourceBase> Deserialize(const std::string& str);
 	virtual ~ResourceBase() = default;
@@ -42,7 +56,18 @@ public:
 	// other import settings
 };
 
-class MaterialResourceData {
+class MaterialResourceDataBase {
 public:
-	std::string material_type;
+	MaterialType material_type;
+	MaterialResourceDataBase(MaterialType type) : material_type(type) {}
+};
+
+template <typename T>
+class MaterialResourceData : public MaterialResourceDataBase {
+private:
+	std::shared_ptr<HostBufferVisitor<T>> material_visitor;
+public:
+	T material_data;
+
+	MaterialResourceData();
 };

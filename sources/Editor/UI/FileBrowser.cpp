@@ -34,7 +34,15 @@ void FileBrowser::RecursivelyDisplayDirectoryNode(const DirectoryNode& parent) {
 		}
 	}
 	else {
-		if (ImGui::TreeNodeEx(parent.file_name.c_str(), ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_SpanFullWidth)) {
+		auto flags = ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_SpanFullWidth;
+
+		// Todo: Can be optimized, string comparasion is too expensive!
+		if (current_selection.full_path == parent.full_path) {
+			flags |= ImGuiTreeNodeFlags_Selected;
+		}
+
+		ImGui::TreeNodeEx(parent.file_name.c_str(), flags);
+		if (ImGui::IsItemClicked()) {
 			if (current_selection.full_path != parent.full_path) {
 				current_selection = parent;
 				is_selection_changed = true;

@@ -6,12 +6,6 @@
 
 EditorSelection::EditorSelection() {
 	selected_inspector = std::make_shared<EmptyInspector>();
-
-	//auto resource = ResourceTemplate<ObjResourceData>();
-	//resource.resource_type = ResourceType::eObj;
-	//resource.resource_data.path = "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/cube.json";
-	//std::string json = ResourceBase::Serialize(resource);
-	//printf("%s\n", json.c_str());
 }
 
 void EditorSelection::SelectResource(const std::string& path) {
