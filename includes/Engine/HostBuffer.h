@@ -39,7 +39,7 @@ template<typename T>
 inline std::shared_ptr<HostBufferVisitor<T>> HostBuffer<T>::CreateVisitor() {
 	data.emplace_back();
 	is_dirty = true;
-	auto visitor = std::make_shared<HostBufferVisitor>(*this, data.size() - 1);
+	auto visitor = std::make_shared<HostBufferVisitor<T>>(*this, data.size() - 1);
 	visitors.emplace_back(visitor);
 	return visitor;
 }
