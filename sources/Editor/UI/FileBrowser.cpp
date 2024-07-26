@@ -68,11 +68,6 @@ void FileBrowser::OnSelected(uint32_t mouse_button, const DirectoryNode& node) {
 	current_state.is_directory = node.is_directory;
 }
 
-
-FileBrowser::FileBrowser(const std::string path) {
-	root = CreateDirectryNodeTreeFromPath(path);
-}
-
 void FileBrowser::OnDrawUi() {
 	current_state.is_changed = false;
 	RecursivelyDisplayDirectoryNode(root);

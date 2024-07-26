@@ -2,6 +2,7 @@
 #include <imgui.h>
 #include <Editor/UI/ImGuiFileDialog.h>
 #include "Engine/Resources/Resources.h"
+#include "Engine/Resources/ResourcesManager.h"
 #include <print>
 
 std::vector<ResourcesPanel::CreateResourceMenuItemNode> ResourcesPanel::creaet_resource_data = {
@@ -9,7 +10,10 @@ std::vector<ResourcesPanel::CreateResourceMenuItemNode> ResourcesPanel::creaet_r
 		"Material",
 		std::vector<ResourcesPanel::CreateResourceMenuItemNode>{
 			{
-				"SimpleLit", []() { std::println("Create Material"); }
+				"SimpleLit", [](const std::string& directory) { 
+					std::string path = std::format("{0}/New SimpleLit.json", directory);
+					ResourcesManager::GetInstance().CreateNewResource<MaterialResourceData<SimpleLitMaterialData>>(path);
+				}
 			}
 		}
 	}
@@ -22,10 +26,10 @@ ResourcesPanel::ResourcesPanel() {
 void ResourcesPanel::DrawCraetePopupNode(const CreateResourceMenuItemNode& node) {
 	std::visit([&](auto&& arg) {
 		using T = std::decay_t<decltype(arg)>;
-		if constexpr (std::is_same_v<T, std::function<void()>>) {
+		if constexpr (std::is_same_v<T, std::function<void(const std::string&)>>) {
 			if (ImGui::MenuItem(node.label.c_str())) {
-				std::println("Label [{0}] is clicked", node.label);
-				arg();
+				arg(browser->GetCurrentState().full_path);
+				browser->Refresh();
 			}
 		} else if constexpr (std::is_same_v<T, std::vector<CreateResourceMenuItemNode>>) {
 			if (ImGui::BeginMenu(node.label.c_str())) {

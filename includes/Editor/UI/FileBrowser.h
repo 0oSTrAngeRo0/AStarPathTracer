@@ -20,6 +20,7 @@ public:
 	};
 
 private:
+	std::string root_path;
 	DirectoryNode root;
 	State current_state;
 
@@ -28,7 +29,8 @@ private:
 	void RecursivelyDisplayDirectoryNode(const DirectoryNode& parentNode);
 	void OnSelected(uint32_t mouse_button, const DirectoryNode& node);
 public:
-	FileBrowser(const std::string path);
+	FileBrowser(const std::string path) : root_path(path){ root = CreateDirectryNodeTreeFromPath(path); }
 	void OnDrawUi();
 	inline const State& GetCurrentState() const { return current_state; }
+	inline void Refresh() { root = CreateDirectryNodeTreeFromPath(root_path); }
 };

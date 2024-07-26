@@ -12,7 +12,7 @@ private:
 	struct CreateResourceMenuItemNode {
 	public:
 		std::string label;
-		std::variant<std::function<void()>, std::vector<CreateResourceMenuItemNode>> data;
+		std::variant<std::function<void(const std::string&)>, std::vector<CreateResourceMenuItemNode>> data;
 	};
 	static std::vector<CreateResourceMenuItemNode> creaet_resource_data;
 

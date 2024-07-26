@@ -16,4 +16,14 @@ private:
 public:
 	ResourceBase& LoadResource(const std::string& path);
 	void SaveResource(const Uuid& uuid);
+	template <typename TData> ResourceBase& CreateNewResource(const std::string& path);
 };
+
+template<typename TData>
+inline ResourceBase& ResourcesManager::CreateNewResource(const std::string& path) {
+	std::unique_ptr<ResourceBase> resource = std::make_unique<ResourceTemplate<TData>>();
+	Uuid uuid = resource->uuid;
+	resources.insert_or_assign(uuid, ResourceData(path, std::move(resource)));
+	SaveResource(uuid);
+	return *resources.at(uuid).data;
+}
