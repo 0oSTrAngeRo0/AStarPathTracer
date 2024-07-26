@@ -1,5 +1,6 @@
 #include "Editor/UI/FileBrowser.h"
 #include "imgui.h"
+#include <print>
 
 void FileBrowser::RecursivelyAddDirectoryNodes(DirectoryNode& parent, std::filesystem::directory_iterator directoryIterator) {
 	for (const std::filesystem::directory_entry& entry : directoryIterator) {
@@ -27,7 +28,18 @@ FileBrowser::DirectoryNode FileBrowser::CreateDirectryNodeTreeFromPath(const std
 void FileBrowser::RecursivelyDisplayDirectoryNode(const DirectoryNode& parent) {
 	ImGui::PushID(&parent);
 	if (parent.is_directory) {
-		if (ImGui::TreeNodeEx(parent.file_name.c_str(), ImGuiTreeNodeFlags_SpanFullWidth)) {
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanFullWidth;
+		if (current_state.full_path == parent.full_path) {
+			flags |= ImGuiTreeNodeFlags_Selected;
+		}
+		bool is_open = ImGui::TreeNodeEx(parent.file_name.c_str(), flags);
+		if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+			OnSelected(ImGuiMouseButton_Right, parent);
+		}
+		if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+			OnSelected(ImGuiMouseButton_Left, parent);
+		}
+		if (is_open) {
 			for (const DirectoryNode& child : parent.children)
 				RecursivelyDisplayDirectoryNode(child);
 			ImGui::TreePop();
@@ -37,26 +49,31 @@ void FileBrowser::RecursivelyDisplayDirectoryNode(const DirectoryNode& parent) {
 		auto flags = ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_SpanFullWidth;
 
 		// Todo: Can be optimized, string comparasion is too expensive!
-		if (current_selection.full_path == parent.full_path) {
+		if (current_state.full_path == parent.full_path) {
 			flags |= ImGuiTreeNodeFlags_Selected;
 		}
 
 		ImGui::TreeNodeEx(parent.file_name.c_str(), flags);
-		if (ImGui::IsItemClicked()) {
-			if (current_selection.full_path != parent.full_path) {
-				current_selection = parent;
-				is_selection_changed = true;
-			}
+		if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
+			OnSelected(ImGuiMouseButton_Left, parent);
 		}
 	}
 	ImGui::PopID();
 }
+
+void FileBrowser::OnSelected(uint32_t mouse_button, const DirectoryNode& node) {
+	current_state.mouse_button = mouse_button;
+	current_state.full_path = node.full_path;
+	current_state.is_changed = true;
+	current_state.is_directory = node.is_directory;
+}
+
 
 FileBrowser::FileBrowser(const std::string path) {
 	root = CreateDirectryNodeTreeFromPath(path);
 }
 
 void FileBrowser::OnDrawUi() {
-	is_selection_changed = false;
+	current_state.is_changed = false;
 	RecursivelyDisplayDirectoryNode(root);
 }

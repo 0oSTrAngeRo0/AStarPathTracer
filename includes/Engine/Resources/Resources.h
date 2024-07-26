@@ -25,8 +25,6 @@ struct SimpleLitMaterialData {
 	glm::vec4 color;
 };
 
-template <typename TData> class ResourceTemplate;
-
 /// <summary>
 /// 不允许实例化，只能实例化其子类
 /// </summary>

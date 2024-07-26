@@ -11,16 +11,24 @@ private:
 		std::vector<DirectoryNode> children;
 		bool is_directory;
 	};
+public:
+	struct State {
+		bool is_changed;
+		uint32_t mouse_button;
+		bool is_directory;
+		std::string full_path;
+	};
+
+private:
 	DirectoryNode root;
-	DirectoryNode current_selection;
-	bool is_selection_changed;
+	State current_state;
 
 	void RecursivelyAddDirectoryNodes(DirectoryNode& parentNode, std::filesystem::directory_iterator directoryIterator);
 	DirectoryNode CreateDirectryNodeTreeFromPath(const std::filesystem::path& rootPath);
 	void RecursivelyDisplayDirectoryNode(const DirectoryNode& parentNode);
+	void OnSelected(uint32_t mouse_button, const DirectoryNode& node);
 public:
 	FileBrowser(const std::string path);
 	void OnDrawUi();
-	inline const DirectoryNode& GetCurrentSelection() const { return current_selection; }
-	inline const bool IsSelectionChanged() const { return is_selection_changed; }
+	inline const State& GetCurrentState() const { return current_state; }
 };
