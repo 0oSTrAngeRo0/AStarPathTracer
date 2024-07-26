@@ -4,6 +4,7 @@
 
 #include "Editor/UI/Inspectors/EditorInspector.h"
 #include "Engine/Resources/Resources.h"
+#include "Engine/Resources/ResourcesManager.h"
 
 class ResourceInspectorFactory {
 private:
@@ -17,9 +18,17 @@ public:
 template <typename TData>
 class ResourceInspector : public EditorInspectorBase {
 protected:
+	bool is_dirty;
 	ResourceTemplate<TData>& data;
 public:
 	ResourceInspector(ResourceTemplate<TData>& data) :data(data) {}
 	virtual ~ResourceInspector() = default;
-	void DrawInspector() override;
+	void DrawInspector() override {
+		is_dirty = false;
+		Draw();
+		if (is_dirty) {
+			ResourcesManager::GetInstance().SaveResource(data.uuid);
+		}
+	};
+	void Draw();
 };

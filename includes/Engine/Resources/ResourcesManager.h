@@ -6,7 +6,14 @@
 
 class ResourcesManager : public Singleton<ResourcesManager> {
 private:
-	std::unordered_map<Uuid, std::unique_ptr<ResourceBase>> resources;
+	struct ResourceData {
+		std::string path;
+		std::unique_ptr<ResourceBase> data;
+
+		ResourceData(const std::string& path, std::unique_ptr<ResourceBase> data) : path(path), data(std::move(data)){}
+	};
+	std::unordered_map<Uuid, ResourceData> resources;
 public:
 	ResourceBase& LoadResource(const std::string& path);
+	void SaveResource(const Uuid& uuid);
 };
