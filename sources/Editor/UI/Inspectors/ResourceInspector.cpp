@@ -30,3 +30,5 @@ void ResourceInspector<MaterialResourceData<SimpleLitMaterialData>>::Draw() {
 
 REGISTER_INSPECTOR_CREATOR(Obj, ObjResourceData);
 REGISTER_INSPECTOR_CREATOR(MaterialSimpleLit, MaterialResourceData<SimpleLitMaterialData>);
+
+REGISTER_RESOURCE_CREATE_MENU(MaterialSimpleLit, { "Material" }, "SimpleLit", MaterialResourceData<SimpleLitMaterialData>);

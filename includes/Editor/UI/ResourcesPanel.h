@@ -5,20 +5,14 @@
 #include <functional>
 
 #include "Editor/UI/FileBrowser.h"
+#include "Editor/UI/Inspectors/ResourceEditorRegistry.h"
 
 
 class ResourcesPanel {
 private:
-	struct CreateResourceMenuItemNode {
-	public:
-		std::string label;
-		std::variant<std::function<void(const std::string&)>, std::vector<CreateResourceMenuItemNode>> data;
-	};
-	static std::vector<CreateResourceMenuItemNode> creaet_resource_data;
-
 	std::unique_ptr<FileBrowser> browser;
 	void DrawCreatePopup();
-	void DrawCraetePopupNode(const CreateResourceMenuItemNode& node);
+	void DrawCraetePopupNode(const ResourceCreateMenuRegistry::Node& node);
 public:
 	ResourcesPanel();
 	void DrawUi();

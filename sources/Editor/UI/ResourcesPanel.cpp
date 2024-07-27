@@ -6,35 +6,21 @@
 #include "Engine/Resources/ResourceData.h"
 #include <print>
 
-std::vector<ResourcesPanel::CreateResourceMenuItemNode> ResourcesPanel::creaet_resource_data = {
-	{
-		"Material",
-		std::vector<ResourcesPanel::CreateResourceMenuItemNode>{
-			{
-				"SimpleLit", [](const std::string& directory) { 
-					std::string path = std::format("{0}/New SimpleLit.json", directory);
-					ResourcesManager::GetInstance().CreateNewResource<MaterialResourceData<SimpleLitMaterialData>>(path);
-				}
-			}
-		}
-	}
-};
-
 ResourcesPanel::ResourcesPanel() {
 	browser = std::make_unique<FileBrowser>(RESOURCES_DIR);
 }
 
-void ResourcesPanel::DrawCraetePopupNode(const CreateResourceMenuItemNode& node) {
+void ResourcesPanel::DrawCraetePopupNode(const ResourceCreateMenuRegistry::Node& node) {
 	std::visit([&](auto&& arg) {
 		using T = std::decay_t<decltype(arg)>;
-		if constexpr (std::is_same_v<T, std::function<void(const std::string&)>>) {
-			if (ImGui::MenuItem(node.label.c_str())) {
+		if constexpr (std::is_same_v<T, ResourceCreateMenuRegistry::Leaf>) {
+			if (ImGui::MenuItem(node.key.c_str())) {
 				arg(browser->GetCurrentState().full_path);
 				browser->Refresh();
 			}
-		} else if constexpr (std::is_same_v<T, std::vector<CreateResourceMenuItemNode>>) {
-			if (ImGui::BeginMenu(node.label.c_str())) {
-				for (const CreateResourceMenuItemNode& child : arg) {
+		} else if constexpr (std::is_same_v<T, ResourceCreateMenuRegistry::Branch>) {
+			if (ImGui::BeginMenu(node.key.c_str())) {
+				for (const ResourceCreateMenuRegistry::Node& child : arg) {
 					DrawCraetePopupNode(child);
 				}
 				ImGui::EndMenu();
@@ -49,7 +35,7 @@ void ResourcesPanel::DrawCreatePopup() {
 		ImGui::OpenPopup("Create Resource");
 	}
 	if (ImGui::BeginPopup("Create Resource")) {
-		for (const CreateResourceMenuItemNode& child : creaet_resource_data) {
+		for (const ResourceCreateMenuRegistry::Node& child : ResourceCreateMenuRegistry::GetRootChildren()) {
 			DrawCraetePopupNode(child);
 		}
 		ImGui::EndPopup();
