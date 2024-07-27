@@ -3,6 +3,7 @@
 #include <Editor/UI/ImGuiFileDialog.h>
 #include "Engine/Resources/Resources.h"
 #include "Engine/Resources/ResourcesManager.h"
+#include "Engine/Resources/ResourceData.h"
 #include <print>
 
 std::vector<ResourcesPanel::CreateResourceMenuItemNode> ResourcesPanel::creaet_resource_data = {

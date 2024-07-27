@@ -69,9 +69,9 @@ add_executable(${PROJECT_NAME}
     sources/Editor/UI/ResourcesPanel.cpp
     sources/Editor/UI/FileBrowser.cpp
 
-    "includes/Engine/Resources/JsonSerializer.h"
     sources/Engine/Resources/Resource.cpp
     sources/Engine/Resources/ResourcesManager.cpp
+    sources/Engine/Resources/ResourceData.cpp
 
 )
 

@@ -5,12 +5,12 @@
 #include "Editor/UI/Inspectors/EditorInspector.h"
 #include "Engine/Resources/Resources.h"
 #include "Engine/Resources/ResourcesManager.h"
+#include "Engine/Resources/ResourceData.h"
+#include "Engine/StaticRegistry.h"
 
 class ResourceInspectorFactory {
 private:
 	using InspectorCreateFunction = std::function<std::unique_ptr<EditorInspectorBase>(ResourceBase&)>;
-	static std::unordered_map<MaterialType, InspectorCreateFunction> material_resource_create_functions;
-	static std::unordered_map<ResourceType, InspectorCreateFunction> resource_create_functions;
 public:
 	static std::unique_ptr<EditorInspectorBase> CreateInspector(ResourceBase& resource);
 };
@@ -19,9 +19,9 @@ template <typename TData>
 class ResourceInspector : public EditorInspectorBase {
 protected:
 	bool is_dirty;
-	ResourceTemplate<TData>& data;
+	Resource<TData>& data;
 public:
-	ResourceInspector(ResourceTemplate<TData>& data) :data(data) {}
+	ResourceInspector(Resource<TData>& data) :data(data) {}
 	virtual ~ResourceInspector() = default;
 	void DrawInspector() override {
 		is_dirty = false;

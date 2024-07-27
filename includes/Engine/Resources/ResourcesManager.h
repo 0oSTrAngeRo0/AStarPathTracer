@@ -2,7 +2,9 @@
 
 #include "Utilities/Singleton.h"
 #include "Engine/Resources/Resources.h"
+#include "Engine/Resources/ResourceData.h"
 #include <unordered_map>
+#include <memory>
 
 class ResourcesManager : public Singleton<ResourcesManager> {
 private:
@@ -21,7 +23,7 @@ public:
 
 template<typename TData>
 inline ResourceBase& ResourcesManager::CreateNewResource(const std::string& path) {
-	std::unique_ptr<ResourceBase> resource = std::make_unique<ResourceTemplate<TData>>();
+	std::unique_ptr<ResourceBase> resource = std::make_unique<Resource<TData>>();
 	Uuid uuid = resource->uuid;
 	resources.insert_or_assign(uuid, ResourceData(path, std::move(resource)));
 	SaveResource(uuid);
