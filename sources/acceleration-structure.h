@@ -15,4 +15,4 @@ std::tuple<vk::AccelerationStructureKHR, Buffer, Buffer> BuildTlas(
 	vk::BuildAccelerationStructureFlagsKHR flags, bool update
 );
 
-void CreateBlases(const DeviceContext& context, std::vector<std::shared_ptr<Mesh>>& meshes);
+void CreateBlases(const DeviceContext& context, std::vector<std::reference_wrapper<Mesh>>& meshes);

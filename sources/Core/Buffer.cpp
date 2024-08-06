@@ -17,6 +17,10 @@ Buffer::Buffer(const DeviceContext& context, const vk::BufferCreateInfo& create_
 void Buffer::Destroy(const DeviceContext& context) {
 	if (!buffer) return;
 	context.GetAllocator().destroyBuffer(buffer, allocation);
+	buffer = nullptr;
+	allocation = nullptr;
+	size = 0;
+	address = 0;
 }
 
 void Buffer::SetName(const DeviceContext& context, const std::string& name) {

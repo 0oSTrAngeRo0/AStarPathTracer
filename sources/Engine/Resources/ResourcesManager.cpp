@@ -1,5 +1,17 @@
 #include "Engine/Resources/ResourcesManager.h"
 #include "fstream"
+#include <filesystem>
+
+ResourcesManager::ResourcesManager() {
+	assert(std::filesystem::exists(RESOURCES_DIR) && std::filesystem::is_directory(RESOURCES_DIR));
+
+	// 遍历目录中的所有项
+	for (const auto& entry : std::filesystem::recursive_directory_iterator(RESOURCES_DIR)) {
+		if (std::filesystem::is_regular_file(entry)) {
+			LoadResource(entry.path().string());
+		}
+	}
+}
 
 ResourceBase& ResourcesManager::LoadResource(const std::string& path) {
 	std::ifstream file(path);
@@ -17,6 +29,13 @@ ResourceBase& ResourcesManager::LoadResource(const std::string& path) {
 	Uuid uuid = resource->uuid;
 	resources.insert_or_assign(uuid, ResourceData(path, std::move(resource)));
 	return *resources.at(uuid).data;
+}
+
+ResourceBase& ResourcesManager::GetResource(const Uuid& id) {
+	if (!resources.contains(id)) {
+		throw std::runtime_error("Failed to find resources");
+	}
+	return *resources.at(id).data;
 }
 
 void ResourcesManager::SaveResource(const Uuid& uuid) {

@@ -1,14 +1,20 @@
 #pragma once
 
-#include <memory>
-#include "Core/Mesh.h"
-#include "Core/Shader.h"
-#include "Core/Instance.h"
+#include <Engine/Guid.h>
 
-#include "Engine/Resources/Resources.h"
+struct MeshComponent {
+public:
+	Uuid id;
+	Uuid resource;
 
-struct Renderable {
-	std::shared_ptr<Mesh> mesh;
-	std::shared_ptr<Material> material;
-	std::shared_ptr<InstanceHandler> instance;
+	MeshComponent(const Uuid& id, const Uuid& resrouce) : id(id), resource(resrouce) {}
+	MeshComponent(const Uuid& resource) : MeshComponent(xg::newGuid(), resource) {}
+};
+
+struct StaticMeshTag {};
+
+struct DeformableMeshTag {};
+
+struct MaterialComponent {
+	Uuid id;
 };

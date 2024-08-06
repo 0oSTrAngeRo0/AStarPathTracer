@@ -2,6 +2,7 @@
 
 #include <unordered_map>
 #include <optional>
+#include <stdexcept>
 
 template <typename TKey, typename TValue>
 class StaticRegistry {

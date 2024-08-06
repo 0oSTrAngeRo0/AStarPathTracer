@@ -1,10 +1,11 @@
 #include "Application/Renderer/RenderContext.h"
 #include "Core/DeviceContext.h"
-#include "Core/ModelLoader/ObjLoader.h"
 #include "Engine/Components/Render.h"
 #include "Engine/Components/Transform.h"
 #include "Engine/Components/Camera.h"
+#include "Core/Mesh.h"
 #include "acceleration-structure.h"
+#include <tuple>
 
 vk::TransformMatrixKHR GetTransformMatrixKHR(const glm::mat4 transform) {
 	std::array<std::array<float, 4>, 3> matrix;
@@ -17,52 +18,20 @@ vk::TransformMatrixKHR GetTransformMatrixKHR(const glm::mat4 transform) {
 }
 
 std::vector<std::shared_ptr<Mesh>> CreateMeshes(const DeviceContext& context) {
-	std::vector<std::string> paths = {
-		"D:/C++/Projects/PathTracer/models/cube.obj"
-	};
 	std::vector<std::shared_ptr<Mesh>> meshes;
-	for (const std::string& path : paths) {
-		auto [positions, indices] = LoadFromFile(path);
-		size_t vertex_count = positions.size();
-		std::vector<Vertex> vertices;
-		for (size_t i = 0; i < vertex_count; i++) {
-			vertices.emplace_back(Vertex(positions[i]));
-		}
-		std::shared_ptr<Mesh> mesh = std::make_shared<Mesh>(context, vertices, indices);
-		mesh->SetName(context, path);
-		meshes.emplace_back(mesh);
-	}
 	return meshes;
 }
 
 RenderContext::RenderContext(const DeviceContext& context) {
-	meshes = CreateMeshes(context);
-	CreateBlases(context, meshes);
-
 	std::shared_ptr<Shader<LitMaterialData>> shader = std::make_shared<Shader<LitMaterialData>>();
+
+	// create sample material data for test
+	std::shared_ptr<MaterialTemplate<LitMaterialData>> material = std::static_pointer_cast<MaterialTemplate<LitMaterialData>>(shader->CreateMaterial());
+	LitMaterialData material_data = material->GetData();
+	material_data.color = glm::vec4(0.3, 0.3, 0.7, 1.0);
+	material->SetData(material_data);
+
 	shaders.emplace_back(shader);
-
-	// Vertex Address Buffer
-	{
-		std::vector<vk::DeviceAddress> data;
-		for (const auto& mesh : meshes) {
-			data.emplace_back(mesh->GetVertexAddress());
-		}
-		vk::BufferCreateInfo create_info({}, {}, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eShaderDeviceAddress);
-		vertex_buffer = Buffer::CreateWithData<vk::DeviceAddress>(context, create_info, data);
-		vertex_buffer.SetName(context, "Vertex Address Buffer");
-	}
-
-	// Index Address Buffer
-	{
-		std::vector<vk::DeviceAddress> data;
-		for (const auto& mesh : meshes) {
-			data.emplace_back(mesh->GetIndexAddress());
-		}
-		vk::BufferCreateInfo create_info({}, {}, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eShaderDeviceAddress);
-		index_buffer = Buffer::CreateWithData<vk::DeviceAddress>(context, create_info, data);
-		index_buffer.SetName(context, "Index Address Buffer");
-	}
 
 	// Material Address Buffer
 	{
@@ -90,37 +59,48 @@ RenderContext::RenderContext(const DeviceContext& context) {
 
 void RenderContext::RecreateInstances(const DeviceContext& context, entt::registry& registry) {
 	// Collect data
-	auto view = registry.view<const LocalTransform, const Renderable>();
-	std::vector<vk::AccelerationStructureInstanceKHR> as_instances(instances.GetDataCount());
+	auto view = registry.view<const LocalTransform, const MeshComponent, const MaterialComponent>();
 
-	view.each([&as_instances](const LocalTransform& transform, const Renderable& render) {
-		uint32_t index =  render.instance->GetIndex();
-		
-  		as_instances[index] = vk::AccelerationStructureInstanceKHR(
+	std::vector<std::tuple<Uuid, Uuid>> used_meshes;
+	view.each([&used_meshes](const LocalTransform& transform, const MeshComponent& mesh, const MaterialComponent& material) {
+		used_meshes.emplace_back(std::make_tuple(mesh.id, mesh.resource));
+	});
+	mesh_pool.EnsureMeshes(context, used_meshes);
+
+	std::vector<vk::AccelerationStructureInstanceKHR> as_instances;
+	std::vector<InstanceData> instances_data;
+	uint32_t index = 0;
+
+	view.each([&as_instances, &index, &instances_data, &mesh_pool = this->mesh_pool, &shaders = this->shaders](const LocalTransform& transform, const MeshComponent& mesh, const MaterialComponent& material) {
+		const Mesh& device_mesh = mesh_pool.GetMesh(mesh.id);
+		as_instances.emplace_back(vk::AccelerationStructureInstanceKHR(
 			GetTransformMatrixKHR(transform.matrix), index, 0xFF, 0,
 			vk::GeometryInstanceFlagBitsKHR::eTriangleCullDisable,
-			render.mesh->GetAsAddress()
-		);
+			device_mesh.GetAsAddress()
+		));
 
 		InstanceData instance_data(
-			render.mesh->GetIndexAddress(),
-			render.mesh->GetVertexAddress(),
-			render.material->GetBufferAddress(),
-			render.material->GetIndex()
+			device_mesh.GetIndexAddress(),
+			device_mesh.GetVertexAddress(),
+			shaders[0]->GetBufferAddress(),
+			0
 		);
-		render.instance->SetData(instance_data);
+		instances_data.emplace_back(instance_data);
+		index++;
 	});
 
 	// Recreate buffers
 	context.GetDevice().destroyAccelerationStructureKHR(tlas);
 	tlas_buffer.Destroy(context);
 	tlas_instance_buffer.Destroy(context);
+	instances_buffer.Destroy(context);
+
+	if (as_instances.size() == 0) return;
 
 	std::tie(tlas, tlas_buffer, tlas_instance_buffer) = BuildTlas(context, as_instances, {}, false);
-	instances.UpdateData(context);
-
-	Buffer buffer = instances.GetBuffer();
-	// buffer.SetName(context, "Instance Data Buffer");
+	vk::BufferCreateInfo create_info({}, {}, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eShaderDeviceAddress);
+	instances_buffer = Buffer::CreateWithData<InstanceData>(context, create_info, instances_data);
+	instances_buffer.SetName(context, "Instance Data Buffer");
 }
 
 void RenderContext::RecreateShaderBuffers(const DeviceContext& context) {
@@ -153,13 +133,8 @@ void RenderContext::Destory(const DeviceContext& context) {
 		shader->Destroy(context);
 	}
 
-	for (auto& mesh : meshes) {
-		mesh->Destroy(context);
-	}
-
+	mesh_pool.Destroy(context);
 	material_buffer.Destroy(context);
-	vertex_buffer.Destroy(context);
-	instances.Destroy(context);
-	index_buffer.Destroy(context);
+	instances_buffer.Destroy(context);
 	constants_buffer.Destroy(context);
 }

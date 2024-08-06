@@ -1,8 +1,6 @@
 #pragma once
 
-#include <crossguid/guid.hpp>
-typedef xg::Guid Uuid;
-
+#include <Engine/Guid.h>
 #include <vector>
 #include "Engine/ShaderHostBuffer.h"
 #include <glm/glm.hpp>

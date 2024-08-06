@@ -43,11 +43,18 @@ void Renderer::CmdInsertImageBarrier(const vk::CommandBuffer cmd, vk::ImageMemor
 }
 
 void Renderer::UpdateDescriptorSet(const DeviceContext& context, const RenderContext& render, const vk::DescriptorSet& set) {
-	vk::WriteDescriptorSetAccelerationStructureKHR write_tlas(render.tlas);
-	vk::DescriptorBufferInfo write_instance_buffer(render.instances.GetBuffer(), 0, vk::WholeSize);
-	vk::DescriptorBufferInfo write_constants_buffer(render.constants_buffer, 0, vk::WholeSize);
+	std::vector<vk::AccelerationStructureKHR> tlases = { render.GetTlas() };
+	vk::WriteDescriptorSetAccelerationStructureKHR write_tlas(tlases);
+	vk::DescriptorBufferInfo write_vertex_buffer(render.GetVertexBuffer(), 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_index_buffer(render.GetIndexBuffer(), 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_material_buffer(render.GetMaterialBuffer(), 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_instance_buffer(render.GetInstancesBuffer(), 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_constants_buffer(render.GetConstantsBuffer(), 0, vk::WholeSize);
 	std::vector<vk::WriteDescriptorSet> writes = {
 		vk::WriteDescriptorSet(set, 0, 0, 1, vk::DescriptorType::eAccelerationStructureKHR, {}, {}, {}, &write_tlas),
+		vk::WriteDescriptorSet(set, 2, 0, vk::DescriptorType::eStorageBuffer, {}, write_vertex_buffer),
+		vk::WriteDescriptorSet(set, 3, 0, vk::DescriptorType::eStorageBuffer, {}, write_index_buffer),
+		vk::WriteDescriptorSet(set, 4, 0, vk::DescriptorType::eStorageBuffer, {}, write_material_buffer),
 		vk::WriteDescriptorSet(set, 5, 0, vk::DescriptorType::eStorageBuffer, {}, write_instance_buffer),
 		vk::WriteDescriptorSet(set, 6, 0, vk::DescriptorType::eUniformBuffer, {}, write_constants_buffer),
 	};
@@ -166,13 +173,14 @@ void Renderer::UploadDescriptorSet(const DeviceContext& context, const RenderCon
 	std::vector<vk::DescriptorSet> sets = context.GetDevice().allocateDescriptorSets(vk::DescriptorSetAllocateInfo(descriptor_pool, descriptor_set_layout));
 	descriptor_set = sets[0];
 
-	vk::WriteDescriptorSetAccelerationStructureKHR write_tlas(render.tlas);
+	std::vector<vk::AccelerationStructureKHR> tlases = { render.GetTlas() };
+	vk::WriteDescriptorSetAccelerationStructureKHR write_tlas(tlases);
 	vk::DescriptorImageInfo write_rt_image({}, rt_image_view, vk::ImageLayout::eGeneral);
-	vk::DescriptorBufferInfo write_vertex_buffer(render.vertex_buffer, 0, vk::WholeSize);
-	vk::DescriptorBufferInfo write_index_buffer(render.index_buffer, 0, vk::WholeSize);
-	vk::DescriptorBufferInfo write_material_buffer(render.material_buffer, 0, vk::WholeSize);
-	vk::DescriptorBufferInfo write_instance_buffer(render.instances.GetBuffer(), 0, vk::WholeSize);
-	vk::DescriptorBufferInfo write_constants_buffer(render.constants_buffer, 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_vertex_buffer(render.GetVertexBuffer(), 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_index_buffer(render.GetIndexBuffer(), 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_material_buffer(render.GetMaterialBuffer(), 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_instance_buffer(render.GetInstancesBuffer(), 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_constants_buffer(render.GetConstantsBuffer(), 0, vk::WholeSize);
 	std::vector<vk::WriteDescriptorSet> writes = {
 		vk::WriteDescriptorSet(descriptor_set, 0, 0, 1, vk::DescriptorType::eAccelerationStructureKHR, {}, {}, {}, &write_tlas),
 		vk::WriteDescriptorSet(descriptor_set, 1, 0, vk::DescriptorType::eStorageImage, write_rt_image),

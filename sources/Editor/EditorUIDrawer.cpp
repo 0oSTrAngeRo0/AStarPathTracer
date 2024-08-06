@@ -10,6 +10,8 @@ EditorUIDrawer::EditorUIDrawer() {
 }
 
 void EditorUIDrawer::DrawUI(entt::registry& registry) {
+    ImGui::DockSpaceOverViewport();
+
     ImGui::ShowDemoWindow();
 
     resources_panel->DrawUi();
@@ -34,5 +36,15 @@ void EditorUIDrawer::DrawUI(entt::registry& registry) {
 
         // close
         ImGuiFileDialog::Instance()->Close();
+    }
+
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("Menu")) {
+            if (ImGui::MenuItem("Close")) {
+                std::printf("Cloase");
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
     }
 }

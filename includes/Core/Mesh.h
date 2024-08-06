@@ -8,15 +8,16 @@
 
 class DeviceContext;
 
-struct Vertex {
-	glm::vec3 position;
-
-	Vertex(const glm::vec3& position) : position(position) {}
-};
-
 class Mesh {
 public:
-	Mesh(const DeviceContext& context, const vk::ArrayProxyNoTemporaries<Vertex>& vertices, const vk::ArrayProxyNoTemporaries<uint32_t>& indices);
+	Mesh(
+		const DeviceContext& context,
+		const std::vector<glm::vec3>& positions, // vertex positions
+		const std::vector<glm::vec3>& normals, // per vertex normal
+		const std::vector<glm::vec4>& tangents, // per vertex tangent, glm::vec3 bitangent = cross(normal, tangent.xyz) * tangent.w
+		const std::vector<glm::vec2>& uvs, // per vertex uv
+		const std::vector<glm::uvec3>& indices // triangles
+	);
 	void Destroy(const DeviceContext& context);
 	void SetName(const DeviceContext& context, const std::string& name);
 
@@ -31,6 +32,12 @@ public:
 	inline uint64_t GetTrianglesCount() const { return index_buffer.GetSize() / (3 * sizeof(uint32_t)); }
 	inline uint64_t GetVertexCount() const { return vertex_buffer.GetSize() / sizeof(Vertex); }
 private:
+	struct Vertex {
+		glm::vec3 position;
+
+		Vertex(const glm::vec3& position) : position(position) {}
+	};
+
 	Buffer vertex_buffer;
 	Buffer index_buffer;
 	vk::AccelerationStructureKHR blas;

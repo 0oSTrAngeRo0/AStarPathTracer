@@ -5,15 +5,30 @@
 #include "GLFW/glfw3.h"
 #include "event-registry.h"
 
-GlfwWindow::GlfwWindow(const AppConfig& config) {
-	glfwInit();
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+uint32_t GlfwWindow::window_count = 0;
+
+GlfwWindow::GlfwWindow(const AppConfig& config) : config(config) {
+	if (window_count == 0) {
+		glfwInit();
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+		glfwSetErrorCallback([](int error_code, const char* message) {
+			std::printf("Window Error: [%d], [%s]\n", error_code, message);
+		});
+		std::printf("Glfw Initialized\n");
+	}
+	window_count++;
 	this->window = glfwCreateWindow(config.window_width, config.window_height, config.window_title, nullptr, nullptr);
+	std::printf("Glfw Window [%s] Created\n", config.window_title);
 }
 
 GlfwWindow::~GlfwWindow() {
 	glfwDestroyWindow(window);
-	glfwTerminate();
+	std::printf("Glfw Window [%s] Destroyed\n", config.window_title);
+	window_count--;
+	if (window_count == 0) {
+		glfwTerminate();
+		std::printf("Glfw Finalized\n");
+	}
 }
 
 bool GlfwWindow::ShouldClose() const {

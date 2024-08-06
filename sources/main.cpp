@@ -6,18 +6,19 @@
 #include "Editor/EditorApplication.h"
 
 void EditorMain() {
+	RendererApplication renderer;
 	EditorApplication editor;
-	//Systems systems(renderer.GetRenderContext());
-	entt::registry registry;
-	while (editor.IsActive()) {
-		//systems.Update(0.01);
-		editor.Update(registry);
+	Systems systems;
+	while (editor.IsActive() && renderer.IsActive()) {
+		systems.Update(0.01);
+		editor.Update(systems.GetRegistry());
+		renderer.Update(systems.GetRegistry());
 	}
 }
 
 void ApplicationMain() {
 	RendererApplication renderer;
-	Systems systems(renderer.GetRenderContext());
+	Systems systems;
 
 	while (renderer.IsActive()) {
 		systems.Update(0.01);
@@ -28,7 +29,7 @@ void ApplicationMain() {
 int main() {
 	try
 	{
-		EditorMain();
+		ApplicationMain();
 	}
 	catch (const std::exception& e)
 	{

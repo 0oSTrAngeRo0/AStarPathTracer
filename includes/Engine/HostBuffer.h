@@ -17,6 +17,7 @@ public:
 	std::shared_ptr<HostBufferVisitor<T>> CreateVisitor();
 	void SetData(const HostBufferVisitor<T>& visitor, const T& data);
 	void ReleaseVisitor(std::shared_ptr<HostBufferVisitor<T>> visitor);
+	friend class HostBufferVisitor<T>;
 };
 
 template <typename T>
@@ -28,6 +29,7 @@ public:
 	HostBufferVisitor(HostBuffer<T>& owner, uint32_t index) :owner(owner), index(index) {}
 	inline T& GetData() { return owner.GetData(*this); }
 	inline void SetData(const T& data) { return owner.SetData(*this, data); }
+	friend class HostBuffer<T>;
 };
 
 template<typename T>

@@ -8,7 +8,7 @@ class Systems {
 private:
 	entt::registry registry;
 public:
-	Systems(RenderContext& renderer);
+	Systems();
 	void Update(float time);
 	inline entt::registry& GetRegistry() { return registry; }
 	~Systems();

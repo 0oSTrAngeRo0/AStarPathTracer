@@ -52,7 +52,7 @@ entt::entity CreateCamera(entt::registry& registry) {
 	return e;
 }
 
-entt::entity CreateCube(entt::registry& registry, RenderContext& renderer) {
+entt::entity CreateCube(entt::registry& registry) {
 	entt::entity e = registry.create();
 	registry.emplace<LocalPosition>(e, glm::vec3(0, 0, 0));
 	registry.emplace<LocalRotation>(e, glm::quatLookAt(glm::vec3(0, 0, 1), glm::vec3(0, 1, 0)));
@@ -60,26 +60,14 @@ entt::entity CreateCube(entt::registry& registry, RenderContext& renderer) {
 	registry.emplace<LocalTransform>(e);
 	registry.emplace<LocalLinearVelocity>(e, glm::vec3(0, 0.01, 0));
 
-	auto& render = registry.emplace<Renderable>(e);
-	render.mesh = renderer.meshes[0];
-
-	// setup material
-	render.material = renderer.shaders[0]->CreateMaterial();
-	std::shared_ptr<MaterialTemplate<LitMaterialData>> material = std::static_pointer_cast<MaterialTemplate<LitMaterialData>>(render.material);
-	printf("Material Address [%d]\n\n", (int)material->GetIndex());
-	LitMaterialData material_data = material->GetData();
-	material_data.color = glm::vec4(0.3, 0.3, 0.7, 1.0);
-	material->SetData(material_data);
-
-	// setup instance
-	std::shared_ptr<InstanceHandler> instance = renderer.instances.CreateInstance();
-	render.instance = instance;
+	registry.emplace<MeshComponent>(e, Uuid("c98fb2af-8be5-437b-b096-bc44d71b656d"));
+	registry.emplace<MaterialComponent>(e);
 	return e;
 }
 
-Systems::Systems(RenderContext& renderer) {
+Systems::Systems() {
 	CreateCamera(registry);
-	CreateCube(registry, renderer);
+	CreateCube(registry);
 }
 
 void Systems::Update(float time) {
@@ -88,4 +76,6 @@ void Systems::Update(float time) {
 	UpdateProjectiveCamera(registry);
 }
 
-Systems::~Systems() {}
+Systems::~Systems() {
+	entt::snapshot snapshot(registry);
+}

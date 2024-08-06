@@ -1,5 +1,4 @@
-#ifndef PATHTRACER_MAIN_WINDOW_H
-#define PATHTRACER_MAIN_WINDOW_H
+#pragma once
 
 #include "config.h"
 #include "vulkan/vulkan.hpp"
@@ -10,7 +9,9 @@
 
 class GlfwWindow : public Window {
 private:
+	AppConfig config;
 	GLFWwindow* window;
+	static uint32_t window_count;
 public:
 	GlfwWindow(const AppConfig& config);
 	~GlfwWindow();
@@ -22,5 +23,3 @@ public:
 	std::expected<vk::SurfaceKHR, vk::Result> CreateWindowSurface(const vk::Instance instance, const vk::AllocationCallbacks* allocator) const override;
 	vk::Extent2D GetActualExtent() const override;
 };
-
-#endif //PATHTRACER_MAIN_WINDOW_H

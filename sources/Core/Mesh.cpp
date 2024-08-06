@@ -1,7 +1,21 @@
 #include "Core/Mesh.h"
 #include "Core/DeviceContext.h"
 
-Mesh::Mesh(const DeviceContext& context, const vk::ArrayProxyNoTemporaries<Vertex>& vertices, const vk::ArrayProxyNoTemporaries<uint32_t>& indices) {
+Mesh::Mesh(
+	const DeviceContext& context,
+	const std::vector<glm::vec3>& positions, // vertex positions
+	const std::vector<glm::vec3>& normals, // per vertex normal
+	const std::vector<glm::vec4>& tangents, // per vertex tangent, glm::vec3 bitangent = cross(normal, tangent.xyz) * tangent.w
+	const std::vector<glm::vec2>& uvs, // per vertex uv
+	const std::vector<glm::uvec3>& indices // triangles
+) {
+	uint32_t count = positions.size();
+	assert(count == normals.size() && count == tangents.size() && count == uvs.size());
+	std::vector<Vertex> vertices;
+	for (uint32_t i = 0; i < count; i++) {
+		vertices.emplace_back(Vertex(positions[i]));
+	}
+
 	vk::BufferCreateInfo vertex_ci({}, {},
 		vk::BufferUsageFlagBits::eVertexBuffer |
 		vk::BufferUsageFlagBits::eAccelerationStructureBuildInputReadOnlyKHR |
@@ -12,7 +26,7 @@ Mesh::Mesh(const DeviceContext& context, const vk::ArrayProxyNoTemporaries<Verte
 		vk::BufferUsageFlagBits::eIndexBuffer |
 		vk::BufferUsageFlagBits::eAccelerationStructureBuildInputReadOnlyKHR |
 		vk::BufferUsageFlagBits::eShaderDeviceAddress);
-	index_buffer = Buffer::CreateWithStaging<uint32_t>(context, index_ci, indices);
+	index_buffer = Buffer::CreateWithStaging<const glm::uvec3>(context, index_ci, indices);
 }
 
 void Mesh::Destroy(const DeviceContext& context) {

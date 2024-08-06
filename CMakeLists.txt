@@ -47,6 +47,7 @@ add_executable(${PROJECT_NAME}
     sources/Application/Renderer/Renderer.cpp
     sources/Application/Renderer/RenderContext.cpp
     sources/Application/Renderer/RendererApplication.cpp
+    sources/Application/Renderer/MeshPool.cpp
 
     sources/Core/RayTracingShaderBindingTable.cpp
     sources/Core/EngineDebugger.cpp
@@ -54,7 +55,6 @@ add_executable(${PROJECT_NAME}
     sources/Core/TemporaryCommandBufferPool.cpp
     sources/Core/Image.cpp
     sources/Core/Mesh.cpp
-    sources/Core/ModelLoader/ObjLoader.cpp
     sources/Core/VulkanUsages.cpp
     sources/Core/Swapchain.cpp
     sources/Core/DeviceContext.cpp
@@ -68,11 +68,15 @@ add_executable(${PROJECT_NAME}
     sources/Editor/UI/ImGuiFileDialog.cpp
     sources/Editor/UI/ResourcesPanel.cpp
     sources/Editor/UI/FileBrowser.cpp
+    
 
     sources/Engine/Resources/Resource.cpp
     sources/Engine/Resources/ResourcesManager.cpp
     sources/Engine/Resources/ResourceData.cpp
-
+    sources/Engine/Resources/MeshLoader/ObjMeshLoader.cpp
+    sources/Engine/Resources/MeshLoader/MikkTSpace/mikktspace.c
+    sources/Engine/Resources/MeshLoader/MikkTSpace/MikkTSpaceTangentGenerator.cpp
+    sources/Engine/Resources/MeshLoader/MeshResourceUtilities.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
