@@ -61,6 +61,7 @@ MeshData MeshResourceUtilities::Load<ObjResourceData>(const Resource<ObjResource
         printf("\n");
     }
 
+    assert(indices.size() % 3 == 0);
     MeshData mesh;
     mesh.indices = reinterpret_cast<std::vector<glm::uvec3>&>(indices);
     mesh.positions = positions;

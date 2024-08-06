@@ -5,8 +5,17 @@
 #extension GL_EXT_shader_explicit_arithmetic_types_int16 : require
 #extension GL_EXT_ray_tracing : enable
 
+#define VERTEX_GET_POSITION(v) (v.position)
+#define VERTEX_GET_NORMAL(v) (v.normal)
+#define VERTEX_GET_TANGENT(v) (v.tangent.xyz)
+#define VERTEX_GET_BITANGENT(v) (cross(v.normal, v.tangent.xyz) * v.tangent.w)
+#define VERTEX_GET_UV(v) (v.uv)
+
 struct Vertex {
 	vec3 position;
+	vec3 normal;
+	vec4 tangent;
+	vec2 uv;
 };
 
 struct LitMaterial {

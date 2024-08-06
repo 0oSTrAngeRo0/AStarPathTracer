@@ -34,8 +34,15 @@ public:
 private:
 	struct Vertex {
 		glm::vec3 position;
-
-		Vertex(const glm::vec3& position) : position(position) {}
+		glm::vec3 normal;
+		glm::vec4 tangent;
+		glm::vec2 uv;
+		Vertex(
+			const glm::vec3& position, 
+			const glm::vec3& normal, 
+			const glm::vec4& tagnent, 
+			const glm::vec2& uv
+		) : position(position), normal(normal), tangent(tagnent), uv(uv) {}
 	};
 
 	Buffer vertex_buffer;

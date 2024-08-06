@@ -13,7 +13,7 @@ Mesh::Mesh(
 	assert(count == normals.size() && count == tangents.size() && count == uvs.size());
 	std::vector<Vertex> vertices;
 	for (uint32_t i = 0; i < count; i++) {
-		vertices.emplace_back(Vertex(positions[i]));
+		vertices.emplace_back(Vertex(positions[i], normals[i], tangents[i], uvs[i]));
 	}
 
 	vk::BufferCreateInfo vertex_ci({}, {},
