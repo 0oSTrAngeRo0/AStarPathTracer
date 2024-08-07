@@ -45,18 +45,20 @@ void Renderer::CmdInsertImageBarrier(const vk::CommandBuffer cmd, vk::ImageMemor
 void Renderer::UpdateDescriptorSet(const DeviceContext& context, const RenderContext& render, const vk::DescriptorSet& set) {
 	std::vector<vk::AccelerationStructureKHR> tlases = { render.GetTlas() };
 	vk::WriteDescriptorSetAccelerationStructureKHR write_tlas(tlases);
-	vk::DescriptorBufferInfo write_vertex_buffer(render.GetVertexBuffer(), 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_vertex_position_buffer(render.GetVertexPositionBuffer(), 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_vertex_other_buffer(render.GetVertexOtherBuffer(), 0, vk::WholeSize);
 	vk::DescriptorBufferInfo write_index_buffer(render.GetIndexBuffer(), 0, vk::WholeSize);
 	vk::DescriptorBufferInfo write_material_buffer(render.GetMaterialBuffer(), 0, vk::WholeSize);
 	vk::DescriptorBufferInfo write_instance_buffer(render.GetInstancesBuffer(), 0, vk::WholeSize);
 	vk::DescriptorBufferInfo write_constants_buffer(render.GetConstantsBuffer(), 0, vk::WholeSize);
 	std::vector<vk::WriteDescriptorSet> writes = {
 		vk::WriteDescriptorSet(set, 0, 0, 1, vk::DescriptorType::eAccelerationStructureKHR, {}, {}, {}, &write_tlas),
-		vk::WriteDescriptorSet(set, 2, 0, vk::DescriptorType::eStorageBuffer, {}, write_vertex_buffer),
-		vk::WriteDescriptorSet(set, 3, 0, vk::DescriptorType::eStorageBuffer, {}, write_index_buffer),
-		vk::WriteDescriptorSet(set, 4, 0, vk::DescriptorType::eStorageBuffer, {}, write_material_buffer),
-		vk::WriteDescriptorSet(set, 5, 0, vk::DescriptorType::eStorageBuffer, {}, write_instance_buffer),
-		vk::WriteDescriptorSet(set, 6, 0, vk::DescriptorType::eUniformBuffer, {}, write_constants_buffer),
+		vk::WriteDescriptorSet(set, 2, 0, vk::DescriptorType::eStorageBuffer, {}, write_vertex_position_buffer),
+		vk::WriteDescriptorSet(set, 3, 0, vk::DescriptorType::eStorageBuffer, {}, write_vertex_other_buffer),
+		vk::WriteDescriptorSet(set, 4, 0, vk::DescriptorType::eStorageBuffer, {}, write_index_buffer),
+		vk::WriteDescriptorSet(set, 5, 0, vk::DescriptorType::eStorageBuffer, {}, write_material_buffer),
+		vk::WriteDescriptorSet(set, 6, 0, vk::DescriptorType::eStorageBuffer, {}, write_instance_buffer),
+		vk::WriteDescriptorSet(set, 7, 0, vk::DescriptorType::eUniformBuffer, {}, write_constants_buffer),
 	};
 	context.GetDevice().updateDescriptorSets(writes, {});
 }
@@ -149,6 +151,7 @@ vk::DescriptorPool Renderer::CreateDescriptorPool(const vk::Device device) {
 		vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 1),
 		vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 1),
 		vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 1),
+		vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 1),
 		vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 1)
 	};
 	return device.createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 1, pool_sizes));
@@ -158,11 +161,12 @@ vk::DescriptorSetLayout Renderer::CreateDescriptorSetLayout(const vk::Device dev
 	std::vector<vk::DescriptorSetLayoutBinding> bindings = {
 		vk::DescriptorSetLayoutBinding(0, vk::DescriptorType::eAccelerationStructureKHR, 1, vk::ShaderStageFlagBits::eRaygenKHR), // tlas
 		vk::DescriptorSetLayoutBinding(1, vk::DescriptorType::eStorageImage, 1, vk::ShaderStageFlagBits::eRaygenKHR), // output image
-		vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eClosestHitKHR), // vertex buffer
-		vk::DescriptorSetLayoutBinding(3, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eClosestHitKHR), // index buffer
-		vk::DescriptorSetLayoutBinding(4, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eClosestHitKHR), // material buffer
-		vk::DescriptorSetLayoutBinding(5, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eClosestHitKHR), // instance buffer
-		vk::DescriptorSetLayoutBinding(6, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eRaygenKHR) // constants buffer
+		vk::DescriptorSetLayoutBinding(2, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eClosestHitKHR), // vertex position buffer
+		vk::DescriptorSetLayoutBinding(3, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eClosestHitKHR), // vertex other buffer
+		vk::DescriptorSetLayoutBinding(4, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eClosestHitKHR), // index buffer
+		vk::DescriptorSetLayoutBinding(5, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eClosestHitKHR), // material buffer
+		vk::DescriptorSetLayoutBinding(6, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eClosestHitKHR), // instance buffer
+		vk::DescriptorSetLayoutBinding(7, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eRaygenKHR) // constants buffer
 	};
 	return device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, bindings));
 }
@@ -176,7 +180,8 @@ void Renderer::UploadDescriptorSet(const DeviceContext& context, const RenderCon
 	std::vector<vk::AccelerationStructureKHR> tlases = { render.GetTlas() };
 	vk::WriteDescriptorSetAccelerationStructureKHR write_tlas(tlases);
 	vk::DescriptorImageInfo write_rt_image({}, rt_image_view, vk::ImageLayout::eGeneral);
-	vk::DescriptorBufferInfo write_vertex_buffer(render.GetVertexBuffer(), 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_vertex_position_buffer(render.GetVertexPositionBuffer(), 0, vk::WholeSize);
+	vk::DescriptorBufferInfo write_vertex_other_buffer(render.GetVertexOtherBuffer(), 0, vk::WholeSize);
 	vk::DescriptorBufferInfo write_index_buffer(render.GetIndexBuffer(), 0, vk::WholeSize);
 	vk::DescriptorBufferInfo write_material_buffer(render.GetMaterialBuffer(), 0, vk::WholeSize);
 	vk::DescriptorBufferInfo write_instance_buffer(render.GetInstancesBuffer(), 0, vk::WholeSize);
@@ -184,11 +189,12 @@ void Renderer::UploadDescriptorSet(const DeviceContext& context, const RenderCon
 	std::vector<vk::WriteDescriptorSet> writes = {
 		vk::WriteDescriptorSet(descriptor_set, 0, 0, 1, vk::DescriptorType::eAccelerationStructureKHR, {}, {}, {}, &write_tlas),
 		vk::WriteDescriptorSet(descriptor_set, 1, 0, vk::DescriptorType::eStorageImage, write_rt_image),
-		vk::WriteDescriptorSet(descriptor_set, 2, 0, vk::DescriptorType::eStorageBuffer, {}, write_vertex_buffer),
-		vk::WriteDescriptorSet(descriptor_set, 3, 0, vk::DescriptorType::eStorageBuffer, {}, write_index_buffer),
-		vk::WriteDescriptorSet(descriptor_set, 4, 0, vk::DescriptorType::eStorageBuffer, {}, write_material_buffer),
-		vk::WriteDescriptorSet(descriptor_set, 5, 0, vk::DescriptorType::eStorageBuffer, {}, write_instance_buffer),
-		vk::WriteDescriptorSet(descriptor_set, 6, 0, vk::DescriptorType::eUniformBuffer, {}, write_constants_buffer),
+		vk::WriteDescriptorSet(descriptor_set, 2, 0, vk::DescriptorType::eStorageBuffer, {}, write_vertex_position_buffer),
+		vk::WriteDescriptorSet(descriptor_set, 3, 0, vk::DescriptorType::eStorageBuffer, {}, write_vertex_other_buffer),
+		vk::WriteDescriptorSet(descriptor_set, 4, 0, vk::DescriptorType::eStorageBuffer, {}, write_index_buffer),
+		vk::WriteDescriptorSet(descriptor_set, 5, 0, vk::DescriptorType::eStorageBuffer, {}, write_material_buffer),
+		vk::WriteDescriptorSet(descriptor_set, 6, 0, vk::DescriptorType::eStorageBuffer, {}, write_instance_buffer),
+		vk::WriteDescriptorSet(descriptor_set, 7, 0, vk::DescriptorType::eUniformBuffer, {}, write_constants_buffer),
 	};
 	context.GetDevice().updateDescriptorSets(writes, {});
 }

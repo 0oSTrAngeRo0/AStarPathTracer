@@ -15,11 +15,13 @@ public:
 	void EnsureMeshes(const DeviceContext& context, const std::vector<std::tuple<Uuid, Uuid>>& used_meshes);
 	void ReleaseUnusedMeshes(const DeviceContext& context, std::vector<Uuid> used);
 	void Destroy(const DeviceContext& context);
-	inline const Buffer& GetVertexBuffer() const { return vertex_buffer; }
+	inline const Buffer& GetVertexPositionBuffer() const { return vertex_position_buffer; }
+	inline const Buffer& GetVertexOtherBuffer() const { return vertex_other_buffer; }
 	inline const Buffer& GetIndexBuffer() const { return index_buffer; }
 private:
 	std::unordered_map<Uuid, Mesh> meshes;
-	Buffer vertex_buffer;
+	Buffer vertex_position_buffer;
+	Buffer vertex_other_buffer;
 	Buffer index_buffer;
 	void UpdateBuffers(const DeviceContext& context);
 };

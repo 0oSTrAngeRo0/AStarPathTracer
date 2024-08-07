@@ -11,32 +11,39 @@ Mesh::Mesh(
 ) {
 	uint32_t count = positions.size();
 	assert(count == normals.size() && count == tangents.size() && count == uvs.size());
-	std::vector<Vertex> vertices;
+	std::vector<VertexOther> vertex_other;
 	for (uint32_t i = 0; i < count; i++) {
-		vertices.emplace_back(Vertex(positions[i], normals[i], tangents[i], uvs[i]));
+		vertex_other.emplace_back(VertexOther(normals[i], tangents[i], uvs[i]));
 	}
 
-	vk::BufferCreateInfo vertex_ci({}, {},
+	vk::BufferCreateInfo vertex_position_ci({}, {}, 
 		vk::BufferUsageFlagBits::eVertexBuffer |
 		vk::BufferUsageFlagBits::eAccelerationStructureBuildInputReadOnlyKHR |
 		vk::BufferUsageFlagBits::eShaderDeviceAddress);
-	vertex_buffer = Buffer::CreateWithStaging<Vertex>(context, vertex_ci, vertices);
+	vertex_position_buffer = Buffer::CreateWithStaging<const VertexPosition>(context, vertex_position_ci, positions);
+
+	vk::BufferCreateInfo vertex_otehr_ci({}, {},
+		vk::BufferUsageFlagBits::eStorageBuffer |
+		vk::BufferUsageFlagBits::eShaderDeviceAddress);
+	vertex_other_buffer = Buffer::CreateWithStaging<VertexOther>(context, vertex_otehr_ci, vertex_other);
 
 	vk::BufferCreateInfo index_ci({}, {},
 		vk::BufferUsageFlagBits::eIndexBuffer |
 		vk::BufferUsageFlagBits::eAccelerationStructureBuildInputReadOnlyKHR |
 		vk::BufferUsageFlagBits::eShaderDeviceAddress);
-	index_buffer = Buffer::CreateWithStaging<const glm::uvec3>(context, index_ci, indices);
+	index_buffer = Buffer::CreateWithStaging<const Index>(context, index_ci, indices);
 }
 
 void Mesh::Destroy(const DeviceContext& context) {
 	context.GetDevice().destroyAccelerationStructureKHR(blas);
 	as_buffer.Destroy(context);
-	vertex_buffer.Destroy(context);
+	vertex_position_buffer.Destroy(context);
+	vertex_other_buffer.Destroy(context);
 	index_buffer.Destroy(context);
 }
 
 void Mesh::SetName(const DeviceContext& context, const std::string& name) {
-	vertex_buffer.SetName(context, name + " Vertex Buffer");
+	vertex_position_buffer.SetName(context, name + " Vertex Position Buffer");
+	vertex_other_buffer.SetName(context, name + " Vertex Position Buffer");
 	index_buffer.SetName(context, name + " Index Buffer");
 }

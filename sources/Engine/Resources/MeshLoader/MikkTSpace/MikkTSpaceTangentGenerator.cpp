@@ -12,6 +12,7 @@ bool MikkTSpaceTangentGenerator::GenerateTangent(MeshData& mesh) {
 	interface.m_getTexCoord = GetTexCoord;
 	interface.m_setTSpaceBasic = SetTSpaceBasic;
 	//interface.m_setTSpace = SetTSpace;
+	interface.m_setTSpace = nullptr;
 
 	SMikkTSpaceContext context;
 	context.m_pInterface = &interface;

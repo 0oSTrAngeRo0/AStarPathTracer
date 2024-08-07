@@ -10,10 +10,11 @@
 #include "Common.glsl"
 #include "Math.glsl"
 
-layout(set = 0, binding = 2, buffer_reference, std430) readonly buffer Vertices { Vertex data[]; };
-layout(set = 0, binding = 3, buffer_reference, std430) readonly buffer Indices { u32vec3 data[];};
-layout(set = 0, binding = 4, buffer_reference, std430) readonly buffer Materials { LitMaterial data[]; };
-layout(set = 0, binding = 5, buffer_reference, std430) readonly buffer Instances { InstanceData data[]; } instances;
+layout(set = 0, binding = 2, buffer_reference, std430) readonly buffer VerticesPosition { vec3 data[]; };
+layout(set = 0, binding = 3, buffer_reference, std430) readonly buffer VerticesOther { VertexOther data[]; };
+layout(set = 0, binding = 4, buffer_reference, std430) readonly buffer Indices { u32vec3 data[];};
+layout(set = 0, binding = 5, buffer_reference, std430) readonly buffer Materials { LitMaterial data[]; };
+layout(set = 0, binding = 6, buffer_reference, std430) readonly buffer Instances { InstanceData data[]; } instances;
 
 layout(location = 0) rayPayloadInEXT HitPayload payload;
 hitAttributeEXT vec3 attribs;
@@ -31,12 +32,19 @@ void main() {
 
 	vec3 barycentric = vec3(1.0 - attribs.x - attribs.y, attribs.x, attribs.y);
 	u32vec3 index = Indices(instance.index_address).data[gl_PrimitiveID];
-	uint64_t address = instance.vertex_address;
-	Vertex v0 = Vertices(address).data[index.x];
-	Vertex v1 = Vertices(address).data[index.y];
-	Vertex v2 = Vertices(address).data[index.z];
+
+	uint64_t vertex_position_address = instance.vertex_position_address;
+	vec3 p0 = VerticesPosition(vertex_position_address).data[index.x];
+	vec3 p1 = VerticesPosition(vertex_position_address).data[index.y];
+	vec3 p2 = VerticesPosition(vertex_position_address).data[index.z];
+	
+	uint64_t vertex_other_address = instance.vertex_other_address;
+	VertexOther v0 = VerticesOther(vertex_other_address).data[index.x];
+	VertexOther v1 = VerticesOther(vertex_other_address).data[index.y];
+	VertexOther v2 = VerticesOther(vertex_other_address).data[index.z];
+
 	FetchedVertex v;
-	v.position = INTERPOLATE_BARYCENTRIC(v0, v1, v2, barycentric, VERTEX_GET_POSITION);
+	v.position = INTERPOLATE_BARYCENTRIC(p0, p1, p2, barycentric, DO_NOTHING);
 	v.normal = INTERPOLATE_BARYCENTRIC(v0, v1, v2, barycentric, VERTEX_GET_NORMAL);
 	v.tangent = INTERPOLATE_BARYCENTRIC(v0, v1, v2, barycentric, VERTEX_GET_TANGENT);
 	v.bitangent = INTERPOLATE_BARYCENTRIC(v0, v1, v2, barycentric, VERTEX_GET_BITANGENT);

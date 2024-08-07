@@ -29,35 +29,37 @@ MeshData MeshResourceUtilities::Load<ObjResourceData>(const Resource<ObjResource
     std::vector<glm::vec2> uvs;
     std::vector<uint32_t> indices;
 
-    assert(attrib.vertices.size() % 3 == 0);
-    for (size_t i = 0, end = attrib.vertices.size(); i < end; i += 3) {
-        positions.emplace_back(glm::vec3(
-            attrib.vertices[i + 0], // vx 
-            attrib.vertices[i + 1], // vy
-            attrib.vertices[i + 2]  // vz
-        ));
-
-        // Todo: Use correct data
-        normals.emplace_back(glm::vec3());
-        uvs.emplace_back(glm::vec2());
-        //normals.emplace_back(glm::vec3(
-        //    attrib.normals[i + 0], // nx 
-        //    attrib.normals[i + 1], // ny
-        //    attrib.normals[i + 2]  // nz
-        //));
-        //uvs.emplace_back(glm::vec2(
-        //    attrib.texcoords[i + 0], // uv_x 
-        //    attrib.texcoords[i + 1] // uv_y
-        //));
-    }
-    
     // Loop over shapes
-    for (const tinyobj::shape_t& shape : shapes) {
+    for (const auto& shape : shapes) {
         printf("Loading Shape: [%s]\n", shape.name.c_str());
-        if (shape.mesh.indices.size() % 3 != 0)
-            throw std::runtime_error("Invalid indices count");
-        for (const tinyobj::index_t& index : shape.mesh.indices)
-            indices.emplace_back(index.vertex_index);
+        size_t offset = 0;
+        for (size_t n = 0; n < shape.mesh.num_face_vertices.size(); n++) {
+            // per face
+            auto ngon = shape.mesh.num_face_vertices[n];
+            assert(ngon == 3);
+            auto material_id = shape.mesh.material_ids[n];
+            for (size_t f = 0; f < ngon; f++) {
+                const auto& index = shape.mesh.indices[offset + f];
+                positions.emplace_back(glm::vec3(
+                    attrib.vertices[3 * index.vertex_index + 0],
+                    attrib.vertices[3 * index.vertex_index + 1],
+                    attrib.vertices[3 * index.vertex_index + 2]
+                ));
+
+                uvs.emplace_back(glm::vec2(
+                    attrib.texcoords[2 * index.texcoord_index + 0],
+                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+                ));
+
+                normals.emplace_back(glm::vec3(
+                    attrib.normals[3 * index.normal_index + 0],
+                    attrib.normals[3 * index.normal_index + 1],
+                    attrib.normals[3 * index.normal_index + 2]
+                ));
+                indices.emplace_back(positions.size() - 1);
+            }
+            offset += ngon;
+        }
         printf("\n");
     }
 
@@ -69,7 +71,7 @@ MeshData MeshResourceUtilities::Load<ObjResourceData>(const Resource<ObjResource
     mesh.uvs = uvs;
     mesh.tangents = std::vector<glm::vec4>(positions.size());
     
-    //MikkTSpaceTangentGenerator::GenerateTangent(mesh);
+    MikkTSpaceTangentGenerator::GenerateTangent(mesh);
 
     return mesh;
 }

@@ -23,8 +23,8 @@ struct BuildAccelerationStructure
 BlasInput CreateBlasInput(const DeviceContext& context, const Mesh& mesh)
 {
 	vk::AccelerationStructureGeometryTrianglesDataKHR triganles(
-		vk::Format::eR32G32B32Sfloat, vk::DeviceOrHostAddressConstKHR(mesh.GetVertexAddress()), mesh.GetVertexStride(), mesh.GetVertexCount(),
-		vk::IndexType::eUint32, vk::DeviceOrHostAddressConstKHR(mesh.GetIndexAddress()), {});
+		mesh.GetVertexFormat(), vk::DeviceOrHostAddressConstKHR(mesh.GetVertexPositionAddress()), mesh.GetVertexPositionStride(), mesh.GetVertexCount(),
+		mesh.GetIndexFormat(), vk::DeviceOrHostAddressConstKHR(mesh.GetIndexAddress()), {});
 
 	vk::AccelerationStructureGeometryKHR geometry(
 		vk::GeometryTypeKHR::eTriangles,

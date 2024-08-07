@@ -80,7 +80,8 @@ void RenderContext::RecreateInstances(const DeviceContext& context, entt::regist
 		));
 
 		InstanceData instance_data(
-			device_mesh.GetVertexAddress(),
+			device_mesh.GetVertexPositionAddress(),
+			device_mesh.GetVertexOtherAddress(),
 			device_mesh.GetIndexAddress(),
 			shaders[0]->GetBufferAddress(),
 			0

@@ -46,20 +46,24 @@ void MeshPool::ReleaseUnusedMeshes(const DeviceContext& context, std::vector<Uui
 
 void MeshPool::Destroy(const DeviceContext& context) {
 	ReleaseUnusedMeshes(context, {});
-	vertex_buffer.Destroy(context);
+	vertex_position_buffer.Destroy(context);
 	index_buffer.Destroy(context);
+	vertex_other_buffer.Destroy(context);
 }
 
 void MeshPool::UpdateBuffers(const DeviceContext& context) {
 	if (meshes.size() == 0) {
 		index_buffer.Destroy(context);
-		vertex_buffer.Destroy(context);
+		vertex_position_buffer.Destroy(context);
+		vertex_other_buffer.Destroy(context);
 		return;
 	}
-	std::vector<vk::DeviceAddress> vertex;
+	std::vector<vk::DeviceAddress> vertex_position;
 	std::vector<vk::DeviceAddress> index;
+	std::vector<vk::DeviceAddress> vertex_other;
 	for (const auto& pair : meshes) {
-		vertex.emplace_back(pair.second.GetVertexAddress());
+		vertex_position.emplace_back(pair.second.GetVertexPositionAddress());
+		vertex_other.emplace_back(pair.second.GetVertexOtherAddress());
 		index.emplace_back(pair.second.GetIndexAddress());
 	}
 
@@ -69,7 +73,10 @@ void MeshPool::UpdateBuffers(const DeviceContext& context) {
 	if (Buffer::SetDataWithResize<vk::DeviceAddress>(context, index_buffer, index, batch_size, create_info, allocation_info)) {
 		index_buffer.SetName(context, "Index Buffer");
 	}
-	if (Buffer::SetDataWithResize<vk::DeviceAddress>(context, vertex_buffer, vertex, batch_size, create_info, allocation_info)) {
-		vertex_buffer.SetName(context, "Vertex Buffer");
+	if (Buffer::SetDataWithResize<vk::DeviceAddress>(context, vertex_position_buffer, vertex_position, batch_size, create_info, allocation_info)) {
+		vertex_position_buffer.SetName(context, "Vertex Position Buffer");
+	}
+	if (Buffer::SetDataWithResize<vk::DeviceAddress>(context, vertex_other_buffer, vertex_other, batch_size, create_info, allocation_info)) {
+		vertex_other_buffer.SetName(context, "Vertex Other Buffer");
 	}
 }

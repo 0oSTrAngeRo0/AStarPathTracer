@@ -20,7 +20,8 @@ public:
 	RenderContext(const DeviceContext& context);
 	void Update(const DeviceContext& context, entt::registry& registry);
 	void Destory(const DeviceContext& context);
-	inline const Buffer& GetVertexBuffer() const { return mesh_pool.GetVertexBuffer(); }
+	inline const Buffer& GetVertexPositionBuffer() const { return mesh_pool.GetVertexPositionBuffer(); }
+	inline const Buffer& GetVertexOtherBuffer() const { return mesh_pool.GetVertexOtherBuffer(); }
 	inline const Buffer& GetIndexBuffer() const { return mesh_pool.GetIndexBuffer(); }
 	inline const Buffer& GetMaterialBuffer() const { return material_buffer; }
 	inline const Buffer& GetInstancesBuffer() const { return instances_buffer; }
