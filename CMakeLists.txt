@@ -43,7 +43,7 @@ add_executable(${PROJECT_NAME}
     sources/acceleration-structure.cpp
 
     sources/Application/GlfwWindow.cpp
-    sources/Application/Systems.cpp
+    sources/Application/World.cpp
     sources/Application/Renderer/Renderer.cpp
     sources/Application/Renderer/RenderContext.cpp
     sources/Application/Renderer/RendererApplication.cpp

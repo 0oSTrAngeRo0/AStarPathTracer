@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glm/glm.hpp>
+#include <entt/entt.hpp>
 
 struct ProjectionCamera {
 	float near_z;
@@ -15,4 +16,14 @@ struct ProjectionCamera {
 struct Camera {
 	glm::mat4 view;
 	glm::mat4 projection;
+};
+
+struct OrbitCamera {
+	entt::entity look_at;
+	float distance;
+	float theta;
+	float phi;
+
+	OrbitCamera(entt::entity look_at, float distance, float theta, float phi) :
+		look_at(look_at), distance(distance), theta(theta), phi(phi){}
 };

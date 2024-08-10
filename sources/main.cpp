@@ -2,7 +2,7 @@
 
 #include "Application/GlfwWindow.h"
 #include <vector>
-#include "Application/Systems.h"
+#include "Application/World.h"
 #include "Application/Renderer/RendererApplication.h"
 #include "Editor/EditorApplication.h"
 #include "config.h"
@@ -14,13 +14,13 @@ void EditorMain() {
 	renderer_window.RegisterInputState(input);
 	RendererApplication renderer(static_cast<const VulkanWindow&>(renderer_window));
 	EditorApplication editor;
-	Systems systems;
+	World world(input);
 	while (editor.IsActive() && !renderer_window.ShouldClose()) {
 		input.ClearFrameData();
 		glfwPollEvents();
-		systems.Update(0.01);
-		editor.Update(systems.GetRegistry());
-		renderer.Update(systems.GetRegistry());
+		world.Update(0.01);
+		editor.Update(world.GetRegistry());
+		renderer.Update(world.GetRegistry());
 	}
 }
 
@@ -29,13 +29,13 @@ void ApplicationMain() {
 	GlfwWindow renderer_window(AppConfig::CreateDefault());
 	renderer_window.RegisterInputState(input);
 	RendererApplication renderer(static_cast<const VulkanWindow&>(renderer_window));
-	Systems systems;
+	World world(input);
 
 	while (!renderer_window.ShouldClose()) {
 		input.ClearFrameData();
 		glfwPollEvents();
-		systems.Update(0.01);
-		renderer.Update(systems.GetRegistry());
+		world.Update(0.01);
+		renderer.Update(world.GetRegistry());
 	}
 }
 
