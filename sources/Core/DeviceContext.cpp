@@ -12,7 +12,7 @@
 
 #pragma region Instance
 
-vk::Instance CreateInstance(const Window& window) {
+vk::Instance CreateInstance(const VulkanWindow& window) {
 	vk::ApplicationInfo app_info = vk::ApplicationInfo(APP_NAME, vk::makeVersion(1, 0, 0), ENGINE_NAME, vk::makeVersion(1, 3, 0), vk::ApiVersion13);
 	std::vector<const char*> extensions = {
 		VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
@@ -190,7 +190,7 @@ vma::Allocator CreateVmaAllocator(const vk::Instance instance, const vk::Physica
 #pragma endregion
 
 
-DeviceContext::DeviceContext(const Window& window)
+DeviceContext::DeviceContext(const VulkanWindow& window)
 {
 	VULKAN_HPP_DEFAULT_DISPATCHER.init();
 	instance = CreateInstance(window);

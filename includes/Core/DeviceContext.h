@@ -19,7 +19,7 @@ class EngineDebugger;
 
 #include "TemporaryCommandBufferPool.h"
 
-class Window;
+class VulkanWindow;
 
 class DeviceContext {
 private:
@@ -51,7 +51,7 @@ private:
 
 
 public:
-	DeviceContext(const Window& window);
+	DeviceContext(const VulkanWindow& window);
 	~DeviceContext();
 	inline vk::Instance GetInstance() const { return instance; }
 	inline vk::Device GetDevice() const { return device; }
