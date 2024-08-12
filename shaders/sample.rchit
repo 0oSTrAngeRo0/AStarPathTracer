@@ -6,18 +6,19 @@
 #extension GL_EXT_ray_tracing : require
 #extension GL_EXT_shader_explicit_arithmetic_types_int64 : require
 #extension GL_EXT_shader_explicit_arithmetic_types_int16 : require
+#extension GL_EXT_debug_printf : enable
 
 #include "Common.glsl"
 #include "Math.glsl"
 
-layout(set = 0, binding = 2, buffer_reference, std430) readonly buffer VerticesPosition { vec3 data[]; };
-layout(set = 0, binding = 3, buffer_reference, std430) readonly buffer VerticesOther { VertexOther data[]; };
-layout(set = 0, binding = 4, buffer_reference, std430) readonly buffer Indices { u32vec3 data[];};
-layout(set = 0, binding = 5, buffer_reference, std430) readonly buffer Materials { LitMaterial data[]; };
-layout(set = 0, binding = 6, buffer_reference, std430) readonly buffer Instances { InstanceData data[]; } instances;
+layout(set = 0, binding = 2, buffer_reference, scalar) readonly buffer VerticesPosition { vec3 data[]; };
+layout(set = 0, binding = 3, buffer_reference, scalar) readonly buffer VerticesOther { VertexOther data[]; };
+layout(set = 0, binding = 4, buffer_reference, scalar) readonly buffer Indices { uvec3 data[];};
+layout(set = 0, binding = 5, buffer_reference, scalar) readonly buffer Materials { LitMaterial data[]; };
+layout(set = 0, binding = 6, buffer_reference, scalar) readonly buffer Instances { InstanceData data[]; } instances;
 
 layout(location = 0) rayPayloadInEXT HitPayload payload;
-hitAttributeEXT vec3 attribs;
+hitAttributeEXT vec2 attribs;
 
 struct FetchedVertex {
 	vec3 position;
@@ -27,11 +28,15 @@ struct FetchedVertex {
 	vec2 uv;
 };
 
+void PrintVertex(VertexOther v) {
+	debugPrintfEXT("normal:[%v3f], tangent:[%v4f], uv:[%v2f]\n", v.normal, v.tangent, v.uv);
+}
+
 void main() {
 	InstanceData instance = instances.data[gl_InstanceCustomIndexEXT];
 
 	vec3 barycentric = vec3(1.0 - attribs.x - attribs.y, attribs.x, attribs.y);
-	u32vec3 index = Indices(instance.index_address).data[gl_PrimitiveID];
+	uvec3 index = Indices(instance.index_address).data[gl_PrimitiveID];
 
 	uint64_t vertex_position_address = instance.vertex_position_address;
 	vec3 p0 = VerticesPosition(vertex_position_address).data[index.x];
@@ -51,5 +56,5 @@ void main() {
 	v.uv = INTERPOLATE_BARYCENTRIC(v0, v1, v2, barycentric, VERTEX_GET_UV);
 
 	LitMaterial material = Materials(instance.material_address).data[instance.material_index];
-	payload.color = vec4(v.position.xyz, 1.0);
+	payload.color = vec4(v.normal.xyz, 1.0);
 }

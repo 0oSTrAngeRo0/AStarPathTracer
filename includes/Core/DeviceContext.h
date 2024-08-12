@@ -7,7 +7,8 @@
 	vk::PhysicalDeviceFeatures2, \
 	vk::PhysicalDeviceAccelerationStructureFeaturesKHR, \
 	vk::PhysicalDeviceRayTracingPipelineFeaturesKHR, \
-	vk::PhysicalDevice16BitStorageFeaturesKHR
+	vk::PhysicalDevice16BitStorageFeaturesKHR, \
+    vk::PhysicalDeviceScalarBlockLayoutFeatures
 #define GPU_PROPERTY \
 	vk::PhysicalDeviceProperties2, \
 	vk::PhysicalDeviceRayTracingPipelinePropertiesKHR

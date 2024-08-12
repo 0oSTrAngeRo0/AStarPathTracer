@@ -105,6 +105,7 @@ std::vector<PhysicalDeviceInfo> GetPhysicalDevices(const vk::Instance instance, 
 		if (!features.get<vk::PhysicalDeviceAccelerationStructureFeaturesKHR>().accelerationStructure) continue;
 		if (!features.get<vk::PhysicalDeviceRayTracingPipelineFeaturesKHR>().rayTracingPipeline) continue;
 		if (!features.get<vk::PhysicalDevice16BitStorageFeaturesKHR>().storageBuffer16BitAccess) continue;
+		if (!features.get<vk::PhysicalDeviceScalarBlockLayoutFeatures>().scalarBlockLayout) continue;
 		info.features = features;
 
 		auto properties = device.getProperties2<GPU_PROPERTY>();
@@ -148,7 +149,8 @@ vk::Device CreateDevice(const vk::PhysicalDevice gpu, const int graphics_queue_i
 		VK_KHR_SPIRV_1_4_EXTENSION_NAME,
 
 		VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
-		VK_EXT_ROBUSTNESS_2_EXTENSION_NAME
+		VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
+		VK_EXT_SCALAR_BLOCK_LAYOUT_EXTENSION_NAME,
 	};
 
 	auto features = gpu.getFeatures2<
@@ -161,7 +163,8 @@ vk::Device CreateDevice(const vk::PhysicalDevice gpu, const int graphics_queue_i
 		vk::PhysicalDeviceAccelerationStructureFeaturesKHR,
 		vk::PhysicalDeviceRayTracingPipelineFeaturesKHR,
 		vk::PhysicalDeviceRobustness2FeaturesEXT,
-		vk::PhysicalDevice16BitStorageFeaturesKHR
+		vk::PhysicalDevice16BitStorageFeaturesKHR,
+		vk::PhysicalDeviceScalarBlockLayoutFeatures
 	>();
 
 	return gpu.createDevice(vk::DeviceCreateInfo({}, queue_create_infos, {}, extensions, 0, &features.get()));

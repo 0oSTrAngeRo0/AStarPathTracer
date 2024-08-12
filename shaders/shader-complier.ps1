@@ -9,8 +9,8 @@ $files = Get-ChildItem -Path $folder -Recurse -Include $extensions
 # 遍历每个文件并调用编译器
 foreach ($file in $files) {
     $outputFile = "$($file.FullName).spv"
-    Write-Host "$compiler --target-env vulkan1.2 $file -o $outputFile"
-    & $compiler --target-env vulkan1.2 $file.FullName -o $outputFile
+    Write-Host "$compiler --target-env vulkan1.2 -g $file -o $outputFile"
+    & $compiler --target-env vulkan1.2 -g $file.FullName -o $outputFile
     Write-Host ""
 }
 
