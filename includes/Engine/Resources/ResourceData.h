@@ -2,6 +2,7 @@
 
 #include "Engine/ShaderHostBuffer.h"
 #include <string>
+#include <glm/glm.hpp>
 
 struct ObjResourceData {
 public:
@@ -18,4 +19,6 @@ public:
 	MaterialResourceData();
 };
 
-
+struct SimpleLitMaterialData {
+	glm::vec4 color;
+};

@@ -76,4 +76,4 @@ MeshData MeshResourceUtilities::Load<ObjResourceData>(const Resource<ObjResource
     return mesh;
 }
 
-REGISTER_RESOURCE_MESH_LOADER(Obj, ObjResourceData);
+REGISTER_RESOURCE_MESH_LOADER(ObjResourceData);

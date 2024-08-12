@@ -1,4 +1,5 @@
 #include <nlohmann/json.hpp>
+#include <glm/glm.hpp>
 #include "Engine/Resources/Resources.h"
 #include "Engine/Resources/ResourceRegistry.h"
 
@@ -16,8 +17,7 @@ namespace nlohmann { \
 }
 
 JSON_SERIALIZER(glm::vec4, <>, x, y, z, w);
-JSON_SERIALIZER(SimpleLitMaterialData, <>, color);
-JSON_SERIALIZER(Resource<TData>, <typename TData>, resource_type, uuid, references, resource_data);
+JSON_SERIALIZER(Resource<TData>, <typename TData>, uuid, references, resource_data);
 
 namespace nlohmann {
 	template <>
@@ -45,7 +45,7 @@ namespace nlohmann {
 				j = nullptr;
 				return;
 			}
-			auto function = ResourceSerializeRegistry::Get(obj.resource_type);
+			auto function = ResourceSerializeRegistry::Get(obj.GetResourceType());
 			if (!function.has_value()) {
 				j = nullptr;
 				return;

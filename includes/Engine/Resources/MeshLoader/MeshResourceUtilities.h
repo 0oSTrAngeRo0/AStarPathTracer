@@ -4,6 +4,7 @@
 
 #include "Engine/StaticRegistry.h"
 #include "Engine/Guid.h"
+#include "Utilities/MacroUtilities.h"
 
 class ResourceBase;
 template <typename T> class Resource;
@@ -23,8 +24,8 @@ public:
 	template <typename T> static MeshData Load(const Resource<T>& resource);
 };
 
-#define REGISTER_RESOURCE_MESH_LOADER(name, type) \
-	static bool register_resource_mesh_loader_##name = (MeshResourceUtilities::Register(#name, \
+#define REGISTER_RESOURCE_MESH_LOADER(type) \
+	static bool ASTAR_UNIQUE_VARIABLE_NAME(register_resource_mesh_loader_) = (MeshResourceUtilities::Register(Resource<type>::GetResourceTypeStatic(), \
 		[](const ResourceBase& resource) { \
 			return MeshResourceUtilities::Load(static_cast<const Resource<type>&>(resource)); \
 		}), true) \

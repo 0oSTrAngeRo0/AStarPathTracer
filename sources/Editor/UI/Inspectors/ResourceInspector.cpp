@@ -6,7 +6,7 @@
 #include "Editor/UI/Inspectors/ResourceEditorRegistry.h"
 
 std::unique_ptr<EditorInspectorBase> ResourceInspectorFactory::CreateInspector(ResourceBase& resource) {
-	auto function = ResourceInspectorCreateRegistry::Get(resource.resource_type);
+	auto function = ResourceInspectorCreateRegistry::Get(resource.GetResourceType());
 	if (function.has_value()) {
 		return function.value()(resource);
 	}
@@ -28,7 +28,7 @@ void ResourceInspector<MaterialResourceData<SimpleLitMaterialData>>::Draw() {
 	is_dirty |= ImGui::ColorEdit4("BaseColor", glm::value_ptr(data.resource_data.material_data.color), flags);
 }
 
-REGISTER_INSPECTOR_CREATOR(Obj, ObjResourceData);
-REGISTER_INSPECTOR_CREATOR(MaterialSimpleLit, MaterialResourceData<SimpleLitMaterialData>);
+REGISTER_INSPECTOR_CREATOR(ObjResourceData);
+REGISTER_INSPECTOR_CREATOR(MaterialResourceData<SimpleLitMaterialData>);
 
-REGISTER_RESOURCE_CREATE_MENU(MaterialSimpleLit, { "Material" }, "SimpleLit", MaterialResourceData<SimpleLitMaterialData>);
+REGISTER_RESOURCE_CREATE_MENU({ "Material" }, MaterialResourceData<SimpleLitMaterialData>);

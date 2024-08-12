@@ -1,6 +1,7 @@
 #include "Engine/Resources/ResourcesManager.h"
 #include "fstream"
 #include <filesystem>
+#include <cassert>
 
 ResourcesManager::ResourcesManager() {
 	assert(std::filesystem::exists(RESOURCES_DIR) && std::filesystem::is_directory(RESOURCES_DIR));

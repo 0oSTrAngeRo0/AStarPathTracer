@@ -3,9 +3,9 @@
 
 MeshData MeshResourceUtilities::Load(Uuid id) {
 	auto& resource = ResourcesManager::GetInstance().GetResource(id);
-	auto& type = resource.resource_type;
+	auto& type = resource.GetResourceType();
 
-	auto function_opt = MeshResourceUtilities::Get(resource.resource_type);
+	auto function_opt = MeshResourceUtilities::Get(resource.GetResourceType());
 	if (function_opt.has_value()) {
 		return function_opt.value()(resource);
 	}
