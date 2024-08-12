@@ -4,11 +4,11 @@
 
 struct MeshComponent {
 public:
-	Uuid id;
-	Uuid resource;
+	Uuid device_id;
+	Uuid resource_id;
 
-	MeshComponent(const Uuid& id, const Uuid& resrouce) : id(id), resource(resrouce) {}
-	MeshComponent(const Uuid& resource) : MeshComponent(xg::newGuid(), resource) {}
+	MeshComponent(const Uuid& device_id, const Uuid& resource_id) : device_id(device_id), resource_id(resource_id) {}
+	MeshComponent(const Uuid& resource_id) : MeshComponent(xg::newGuid(), resource_id) {}
 };
 
 struct StaticMeshTag {};
@@ -16,5 +16,7 @@ struct StaticMeshTag {};
 struct DeformableMeshTag {};
 
 struct MaterialComponent {
-	Uuid id;
+	Uuid resource_id;
+
+	MaterialComponent(const Uuid& resource_id) : resource_id(resource_id) {}
 };

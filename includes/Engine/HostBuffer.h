@@ -2,8 +2,8 @@
 
 #include <vector>
 #include <memory>
+#include "Engine/Guid.h"
 
-template <typename T> class HostBufferVisitor;
 
 // Todo 限定为值类型
 template <typename T>
@@ -11,46 +11,53 @@ class HostBuffer {
 protected:
 	std::vector<T> data;
 	bool is_dirty;
-	std::vector<std::shared_ptr<HostBufferVisitor<T>>> visitors;
+	std::unordered_map<Uuid, size_t> handlers;
 public:
-	T& GetData(const HostBufferVisitor<T>& visitor);
-	std::shared_ptr<HostBufferVisitor<T>> CreateVisitor();
-	void SetData(const HostBufferVisitor<T>& visitor, const T& data);
-	void ReleaseVisitor(std::shared_ptr<HostBufferVisitor<T>> visitor);
-	friend class HostBufferVisitor<T>;
-};
+	const T& GetData(const Uuid& handle) const;
+	inline bool IsDirty() const { return is_dirty; }
+	inline const std::vector<T>& GetHostBuffer() const { return data; }
+	inline const size_t GetIndex(const Uuid& handle) const;
 
-template <typename T>
-class HostBufferVisitor {
-protected:
-	HostBuffer<T>& owner;
-	uint32_t index;
-public:
-	HostBufferVisitor(HostBuffer<T>& owner, uint32_t index) :owner(owner), index(index) {}
-	inline T& GetData() { return owner.GetData(*this); }
-	inline void SetData(const T& data) { return owner.SetData(*this, data); }
-	friend class HostBuffer<T>;
+	const Uuid CreateData();
+	void SetData(const Uuid& handle, const T& data);
+	void ReleaseHandle(const Uuid& handle);
 };
 
 template<typename T>
-inline T& HostBuffer<T>::GetData(const HostBufferVisitor<T>& visitor) {
-	return data[visitor.index];
+inline const T& HostBuffer<T>::GetData(const Uuid& handle) const {
+	if (!handlers.contains(handle)) {
+		throw std::runtime_error("Invalid handle: [" + handle.str() + "]");
+	}
+	return data[handlers.at(handle)];
 }
 
 template<typename T>
-inline std::shared_ptr<HostBufferVisitor<T>> HostBuffer<T>::CreateVisitor() {
+inline const size_t HostBuffer<T>::GetIndex(const Uuid& handle) const {
+	if (!handlers.contains(handle)) {
+		throw std::runtime_error("Invalid handle: [" + handle.str() + "]");
+	}
+	return handlers.at(handle);
+}
+
+template<typename T>
+inline const Uuid HostBuffer<T>::CreateData() {
 	data.emplace_back();
 	is_dirty = true;
-	auto visitor = std::make_shared<HostBufferVisitor<T>>(*this, data.size() - 1);
-	visitors.emplace_back(visitor);
-	return visitor;
+	Uuid handle = xg::newGuid();
+	handlers.emplace(handle, data.size() - 1);
+	return handle;
 }
 
 template<typename T>
-inline void HostBuffer<T>::SetData(const HostBufferVisitor<T>& visitor, const T& data) {
-	this->data[visitor.index] = data;
+inline void HostBuffer<T>::SetData(const Uuid& handle, const T& data) {
+	if (!handlers.contains(handle)) {
+		throw std::runtime_error("Invalid handle: [" + handle.str() + "]");
+	}
+	this->data[handlers.at(handle)] = data;
 	is_dirty = true;
 }
 
 template<typename T>
-inline void HostBuffer<T>::ReleaseVisitor(std::shared_ptr<HostBufferVisitor<T>> visitor) {}
+inline void HostBuffer<T>::ReleaseHandle(const Uuid& handle) {
+	throw std::runtime_error("Unimplemented method");
+}

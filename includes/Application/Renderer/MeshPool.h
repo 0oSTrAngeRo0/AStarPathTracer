@@ -11,7 +11,7 @@ class DeviceContext;
 
 class MeshPool {
 public:
-	const Mesh& GetMesh(const Uuid& id);
+	const Mesh& GetMesh(const Uuid& device_id);
 	void EnsureMeshes(const DeviceContext& context, const std::vector<std::tuple<Uuid, Uuid>>& used_meshes);
 	void ReleaseUnusedMeshes(const DeviceContext& context, std::vector<Uuid> used);
 	void Destroy(const DeviceContext& context);

@@ -48,6 +48,7 @@ add_executable(${PROJECT_NAME}
     sources/Application/Renderer/RenderContext.cpp
     sources/Application/Renderer/RendererApplication.cpp
     sources/Application/Renderer/MeshPool.cpp
+    sources/Application/Renderer/MaterialPool.cpp
 
     sources/Core/RayTracingShaderBindingTable.cpp
     sources/Core/EngineDebugger.cpp
@@ -77,6 +78,7 @@ add_executable(${PROJECT_NAME}
     sources/Engine/Resources/MeshLoader/MikkTSpace/mikktspace.c
     sources/Engine/Resources/MeshLoader/MikkTSpace/MikkTSpaceTangentGenerator.cpp
     sources/Engine/Resources/MeshLoader/MeshResourceUtilities.cpp
+    sources/Engine/ShaderHostBuffer.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})

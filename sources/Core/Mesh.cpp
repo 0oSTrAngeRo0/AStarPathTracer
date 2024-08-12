@@ -44,6 +44,6 @@ void Mesh::Destroy(const DeviceContext& context) {
 
 void Mesh::SetName(const DeviceContext& context, const std::string& name) {
 	vertex_position_buffer.SetName(context, name + " Vertex Position Buffer");
-	vertex_other_buffer.SetName(context, name + " Vertex Position Buffer");
+	vertex_other_buffer.SetName(context, name + " Vertex Other Buffer");
 	index_buffer.SetName(context, name + " Index Buffer");
 }

@@ -11,6 +11,7 @@
 #include "Engine/Resources/Resources.h"
 #include "Engine/HostBuffer.h"
 #include "Application/Renderer/MeshPool.h"
+#include "Application/Renderer/MaterialPool.h"
 
 class DeviceContext;
 class Mesh;
@@ -23,15 +24,12 @@ public:
 	inline const Buffer& GetVertexPositionBuffer() const { return mesh_pool.GetVertexPositionBuffer(); }
 	inline const Buffer& GetVertexOtherBuffer() const { return mesh_pool.GetVertexOtherBuffer(); }
 	inline const Buffer& GetIndexBuffer() const { return mesh_pool.GetIndexBuffer(); }
-	inline const Buffer& GetMaterialBuffer() const { return material_buffer; }
+	inline const Buffer& GetMaterialBuffer() const { return material_pool.GetMainBuffer(); }
 	inline const Buffer& GetInstancesBuffer() const { return instances_buffer; }
 	inline const Buffer& GetConstantsBuffer() const { return constants_buffer; }
 	inline const vk::AccelerationStructureKHR GetTlas() const { return tlas; }
 private:
-	std::vector<std::shared_ptr<ShaderBase>> shaders;
-
-	Buffer material_buffer;
-
+	MaterialPool material_pool;
 	MeshPool mesh_pool;
 
 	vk::AccelerationStructureKHR tlas;
@@ -42,7 +40,13 @@ private:
 
 	Buffer constants_buffer;
 
+	struct ConstantsData {
+		glm::mat4 view_inverse;
+		glm::mat4 projection_inverse;
+	};
+
+	void UploadMeshes(const DeviceContext& context, entt::registry& registry);
+	void UploadMaterials(const DeviceContext& context, entt::registry& registry);
 	void RecreateInstances(const DeviceContext& context, entt::registry& registry);
-	void RecreateShaderBuffers(const DeviceContext& context);
 	void UpdatePushConstants(const DeviceContext& context, entt::registry& registry);
 };

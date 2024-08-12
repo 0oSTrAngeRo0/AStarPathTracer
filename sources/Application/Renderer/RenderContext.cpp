@@ -6,6 +6,8 @@
 #include "Core/Mesh.h"
 #include "acceleration-structure.h"
 #include <tuple>
+#include "Engine/ShaderHostBuffer.h"
+
 
 vk::TransformMatrixKHR GetTransformMatrixKHR(const glm::mat4 transform) {
 	std::array<std::array<float, 4>, 3> matrix;
@@ -17,35 +19,7 @@ vk::TransformMatrixKHR GetTransformMatrixKHR(const glm::mat4 transform) {
 	return vk::TransformMatrixKHR(matrix);
 }
 
-std::vector<std::shared_ptr<Mesh>> CreateMeshes(const DeviceContext& context) {
-	std::vector<std::shared_ptr<Mesh>> meshes;
-	return meshes;
-}
-
 RenderContext::RenderContext(const DeviceContext& context) {
-	std::shared_ptr<Shader<LitMaterialData>> shader = std::make_shared<Shader<LitMaterialData>>();
-
-	// create sample material data for test
-	std::shared_ptr<MaterialTemplate<LitMaterialData>> material = std::static_pointer_cast<MaterialTemplate<LitMaterialData>>(shader->CreateMaterial());
-	LitMaterialData material_data = material->GetData();
-	material_data.color = glm::vec4(0.3, 0.3, 0.7, 1.0);
-	material->SetData(material_data);
-
-	shaders.emplace_back(shader);
-
-	// Material Address Buffer
-	{
-		std::vector<vk::DeviceAddress> data;
-		for (const auto& shader : shaders) {
-			shader->CreateMaterial();
-			shader->UpdateData(context);
-			data.emplace_back(shader->GetBufferAddress());
-		}
-		vk::BufferCreateInfo create_info({}, {}, vk::BufferUsageFlagBits::eStorageBuffer | vk::BufferUsageFlagBits::eShaderDeviceAddress);
-		material_buffer = Buffer::CreateWithData<vk::DeviceAddress>(context, create_info, data);
-		material_buffer.SetName(context, "Material Address Buffer");
-	}
-
 	// Constants Buffer
 	{
 		constants_buffer = Buffer(
@@ -57,22 +31,53 @@ RenderContext::RenderContext(const DeviceContext& context) {
 	}
 }
 
-void RenderContext::RecreateInstances(const DeviceContext& context, entt::registry& registry) {
-	// Collect data
+void RenderContext::UploadMeshes(const DeviceContext& context, entt::registry& registry) {
 	auto view = registry.view<const LocalTransform, const MeshComponent, const MaterialComponent>();
 
 	std::vector<std::tuple<Uuid, Uuid>> used_meshes;
 	view.each([&used_meshes](const LocalTransform& transform, const MeshComponent& mesh, const MaterialComponent& material) {
-		used_meshes.emplace_back(std::make_tuple(mesh.id, mesh.resource));
-	});
+		used_meshes.emplace_back(std::make_tuple(mesh.device_id, mesh.resource_id));
+		});
 	mesh_pool.EnsureMeshes(context, used_meshes);
+}
 
+void RenderContext::UploadMaterials(const DeviceContext& context, entt::registry& registry) {
+	auto view = registry.view<const LocalTransform, const MeshComponent, const MaterialComponent>();
+	std::vector<Uuid> used_materials;
+	view.each([&used_materials](const LocalTransform& transform, const MeshComponent& mesh, const MaterialComponent& material) {
+		used_materials.emplace_back(material.resource_id);
+	});
+	material_pool.EnsureMaterials(used_materials);
+
+	const auto& host_shaders = registry.ctx().get<const HostShaderManager&>();
+	std::vector<std::tuple<const Uuid, const std::vector<std::byte>, const bool>> data;
+	for (const auto& shader_wrapper : host_shaders.GetAllShaders()) {
+		const auto& shader = shader_wrapper.get();
+		data.emplace_back(std::make_tuple(shader.GetId(), shader.GetData(), shader.IsDirty()));
+	}
+	material_pool.EnsureBuffers(context, data);
+}
+
+void RenderContext::RecreateInstances(const DeviceContext& context, entt::registry& registry) {
+	auto view = registry.view<const LocalTransform, const MeshComponent, const MaterialComponent>();
 	std::vector<vk::AccelerationStructureInstanceKHR> as_instances;
 	std::vector<InstanceData> instances_data;
 	uint32_t index = 0;
 
-	view.each([&as_instances, &index, &instances_data, &mesh_pool = this->mesh_pool, &shaders = this->shaders](const LocalTransform& transform, const MeshComponent& mesh, const MaterialComponent& material) {
-		const Mesh& device_mesh = mesh_pool.GetMesh(mesh.id);
+	const auto& host_shaders = registry.ctx().get<const HostShaderManager&>();
+	view.each([
+		&as_instances, 
+		&index,
+		&instances_data,
+		&mesh_pool = this->mesh_pool, 
+		&material_pool = this->material_pool,
+		&host_shaders
+	](  const LocalTransform& transform,
+		const MeshComponent& mesh, 
+		const MaterialComponent& material
+	) {
+		const Mesh& device_mesh = mesh_pool.GetMesh(mesh.device_id);
+		const auto& [shader_id, material_index] = host_shaders.GetMaterialRuntimeData(material.resource_id);
 		as_instances.emplace_back(vk::AccelerationStructureInstanceKHR(
 			GetTransformMatrixKHR(transform.matrix), index, 0xFF, 0,
 			vk::GeometryInstanceFlagBitsKHR::eTriangleCullDisable,
@@ -83,8 +88,8 @@ void RenderContext::RecreateInstances(const DeviceContext& context, entt::regist
 			device_mesh.GetVertexPositionAddress(),
 			device_mesh.GetVertexOtherAddress(),
 			device_mesh.GetIndexAddress(),
-			shaders[0]->GetBufferAddress(),
-			0
+			material_pool.GetShaderBuffer(shader_id).GetDeviceAddress(),
+			material_index
 		);
 		instances_data.emplace_back(instance_data);
 		index++;
@@ -104,12 +109,6 @@ void RenderContext::RecreateInstances(const DeviceContext& context, entt::regist
 	instances_buffer.SetName(context, "Instance Data Buffer");
 }
 
-void RenderContext::RecreateShaderBuffers(const DeviceContext& context) {
-	for (auto shader : shaders) {
-		shader->UpdateData(context);
-	}
-}
-
 void RenderContext::UpdatePushConstants(const DeviceContext& context, entt::registry& registry) {
 	ConstantsData data;
 	registry.view<const Camera>().each([&data](const Camera& camera) {
@@ -120,7 +119,8 @@ void RenderContext::UpdatePushConstants(const DeviceContext& context, entt::regi
 }
 
 void RenderContext::Update(const DeviceContext& context, entt::registry& registry) {
-	RecreateShaderBuffers(context);
+	UploadMaterials(context, registry);
+	UploadMeshes(context, registry);
 	UpdatePushConstants(context, registry);
 	RecreateInstances(context, registry);
 }
@@ -130,12 +130,8 @@ void RenderContext::Destory(const DeviceContext& context) {
 	tlas_buffer.Destroy(context);
 	tlas_instance_buffer.Destroy(context);
 
-	for (auto& shader : shaders) {
-		shader->Destroy(context);
-	}
-
 	mesh_pool.Destroy(context);
-	material_buffer.Destroy(context);
+	material_pool.Destroy(context);
 	instances_buffer.Destroy(context);
 	constants_buffer.Destroy(context);
 }

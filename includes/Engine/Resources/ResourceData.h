@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Engine/ShaderHostBuffer.h"
 #include <string>
 #include <glm/glm.hpp>
+#include "Engine/Guid.h"
 
 struct ObjResourceData {
 public:
@@ -12,11 +12,13 @@ public:
 
 template <typename T>
 struct MaterialResourceData {
-private:
-	std::shared_ptr<HostBufferVisitor<T>> material_visitor;
 public:
 	T material_data;
+	Uuid runtime_host_id;
 	MaterialResourceData();
+	const Uuid GetShaderId() const;
+	inline const Uuid GetMaterialId() const { return runtime_host_id; }
+	const size_t GetMaterialIndex() const;
 };
 
 struct SimpleLitMaterialData {

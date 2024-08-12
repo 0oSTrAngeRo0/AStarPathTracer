@@ -7,6 +7,8 @@
 #include "Editor/EditorApplication.h"
 #include "config.h"
 #include "Engine/InputSystem.h"
+#include "Engine/ShaderHostBuffer.h"
+#include "Engine/Resources/ResourcesManager.h"
 
 void EditorMain() {
 	InputState input;
@@ -14,7 +16,10 @@ void EditorMain() {
 	renderer_window.RegisterInputState(input);
 	RendererApplication renderer(static_cast<const VulkanWindow&>(renderer_window));
 	EditorApplication editor;
-	World world(input);
+	World world;
+
+	world.GetRegistry().ctx().emplace<const InputState&>(input);
+	world.GetRegistry().ctx().emplace<const HostShaderManager&>(HostShaderManager::GetInstance());
 	while (editor.IsActive() && !renderer_window.ShouldClose()) {
 		input.ClearFrameData();
 		glfwPollEvents();
@@ -29,8 +34,10 @@ void ApplicationMain() {
 	GlfwWindow renderer_window(AppConfig::CreateDefault());
 	renderer_window.RegisterInputState(input);
 	RendererApplication renderer(static_cast<const VulkanWindow&>(renderer_window));
-	World world(input);
+	World world;
 
+	world.GetRegistry().ctx().emplace<const InputState&>(input);
+	world.GetRegistry().ctx().emplace<const HostShaderManager&>(HostShaderManager::GetInstance());
 	while (!renderer_window.ShouldClose()) {
 		input.ClearFrameData();
 		glfwPollEvents();
@@ -40,14 +47,16 @@ void ApplicationMain() {
 }
 
 int main() {
-	try
-	{
-		ApplicationMain();
-	}
-	catch (const std::exception& e)
-	{
-		printf("%s\n", e.what());
-	}
+	ApplicationMain();
+
+	//try
+	//{
+	//	ApplicationMain();
+	//}
+	//catch (const std::exception& e)
+	//{
+	//	printf("%s\n", e.what());
+	//}
 
 	return 0;
 }

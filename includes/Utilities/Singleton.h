@@ -4,13 +4,13 @@ template <typename T>
 class Singleton {
 public:
 	static T& GetInstance() {
-		static T instance;
+		static T instance = T();
 		return instance;
 	}
 
 protected:
 	Singleton() {}
-	~Singleton() {}
+	virtual ~Singleton() = default;
 
 private:
 	Singleton(const Singleton&) = delete;

@@ -2,6 +2,7 @@
 #include "Engine/Resources/Resources.h"
 #include "Engine/Resources/ResourceRegistry.h"
 #include "Engine/Resources/JsonSerializer.h"
+#include "Engine/ShaderHostBuffer.h"
 
 template <> const std::string& Resource<ObjResourceData>::GetResourceTypeStatic() {
 	static std::string type = "Obj";
@@ -18,7 +19,10 @@ template <> const std::string& Resource<MaterialResourceData<SimpleLitMaterialDa
 	return type;
 }
 template <> MaterialResourceData<SimpleLitMaterialData>::MaterialResourceData() :
-	material_visitor(ShaderHostBuffer<SimpleLitMaterialData>::GetInstance().CreateVisitor()) {}
+	runtime_host_id(HostShaderBuffer<SimpleLitMaterialData>::GetInstance().CreateData()) {}
+template<typename T> const Uuid MaterialResourceData<T>::GetShaderId() const { return HostShaderBuffer<T>::GetIdStatic(); }
+template<typename T> const size_t MaterialResourceData<T>::GetMaterialIndex() const { return HostShaderBuffer<T>::GetInstance().GetMaterialIndex(runtime_host_id); }
 JSON_SERIALIZER(MaterialResourceData<TMatData>, <typename TMatData>, material_data);
 REGISTER_RESOURCE_SERIALIZER(MaterialResourceData<SimpleLitMaterialData>);
 REGISTER_RESOURCE_DESERIALIZER(MaterialResourceData<SimpleLitMaterialData>);
+REGISTER_MATERIAL_RUNTIME_DATA(MaterialResourceData<SimpleLitMaterialData>);

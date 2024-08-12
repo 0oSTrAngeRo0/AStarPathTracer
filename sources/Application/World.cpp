@@ -90,7 +90,7 @@ entt::entity World::CreateCube(entt::registry& registry) {
 	registry.emplace<LocalTransform>(e);
 
 	registry.emplace<MeshComponent>(e, Uuid("c98fb2af-8be5-437b-b096-bc44d71b656d"));
-	registry.emplace<MaterialComponent>(e);
+	registry.emplace<MaterialComponent>(e, Uuid("5ba3b79d-2f7e-479a-961b-04b58ba8fc6c"));
 	return e;
 }
 
@@ -102,8 +102,7 @@ void World::CreateDefault(entt::registry& registry) {
 
 #pragma endregion
 
-World::World(const InputState& input) {
-	registry.ctx().emplace<const InputState&>(input);
+World::World() {
 	CreateDefault(registry);
 }
 
