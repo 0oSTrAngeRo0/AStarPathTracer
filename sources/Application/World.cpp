@@ -102,15 +102,9 @@ void World::CreateDefault(entt::registry& registry) {
 
 #pragma endregion
 
-World::World() {
-	CreateDefault(registry);
-}
-
-void World::Update(float delta_time) {
+void World::Update(entt::registry& registry, float delta_time) {
 	UpdateOrbitCamera(registry);
 	UpdateLinearVelocity(registry, delta_time);
 	UpdateLocalTransform(registry);
 	UpdateProjectiveCamera(registry);
 }
-
-World::~World() {}

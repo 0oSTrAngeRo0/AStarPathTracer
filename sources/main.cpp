@@ -10,22 +10,28 @@
 #include "Engine/ShaderHostBuffer.h"
 #include "Engine/Resources/ResourcesManager.h"
 
+entt::registry CreateWorld(const InputState& input) {
+	entt::registry registry;
+	World::CreateDefault(registry);
+	registry.ctx().emplace<const InputState&>(input);
+	registry.ctx().emplace<const HostShaderManager&>(HostShaderManager::GetInstance());
+	return registry;
+}
+
 void EditorMain() {
 	InputState input;
 	GlfwWindow renderer_window(AppConfig::CreateDefault());
 	renderer_window.RegisterInputState(input);
 	RendererApplication renderer(static_cast<const VulkanWindow&>(renderer_window));
 	EditorApplication editor;
-	World world;
+	entt::registry registry = CreateWorld(input);
 
-	world.GetRegistry().ctx().emplace<const InputState&>(input);
-	world.GetRegistry().ctx().emplace<const HostShaderManager&>(HostShaderManager::GetInstance());
 	while (editor.IsActive() && !renderer_window.ShouldClose()) {
 		input.ClearFrameData();
 		glfwPollEvents();
-		world.Update(0.01);
-		editor.Update(world.GetRegistry());
-		renderer.Update(world.GetRegistry());
+		World::Update(registry, 0.01);
+		editor.Update(registry);
+		renderer.Update(registry);
 	}
 }
 
@@ -34,24 +40,21 @@ void ApplicationMain() {
 	GlfwWindow renderer_window(AppConfig::CreateDefault());
 	renderer_window.RegisterInputState(input);
 	RendererApplication renderer(static_cast<const VulkanWindow&>(renderer_window));
-	World world;
+	entt::registry registry = CreateWorld(input);
 
-	world.GetRegistry().ctx().emplace<const InputState&>(input);
-	world.GetRegistry().ctx().emplace<const HostShaderManager&>(HostShaderManager::GetInstance());
 	while (!renderer_window.ShouldClose()) {
 		input.ClearFrameData();
 		glfwPollEvents();
-		world.Update(0.01);
-		renderer.Update(world.GetRegistry());
+		World::Update(registry, 0.01);
+		renderer.Update(registry);
 	}
 }
 
 int main() {
-	ApplicationMain();
 
 	//try
 	//{
-	//	ApplicationMain();
+		ApplicationMain();
 	//}
 	//catch (const std::exception& e)
 	//{

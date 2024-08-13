@@ -2,21 +2,14 @@
 
 #include <entt/entt.hpp>
 
-class InputState;
-
 class World {
 public:
-	World();
-	void Update(float delta_time);
-	inline entt::registry& GetRegistry() { return registry; }
-	~World();
+	static void Update(entt::registry& registry, float delta_time);
+	static void CreateDefault(entt::registry& registry);
 private:
-	entt::registry registry;
-
 	// World Creations
 	static entt::entity CreateCamera(entt::registry& registry);
 	static entt::entity CreateCube(entt::registry& registry);
-	static void CreateDefault(entt::registry& registry);
 
 	// Systems
 	static void UpdateLinearVelocity(entt::registry & registry, float delta_time);
