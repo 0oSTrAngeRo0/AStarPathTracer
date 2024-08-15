@@ -9,7 +9,9 @@ ResourcesManager::ResourcesManager() {
 	// 遍历目录中的所有项
 	for (const auto& entry : std::filesystem::recursive_directory_iterator(RESOURCES_DIR)) {
 		if (std::filesystem::is_regular_file(entry)) {
-			LoadResource(entry.path().string());
+			const std::string& path = entry.path().string();
+			std::printf("Loading resource: [%s]\n", path.c_str());
+			LoadResource(path);
 		}
 	}
 }

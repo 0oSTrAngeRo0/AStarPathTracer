@@ -12,6 +12,7 @@ private:
 	static entt::entity CreateCube(entt::registry& registry);
 
 	// Systems
+	static void UpdateMaterialsRegistry(entt::registry& registry);
 	static void UpdateLinearVelocity(entt::registry & registry, float delta_time);
 	static void UpdateLocalTransform(entt::registry & registry);
 	static void UpdateOrbitCamera(entt::registry& registry);

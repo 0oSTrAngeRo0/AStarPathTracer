@@ -8,6 +8,7 @@
 #include "config.h"
 #include "Engine/InputSystem.h"
 #include "Engine/ShaderHostBuffer.h"
+#include "Engine/HostShaderManager.h"
 #include "Engine/Resources/ResourcesManager.h"
 
 entt::registry CreateWorld(const InputState& input) {

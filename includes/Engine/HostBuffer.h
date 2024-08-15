@@ -3,61 +3,51 @@
 #include <vector>
 #include <memory>
 #include "Engine/Guid.h"
+#include "Utilities/MacroUtilities.h"
+#include <span>
 
-
-// Todo 限定为值类型
-template <typename T>
-class HostBuffer {
-protected:
-	std::vector<T> data;
-	bool is_dirty;
-	std::unordered_map<Uuid, size_t> handlers;
+class MemoryBlock {
 public:
-	const T& GetData(const Uuid& handle) const;
-	inline bool IsDirty() const { return is_dirty; }
-	inline const std::vector<T>& GetHostBuffer() const { return data; }
-	inline const size_t GetIndex(const Uuid& handle) const;
-
-	const Uuid CreateData();
-	void SetData(const Uuid& handle, const T& data);
-	void ReleaseHandle(const Uuid& handle);
+	template <typename T> inline T Get(size_t index) const {
+		auto& vector = Reinterpret<T>();
+		ASTAR_ASSERT(vector.size() >= index);
+		return vector[index];
+	}
+	//template <typename T> inline T GetByOffset(size_t offset) const {
+	//	using TData = std::decay_t<T>;
+	//	ASTAR_ASSERT(size >= sizeof(TData) + offset);
+	//	return *(((TData*)((std::byte*)data + offset)));
+	//}
+	template <typename T> inline size_t EmplaceBack(const T value) {
+		size_t start = Size();
+		auto& vector = Reinterpret<T>();
+		vector.emplace_back(value);
+		return start;
+	}
+	inline size_t Size() const { return data.size(); }
+	template <typename T> inline const std::vector<T>& GetData() const {
+		return Reinterpret<T>();
+	}
+protected:
+	std::vector<std::byte> data;
+	template <typename T> inline const std::vector<T>& Reinterpret() const {
+		using TData = std::decay_t<T>;
+		if constexpr (std::is_same_v<TData, std::byte>) {
+			return data;
+		}
+		else {
+			ASTAR_ASSERT(Size() % sizeof(TData) == 0);
+			return reinterpret_cast<const std::vector<TData>&>(data);
+		}
+	}
+	template <typename T> inline std::vector<T>& Reinterpret() {
+		using TData = std::decay_t<T>;
+		if constexpr (std::is_same_v<TData, std::byte>) {
+			return data;
+		}
+		else {
+			ASTAR_ASSERT(Size() % sizeof(TData) == 0);
+			return reinterpret_cast<std::vector<TData>&>(data);
+		}
+	}
 };
-
-template<typename T>
-inline const T& HostBuffer<T>::GetData(const Uuid& handle) const {
-	if (!handlers.contains(handle)) {
-		throw std::runtime_error("Invalid handle: [" + handle.str() + "]");
-	}
-	return data[handlers.at(handle)];
-}
-
-template<typename T>
-inline const size_t HostBuffer<T>::GetIndex(const Uuid& handle) const {
-	if (!handlers.contains(handle)) {
-		throw std::runtime_error("Invalid handle: [" + handle.str() + "]");
-	}
-	return handlers.at(handle);
-}
-
-template<typename T>
-inline const Uuid HostBuffer<T>::CreateData() {
-	data.emplace_back();
-	is_dirty = true;
-	Uuid handle = xg::newGuid();
-	handlers.emplace(handle, data.size() - 1);
-	return handle;
-}
-
-template<typename T>
-inline void HostBuffer<T>::SetData(const Uuid& handle, const T& data) {
-	if (!handlers.contains(handle)) {
-		throw std::runtime_error("Invalid handle: [" + handle.str() + "]");
-	}
-	this->data[handlers.at(handle)] = data;
-	is_dirty = true;
-}
-
-template<typename T>
-inline void HostBuffer<T>::ReleaseHandle(const Uuid& handle) {
-	throw std::runtime_error("Unimplemented method");
-}

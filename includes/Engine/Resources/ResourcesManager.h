@@ -11,6 +11,11 @@ public:
 	ResourceBase& LoadResource(const std::string& path);
 	ResourceBase& GetResource(const Uuid& id);
 	void SaveResource(const Uuid& uuid);
+	void IterateResources(std::function<void(const std::string&, const ResourceBase&)> callback) {
+		for (const auto& pair : resources) {
+			callback(pair.second.path, *pair.second.data);
+		}
+	}
 	template <typename TData> ResourceBase& CreateNewResource(const std::string& path) {
 		std::unique_ptr<ResourceBase> resource = std::make_unique<Resource<TData>>();
 		Uuid uuid = resource->uuid;

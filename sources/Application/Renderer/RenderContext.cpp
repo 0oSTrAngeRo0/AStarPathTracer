@@ -6,6 +6,7 @@
 #include "Core/Mesh.h"
 #include "acceleration-structure.h"
 #include <tuple>
+#include "Engine/HostShaderManager.h"
 #include "Engine/ShaderHostBuffer.h"
 
 
@@ -42,18 +43,18 @@ void RenderContext::UploadMeshes(const DeviceContext& context, entt::registry& r
 }
 
 void RenderContext::UploadMaterials(const DeviceContext& context, entt::registry& registry) {
+	const auto& host_shaders = registry.ctx().get<const HostShaderManager&>();
 	auto view = registry.view<const LocalTransform, const MeshComponent, const MaterialComponent>();
+
 	std::vector<Uuid> used_materials;
 	view.each([&used_materials](const LocalTransform& transform, const MeshComponent& mesh, const MaterialComponent& material) {
 		used_materials.emplace_back(material.resource_id);
 	});
-	material_pool.EnsureMaterials(used_materials);
 
-	const auto& host_shaders = registry.ctx().get<const HostShaderManager&>();
-	std::vector<std::tuple<const Uuid, const std::vector<std::byte>, const bool>> data;
+	std::vector<std::tuple<const Uuid, const std::vector<std::byte>, const bool, const size_t>> data;
 	for (const auto& shader_wrapper : host_shaders.GetAllShaders()) {
 		const auto& shader = shader_wrapper.get();
-		data.emplace_back(std::make_tuple(shader.GetId(), shader.GetData(), shader.IsDirty()));
+		data.emplace_back(std::make_tuple(shader.GetId(), shader.GetData(), shader.IsDirty(), shader.GetStride()));
 	}
 	material_pool.EnsureBuffers(context, data);
 }

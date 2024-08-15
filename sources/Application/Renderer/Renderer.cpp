@@ -14,9 +14,10 @@
 #include "math-utils.h"
 #include "acceleration-structure.h"
 #include "Application/Renderer/RenderContext.h"
+#include "Engine/Resources/ResourcesManager.h"
+#include <Engine/Resources/ResourceData.h>
 
-Renderer::Renderer(const DeviceContext& context, const RenderContext& render)
-{
+Renderer::Renderer(const DeviceContext& context, const RenderContext& render) {
 	swapchain = std::make_unique<Swapchain>(context);
 	rt_image = std::make_unique<Image>(context, vk::ImageCreateInfo(
 		{}, vk::ImageType::e2D, context.GetSurfaceFormat().format,
@@ -205,31 +206,48 @@ void Renderer::CreateRayTracingPipelineLayout(const DeviceContext& context) {
 }
 
 void Renderer::CreateRayTracingPipeline(const DeviceContext& context) {
-	std::vector<uint32_t> ray_gen_shader_code = asset::LoadBinaryFile<uint32_t>(R"(D:\C++\Projects\PathTracer\shaders\sample.rgen.spv)");
-	std::vector<uint32_t> miss_shader_code = asset::LoadBinaryFile<uint32_t>(R"(D:\C++\Projects\PathTracer\shaders\sample.rmiss.spv)");
-	std::vector<uint32_t> closest_hit_shader_code = asset::LoadBinaryFile<uint32_t>(R"(D:\C++\Projects\PathTracer\shaders\sample.rchit.spv)");
+	std::vector<std::reference_wrapper<const Resource<ShaderResourceData>>> shaders;
+	ResourcesManager::GetInstance().IterateResources([&shaders](const std::string& path, const ResourceBase& resource) {
+		if (resource.GetResourceType() != Resource<ShaderResourceData>::GetResourceTypeStatic()) return;
+		shaders.emplace_back(std::ref(static_cast<const Resource<ShaderResourceData>&>(resource)));
+	});
+	auto comparer = [](const vk::ShaderStageFlagBits stage) -> uint32_t {
+		if (stage == vk::ShaderStageFlagBits::eRaygenKHR) return 1;
+		else if (stage == vk::ShaderStageFlagBits::eClosestHitKHR) return 3;
+		else if (stage == vk::ShaderStageFlagBits::eMissKHR) return 2;
+		return 0;
+		};
+	std::sort(shaders.begin(), shaders.end(), [&comparer](const auto& a, const auto& b) {
+		return comparer(a.get().resource_data.shader_stage) < comparer(b.get().resource_data.shader_stage);
+		});
+	std::vector<vk::PipelineShaderStageCreateInfo> stages;
+	std::vector<vk::RayTracingShaderGroupCreateInfoKHR> groups;
+	for (size_t i = 0, end = shaders.size(); i < end; i++) {
+		const auto& shader_resource = shaders[i];
+		const auto& shader = shader_resource.get().resource_data;
+		std::vector<uint32_t> compiled_code = asset::LoadBinaryFile<uint32_t>(shader.compiled_code_path.c_str());
+		vk::ShaderModule module = context.GetDevice().createShaderModule(vk::ShaderModuleCreateInfo({}, compiled_code));
 
-	vk::ShaderModule ray_gen_shader = context.GetDevice().createShaderModule(vk::ShaderModuleCreateInfo({}, ray_gen_shader_code));
-	vk::ShaderModule miss_shader = context.GetDevice().createShaderModule(vk::ShaderModuleCreateInfo({}, miss_shader_code));
-	vk::ShaderModule closest_hit_shader = context.GetDevice().createShaderModule(vk::ShaderModuleCreateInfo({}, closest_hit_shader_code));
+		// emplace stage
+		stages.emplace_back(vk::PipelineShaderStageCreateInfo({}, shader.shader_stage, module, shader.entry_function.c_str()));
 
+		// emplace group
+		if (shader.shader_stage == vk::ShaderStageFlagBits::eClosestHitKHR ||
+			shader.shader_stage == vk::ShaderStageFlagBits::eAnyHitKHR || 
+			shader.shader_stage == vk::ShaderStageFlagBits::eIntersectionKHR) {
+			groups.emplace_back(vk::RayTracingShaderGroupCreateInfoKHR(vk::RayTracingShaderGroupTypeKHR::eTrianglesHitGroup, vk::ShaderUnusedKHR, i));
+		}
+		else {
+			groups.emplace_back(vk::RayTracingShaderGroupCreateInfoKHR(vk::RayTracingShaderGroupTypeKHR::eGeneral, i));
+		}
+	}
 
-	std::vector<vk::PipelineShaderStageCreateInfo> stages = {
-		vk::PipelineShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eRaygenKHR, ray_gen_shader, "main"),
-		vk::PipelineShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eMissKHR, miss_shader, "main"),
-		vk::PipelineShaderStageCreateInfo({}, vk::ShaderStageFlagBits::eClosestHitKHR, closest_hit_shader, "main"),
-	};
-	std::vector<vk::RayTracingShaderGroupCreateInfoKHR> groups = {
-		vk::RayTracingShaderGroupCreateInfoKHR(vk::RayTracingShaderGroupTypeKHR::eGeneral, 0),
-		vk::RayTracingShaderGroupCreateInfoKHR(vk::RayTracingShaderGroupTypeKHR::eGeneral, 1),
-		vk::RayTracingShaderGroupCreateInfoKHR(vk::RayTracingShaderGroupTypeKHR::eTrianglesHitGroup, vk::ShaderUnusedKHR, 2),
-	};
 	vk::RayTracingPipelineCreateInfoKHR create_info({}, stages, groups, 1, {}, {}, {}, pipeline_layout);
 	ray_tracing_pipeline = context.GetDevice().createRayTracingPipelineKHR({}, {}, create_info).value;
 
-	context.GetDevice().destroyShaderModule(ray_gen_shader);
-	context.GetDevice().destroyShaderModule(miss_shader);
-	context.GetDevice().destroyShaderModule(closest_hit_shader);
+	for (const auto& stage : stages) {
+		context.GetDevice().destroyShaderModule(stage.module);
+	}
 }
 
 void Renderer::Destroy(const DeviceContext& context) {

@@ -10,8 +10,7 @@ class DeviceContext;
 class MaterialPool {
 public:
 	const Buffer& GetShaderBuffer(const Uuid& id);
-	void EnsureBuffers(const DeviceContext& context, const std::vector<std::tuple<const Uuid, const std::vector<std::byte>, const bool>>& buffers);
-	void EnsureMaterials(const std::vector<Uuid>& materials);
+	void EnsureBuffers(const DeviceContext& context, const std::vector<std::tuple<const Uuid, const std::vector<std::byte>, const bool, const size_t>>& buffers);
 	void Destroy(const DeviceContext& context);
 	inline const Buffer& GetMainBuffer() const { return main_buffer; }
 	

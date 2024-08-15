@@ -1,6 +1,7 @@
 #include "Application/Renderer/MaterialPool.h"
 #include <unordered_set>
 #include "Engine/Resources/ResourcesManager.h"
+#include "Engine/HostShaderManager.h"
 
 const Buffer& MaterialPool::GetShaderBuffer(const Uuid& id) {
 	if (!shader_buffers.contains(id)) {
@@ -9,7 +10,7 @@ const Buffer& MaterialPool::GetShaderBuffer(const Uuid& id) {
 	return shader_buffers.at(id);
 }
 
-void MaterialPool::EnsureBuffers(const DeviceContext& context, const std::vector<std::tuple<const Uuid, const std::vector<std::byte>, const bool>>& material_data) {
+void MaterialPool::EnsureBuffers(const DeviceContext& context, const std::vector<std::tuple<const Uuid, const std::vector<std::byte>, const bool, const size_t>>& material_data) {
 	bool is_dirty = false;
 	if (material_data.size() != shader_buffers.size()) {
 		is_dirty = true;
@@ -26,15 +27,17 @@ void MaterialPool::EnsureBuffers(const DeviceContext& context, const std::vector
 
 		// extract data
 		const Uuid& id = std::get<0>(data);
+		const size_t stride = std::get<3>(data);
 		auto bytes = std::get<1>(data);
 
 		used_materials.insert(id);
 
 		// resize buffer
 		Buffer buffer = shader_buffers[id];
-		if (Buffer::SetDataWithResize<std::byte>(context, buffer, bytes, 128, create_info, allocation_info)) {
+		if (Buffer::SetDataWithResize<std::byte>(context, buffer, bytes, stride * 64, create_info, allocation_info)) {
 			shader_buffers[id] = buffer;
 			is_dirty = true;
+			main_buffer.SetName(context, "Material Buffer" + id.str());
 		}
 	}
 
@@ -55,13 +58,14 @@ void MaterialPool::EnsureBuffers(const DeviceContext& context, const std::vector
 		materials.emplace_back(shader.second.GetDeviceAddress());
 	}
 	if (is_dirty) {
-		Buffer::SetDataWithResize<vk::DeviceAddress>(context, main_buffer, materials, 16, create_info, allocation_info);
-	}
-}
-
-void MaterialPool::EnsureMaterials(const std::vector<Uuid>& materials) {
-	for (const Uuid& id : materials) {
-		ResourcesManager::GetInstance().GetResource(id);
+		if (materials.size() == 0) {
+			main_buffer.Destroy(context);
+		}
+		else {
+			if (Buffer::SetDataWithResize<vk::DeviceAddress>(context, main_buffer, materials, 16, create_info, allocation_info)) {
+				main_buffer.SetName(context, "Main Material Buffer");
+			}
+		}
 	}
 }
 

@@ -24,6 +24,7 @@ void Buffer::Destroy(const DeviceContext& context) {
 }
 
 void Buffer::SetName(const DeviceContext& context, const std::string& name) {
+	if (!buffer) return;
 	context.GetDevice().setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT(vk::ObjectType::eBuffer, (uint64_t)(VkBuffer)buffer, name.c_str()));
 	context.GetAllocator().setAllocationName(allocation, name.c_str());
 }

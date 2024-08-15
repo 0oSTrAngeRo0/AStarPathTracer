@@ -4,8 +4,18 @@
 #include "Engine/Components/Camera.h"
 #include "Engine/Components/Render.h"
 #include "Application/Renderer/RenderContext.h"
+#include "Engine/Resources/ResourcesManager.h"
+#include "Engine/ShaderHostBuffer.h"
+#include "Engine/HostShaderManager.h"
 
 #pragma region Systems
+
+void World::UpdateMaterialsRegistry(entt::registry& registry) {
+	auto view = registry.view<const MaterialComponent>();
+	view.each([&](const MaterialComponent& material) {
+		const auto& [shader_id, index] = HostShaderManager::GetInstance().RegisterMaterial(material.resource_id);
+	});
+}
 
 void World::UpdateLinearVelocity(entt::registry& registry, float delta_time) {
 	auto view = registry.view<LocalLinearVelocity, LocalPosition>();
@@ -103,6 +113,7 @@ void World::CreateDefault(entt::registry& registry) {
 #pragma endregion
 
 void World::Update(entt::registry& registry, float delta_time) {
+	UpdateMaterialsRegistry(registry);
 	UpdateOrbitCamera(registry);
 	UpdateLinearVelocity(registry, delta_time);
 	UpdateLocalTransform(registry);

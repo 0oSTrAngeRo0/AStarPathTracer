@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include "Engine/Resources/Resources.h"
 #include "Engine/Resources/ResourceRegistry.h"
+#include <vulkan/vulkan.hpp>
 
 #define JSON_SERIALIZER(Type, Generic, ...)  \
 namespace nlohmann { \
@@ -14,6 +15,11 @@ namespace nlohmann { \
 			NLOHMANN_JSON_EXPAND(NLOHMANN_JSON_PASTE(NLOHMANN_JSON_FROM, __VA_ARGS__)) \
 		} \
 	}; \
+}
+
+#define JSON_ENUM_SERIALIZER(ENUM_TYPE, ...) \
+namespace nlohmann { \
+	NLOHMANN_JSON_SERIALIZE_ENUM(ENUM_TYPE, __VA_ARGS__) \
 }
 
 JSON_SERIALIZER(glm::vec4, <>, x, y, z, w);

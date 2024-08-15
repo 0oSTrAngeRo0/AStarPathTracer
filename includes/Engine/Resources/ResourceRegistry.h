@@ -20,10 +20,12 @@ namespace nlohmann { \
 }
 
 
-#define REGISTER_RESOURCE_DESERIALIZER(type) \
+#define REGISTER_RESOURCE_DESERIALIZER(type, after_serialized) \
 namespace nlohmann { \
 	static bool ASTAR_UNIQUE_VARIABLE_NAME(resource_deserialize_register_) = (ResourceDeserializerRegistry::Register(Resource<type>::GetResourceTypeStatic(), \
 		[](const nlohmann::json& j) { \
-			return std::make_unique<Resource<type>>(j.template get<Resource<type>>()); \
+			auto ptr = std::make_unique<Resource<type>>(j.template get<Resource<type>>()); \
+			after_serialized(*ptr); \
+			return ptr; \
 		}), true); \
 } 
