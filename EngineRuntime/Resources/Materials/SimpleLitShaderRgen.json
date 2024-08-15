@@ -1,0 +1,12 @@
+{
+  "references": [],
+  "resource_data": {
+    "source_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/sample.rgen",
+    "compiled_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/sample.rgen.spv",
+    "shader_stage": "RaygenKHR",
+    "instance_stride": 0,
+    "entry_function": "main"
+  },
+  "resource_type": "Shader",
+  "uuid": "11dead56-099f-4a5c-84ac-312285165543"
+}

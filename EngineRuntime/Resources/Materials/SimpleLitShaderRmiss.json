@@ -1,0 +1,12 @@
+{
+  "references": [],
+  "resource_data": {
+    "source_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/sample.rmiss",
+    "compiled_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/sample.rmiss.spv",
+    "shader_stage": "MissKHR",
+    "instance_stride": 0,
+    "entry_function": "main"
+  },
+  "resource_type": "Shader",
+  "uuid": "e9324dda-fadb-47d9-8a5a-883703b114d3"
+}
