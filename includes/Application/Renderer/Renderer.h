@@ -6,7 +6,7 @@
 #include "Application/GlfwWindow.h"
 #include <vector>
 #include "Core/Mesh.h"
-#include "Core/RayTracingShaderBindingTable.h"
+#include "Core/RayTracingShaders.h"
 #include "Core/Image.h"
 #include "entt/entt.hpp"
 #include "Core/Swapchain.h"
@@ -17,12 +17,12 @@ class Renderer {
 private:
 	std::unique_ptr<Swapchain> swapchain;
 	vk::PipelineLayout pipeline_layout;
-	vk::Pipeline ray_tracing_pipeline;
+	vk::Pipeline pipeline;
 	vk::CommandPool command_pool;
 	vk::Semaphore image_available_semaphore;
 	vk::Semaphore render_finished_semaphore;
 	vk::Fence in_flight_fence;
-	std::unique_ptr<RayTracingShaderBindingTable> shader_binding_table;
+	std::unique_ptr<RayTracingShaders::BindingTable> shader_binding_table;
 	vk::DescriptorPool descriptor_pool;
 	vk::DescriptorSetLayout descriptor_set_layout;
 	vk::DescriptorSet descriptor_set;
@@ -37,7 +37,7 @@ public:
 private:
 	void CreateRayTracingPipelineLayout(const DeviceContext& context);
 	void CreateSyncObjects(const DeviceContext& context);
-	void CreateRayTracingPipeline(const DeviceContext& context);
+	void CreatePipelineAndBindingTable(const DeviceContext& context);
 	void UploadDescriptorSet(const DeviceContext& context, const RenderContext& render);
 	vk::CommandBuffer CreateFrameCommandBuffer(const DeviceContext& context, const vk::CommandPool pool, const uint32_t index);
 

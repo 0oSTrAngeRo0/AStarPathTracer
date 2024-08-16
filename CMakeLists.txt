@@ -50,7 +50,7 @@ add_executable(${PROJECT_NAME}
     sources/Application/Renderer/MeshPool.cpp
     sources/Application/Renderer/MaterialPool.cpp
 
-    sources/Core/RayTracingShaderBindingTable.cpp
+    "sources/Core/RayTracingShaders.cpp"
     sources/Core/EngineDebugger.cpp
     sources/Core/Buffer.cpp
     sources/Core/TemporaryCommandBufferPool.cpp
