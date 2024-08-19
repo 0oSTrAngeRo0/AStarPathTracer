@@ -1,3 +1,5 @@
+#pragma once
+
 #include <nlohmann/json.hpp>
 #include <glm/glm.hpp>
 #include "Engine/Resources/Resources.h"
@@ -22,8 +24,22 @@ namespace nlohmann { \
 	NLOHMANN_JSON_SERIALIZE_ENUM(ENUM_TYPE, __VA_ARGS__) \
 }
 
+JSON_SERIALIZER(glm::vec3, <>, x, y, z);
 JSON_SERIALIZER(glm::vec4, <>, x, y, z, w);
-JSON_SERIALIZER(Resource<TData>, <typename TData>, uuid, references, resource_data);
+namespace nlohmann {
+	template <typename TData> struct adl_serializer<Resource<TData>> {
+		static inline void to_json(json& nlohmann_json_j, const Resource<TData>& nlohmann_json_t) {
+			nlohmann_json_j["uuid"] = nlohmann_json_t.uuid; 
+			nlohmann_json_j["references"] = nlohmann_json_t.references; 
+			nlohmann_json_j["resource_data"] = nlohmann_json_t.resource_data;
+			nlohmann_json_j["resource_type"] = Resource<TData>::GetResourceTypeStatic();
+		} static inline void from_json(const json& nlohmann_json_j, Resource<TData>& nlohmann_json_t) {
+			nlohmann_json_j.at("uuid").get_to(nlohmann_json_t.uuid); 
+			nlohmann_json_j.at("references").get_to(nlohmann_json_t.references);
+			nlohmann_json_j.at("resource_data").get_to(nlohmann_json_t.resource_data);
+		}
+	};
+};
 
 namespace nlohmann {
 	template <>
@@ -48,13 +64,11 @@ namespace nlohmann {
 	struct adl_serializer<ResourceBase> {
 		static void to_json(json& j, const ResourceBase& obj) {
 			if (!obj.uuid.isValid()) {
-				j = nullptr;
-				return;
+				throw std::runtime_error("Invalid uuid when serialize resource");
 			}
 			auto function = ResourceSerializeRegistry::Get(obj.GetResourceType());
 			if (!function.has_value()) {
-				j = nullptr;
-				return;
+				throw std::runtime_error("Invalid resource type when serialize resource");
 			}
 			function.value()(j, obj);
 		}

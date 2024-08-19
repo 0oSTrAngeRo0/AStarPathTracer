@@ -10,5 +10,9 @@ std::string ResourceBase::Serialize(const ResourceBase& data) {
 
 std::unique_ptr<ResourceBase> ResourceBase::Deserialize(const std::string& str) {
 	nlohmann::json j = nlohmann::json::parse(str);
-	return nlohmann::adl_serializer<ResourceBase>::from_json(j).value();
+	auto result = nlohmann::adl_serializer<ResourceBase>::from_json(j);
+	if (!result.has_value()) {
+		throw std::runtime_error("Failed to deserialize: [" + str + "]");
+	}
+	return std::move(result.value());
 }

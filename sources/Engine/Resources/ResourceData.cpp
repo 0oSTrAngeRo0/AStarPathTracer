@@ -33,13 +33,3 @@ REGISTER_RESOURCE_DESERIALIZER(ShaderResourceData, \
 	HostShaderManager::GetInstance().RegisterShader(resource.uuid, resource.resource_data.instance_stride); \
 });
 
-JSON_SERIALIZER(MaterialResourceData<TMatData>, <typename TMatData>, material_data, shader_id);
-
-template <> const std::string& Resource<MaterialResourceData<SimpleLitMaterialData>>::GetResourceTypeStatic() {
-	static std::string type = "MaterialSimpleLit";
-	return type;
-}
-JSON_SERIALIZER(SimpleLitMaterialData, <>, color);
-REGISTER_RESOURCE_SERIALIZER(MaterialResourceData<SimpleLitMaterialData>);
-REGISTER_RESOURCE_DESERIALIZER(MaterialResourceData<SimpleLitMaterialData>, ASTAR_DO_NOTHING);
-REGISTER_GET_BASE_MATERIAL_DATA(MaterialResourceData<SimpleLitMaterialData>);

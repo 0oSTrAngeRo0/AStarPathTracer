@@ -13,9 +13,9 @@ class ResourceBase {
 public:
 	Uuid uuid;
 	std::vector<Uuid> references;
+	ResourceBase() : uuid(xg::newGuid()) {}
 
 	virtual const std::string& GetResourceType() const = 0;
-
 	static std::string Serialize(const ResourceBase& data);
 	static std::unique_ptr<ResourceBase> Deserialize(const std::string& str);
 	virtual ~ResourceBase() = default;

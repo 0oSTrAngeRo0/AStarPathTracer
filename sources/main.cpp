@@ -56,6 +56,7 @@ int main() {
 	//try
 	//{
 		ApplicationMain();
+		//EditorMain();
 	//}
 	//catch (const std::exception& e)
 	//{

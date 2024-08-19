@@ -17,18 +17,5 @@ template <>
 void ResourceInspector<ObjResourceData>::Draw() {
 	ImGui::LabelText("Source File Path", "%s", data.resource_data.path.c_str());
 }
-
-template <>
-void ResourceInspector<MaterialResourceData<SimpleLitMaterialData>>::Draw() {
-	ImGuiColorEditFlags flags =
-		ImGuiColorEditFlags_AlphaBar |
-		ImGuiColorEditFlags_Float |
-		ImGuiColorEditFlags_PickerHueWheel |
-		ImGuiColorEditFlags_DisplayRGB;
-	is_dirty |= ImGui::ColorEdit4("BaseColor", glm::value_ptr(data.resource_data.material_data.color), flags);
-}
-
 REGISTER_INSPECTOR_CREATOR(ObjResourceData);
-REGISTER_INSPECTOR_CREATOR(MaterialResourceData<SimpleLitMaterialData>);
 
-REGISTER_RESOURCE_CREATE_MENU({ "Material" }, MaterialResourceData<SimpleLitMaterialData>);

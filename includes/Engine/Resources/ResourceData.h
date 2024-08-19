@@ -7,6 +7,7 @@
 #include "Engine/ShaderHostBuffer.h"
 #include "Engine/StaticRegistry.h"
 #include "Engine/Resources/Resources.h"
+#include "Engine/Resources/JsonSerializer.h"
 
 struct ObjResourceData {
 public:
@@ -47,6 +48,5 @@ public:
 	}
 };
 
-struct SimpleLitMaterialData {
-	glm::vec4 color;
-};
+JSON_SERIALIZER(MaterialResourceData<TMatData>, <typename TMatData>, material_data, shader_id);
+

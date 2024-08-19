@@ -21,6 +21,7 @@ vk::TransformMatrixKHR GetTransformMatrixKHR(const glm::mat4 transform) {
 }
 
 RenderContext::RenderContext(const DeviceContext& context) {
+	constants_data.sample_per_pixel = 0;
 	// Constants Buffer
 	{
 		constants_buffer = Buffer(
@@ -120,6 +121,7 @@ void RenderContext::UpdatePushConstants(const DeviceContext& context, entt::regi
 }
 
 void RenderContext::Update(const DeviceContext& context, entt::registry& registry) {
+	constants_data.sample_per_pixel++;
 	UploadMaterials(context, registry);
 	UploadMeshes(context, registry);
 	UpdatePushConstants(context, registry);

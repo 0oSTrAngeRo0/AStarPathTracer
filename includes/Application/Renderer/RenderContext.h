@@ -43,7 +43,9 @@ private:
 	struct ConstantsData {
 		glm::mat4 view_inverse;
 		glm::mat4 projection_inverse;
+		uint32_t sample_per_pixel;
 	};
+	ConstantsData constants_data;
 
 	void UploadMeshes(const DeviceContext& context, entt::registry& registry);
 	void UploadMaterials(const DeviceContext& context, entt::registry& registry);
