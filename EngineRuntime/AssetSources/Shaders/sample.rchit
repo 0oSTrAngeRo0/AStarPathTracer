@@ -1,0 +1,34 @@
+#version 460
+#extension GL_GOOGLE_include_directive : enable
+
+#include "Common.glsl"
+#include "Math.glsl"
+#include "RayClosestHitCommon.glsl"
+
+struct SimpleLitMaterial {
+	vec4 color;
+};
+
+RAY_CLOSEST_HIT_DESCRIPTORS();
+RAY_CLOSEST_HIT_MATERIAL_DESCRIPTOR(SimpleLitMaterial);
+RAY_CLOSEST_HIT_RAY_TRACING_VARIABLES();
+
+void main() {
+	RAY_CLOSEST_HIT_RAY_TRACING_FETCH_DATA(instance, barycentric, index, vertex, SimpleLitMaterial, material);
+
+	payload.position = vertex.position;
+	payload.normal = vertex.normal;
+	payload.is_stopped = false;
+	payload.emittence = vec3(0);
+
+	// throughput = brdf * cos(n, omega_input) / pdf(omega_input)
+	// brdf of lamertian: brdf = albedo / PI
+	// sampling of omege_input is uniform sampling, pdf(omega_input) = 1 / (2 * PI)
+	// further reduction, throughput = 2 * albedo * cos;
+	vec3 ray_direction = HemiSphereSampleUniform(payload.random_seed);
+	ray_direction = mat3x3(vertex.tangent, vertex.bitangent, vertex.normal) * ray_direction;
+	float cosine_theta = dot(vertex.normal, ray_direction);
+	vec3 throughput = 2 * cosine_theta * material.color.xyz; 
+	payload.throughput = vec3(1);
+	payload.next_ray_direction = ray_direction;
+}

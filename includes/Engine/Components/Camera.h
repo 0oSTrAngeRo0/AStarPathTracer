@@ -25,5 +25,7 @@ struct OrbitCamera {
 	float phi;
 
 	OrbitCamera(entt::entity look_at, float distance, float theta, float phi) :
-		look_at(look_at), distance(distance), theta(theta), phi(phi){}
+		look_at(look_at), distance(distance), theta(theta), phi(phi) {}
 };
+
+struct CameraDirtyTag {};

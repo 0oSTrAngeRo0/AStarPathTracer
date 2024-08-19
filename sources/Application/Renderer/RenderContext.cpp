@@ -112,16 +112,20 @@ void RenderContext::RecreateInstances(const DeviceContext& context, entt::regist
 }
 
 void RenderContext::UpdatePushConstants(const DeviceContext& context, entt::registry& registry) {
-	ConstantsData data;
-	registry.view<const Camera>().each([&data](const Camera& camera) {
-		data.projection_inverse = glm::inverse(camera.projection);
-		data.view_inverse = glm::inverse(camera.view);
+	auto view = registry.view<const Camera>();
+	view.each([&constants_data = this->constants_data, &registry](entt::entity entity, const Camera& camera) {
+		if (registry.all_of<CameraDirtyTag>(entity)) {
+			constants_data.sample_per_pixel = 0;
+		}
+		constants_data.projection_inverse = glm::inverse(camera.projection);
+		constants_data.view_inverse = glm::inverse(camera.view);
 	});
-	constants_buffer.SetData<ConstantsData>(context, data);
+
+	constants_buffer.SetData<ConstantsData>(context, constants_data);
+	constants_data.sample_per_pixel++;
 }
 
 void RenderContext::Update(const DeviceContext& context, entt::registry& registry) {
-	constants_data.sample_per_pixel++;
 	UploadMaterials(context, registry);
 	UploadMeshes(context, registry);
 	UpdatePushConstants(context, registry);

@@ -1,0 +1,81 @@
+#version 460
+#extension GL_EXT_ray_tracing : enable
+#extension GL_GOOGLE_include_directive : enable
+#extension GL_EXT_debug_printf : enable
+
+#include "Common.glsl"
+#include "Math.glsl"
+
+#define RAY_TMIN 0.001
+#define RAY_TMAX 100.0
+#define RAY_MAX_DEPTH 10
+
+layout(location = 0) rayPayloadEXT HitPayload payload;
+layout(binding = 0, set = 0) uniform accelerationStructureEXT as;
+layout(binding = 1, set = 0, rgba32f) uniform image2D img;
+
+layout(binding = 7, set = 0) uniform Constants { ConstantsData constant; };
+
+void InitializePayload(inout HitPayload payload) {
+    vec2 pixel_sample = vec2(gl_LaunchIDEXT.xy) + vec2(Rnd(payload.random_seed), Rnd(payload.random_seed)); //将像素坐标从像素左下角移至像素中间
+    vec2 uv = pixel_sample / vec2(gl_LaunchSizeEXT.xy); // 归一化像素坐标
+    vec2 d = uv * 2.0 - 1.0;  // 将坐标原点移动至屏幕中心
+
+    vec4 ray_origin = constant.view_inverse * vec4(0, 0, 0, 1); // 相机的世界坐标
+    vec4 ray_target = constant.projection_inverse * vec4(d.x, d.y, 1, 1); // 像素点的世界坐标
+    vec4 ray_direction = constant.view_inverse * vec4(normalize(ray_target.xyz), 0); // 光线方向
+
+    uint random_seed = Tea(gl_LaunchIDEXT.y * gl_LaunchSizeEXT.x + gl_LaunchIDEXT.x, constant.samples_per_pixel);
+    
+    payload.next_ray_direction = ray_direction.xyz;
+    payload.random_seed = random_seed;
+    payload.position = ray_origin.xyz;
+    payload.is_stopped = false;
+    payload.normal = vec3(0);
+    payload.emittence = vec3(0);
+    payload.throughput = vec3(1);
+}
+
+void main() {
+    InitializePayload(payload);
+    vec3 throughput = vec3(1);
+    vec3 radiance = vec3(0);
+
+    uint ray_depth = 0;
+    bool is_stopped = false;
+    for(; ray_depth < RAY_MAX_DEPTH && !is_stopped; ray_depth++) {
+        vec3 ray_origin = payload.position.xyz + payload.normal.xyz * 0.01f;
+        vec3 ray_direction = payload.next_ray_direction.xyz;
+
+        traceRayEXT(
+            as, // acceleration structure
+            gl_RayFlagsOpaqueEXT, // ray flags
+            0xff, // cull mask
+            0,  // sbt record offset
+            0,  // sbt record stride
+            0,  // miss index
+            ray_origin,  // ray origin
+            RAY_TMIN,   // ray min range
+            ray_direction.xyz,  // ray direction
+            RAY_TMAX, // ray max range
+            0 // payload location
+        );
+
+        radiance += payload.emittence * throughput;
+        throughput *= payload.throughput;
+
+        if(payload.is_stopped) {
+            is_stopped = true;
+        }
+    }
+
+    vec3 old_radiance = vec3(0);
+    if(constant.samples_per_pixel != 0) {
+        old_radiance = imageLoad(img, ivec2(gl_LaunchIDEXT).xy).xyz;
+    }
+    if(ray_depth > 1) {
+        debugPrintfEXT("Pixel Coord: [(%u, %u)] Samples Per Pixel: [%u] Ray Depth:[%u]\n", gl_LaunchIDEXT.x, gl_LaunchIDEXT.y, constant.samples_per_pixel, ray_depth);
+    }
+    vec3 new_radiance = mix(old_radiance, radiance, 1 / (constant.samples_per_pixel + 1));
+    imageStore(img, ivec2(gl_LaunchIDEXT).xy, vec4(radiance.xyz, 1.0));
+}

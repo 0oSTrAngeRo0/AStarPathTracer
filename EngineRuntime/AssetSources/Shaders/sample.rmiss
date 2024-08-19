@@ -7,5 +7,7 @@
 layout(location = 0) rayPayloadInEXT HitPayload payload;
 
 void main() {
-  payload.color = vec4(vec3(0.3), 1.0);
+  payload.emittence = vec3(0);
+  payload.throughput = vec3(1);
+  payload.is_stopped = true;
 }

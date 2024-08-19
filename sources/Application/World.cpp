@@ -47,12 +47,15 @@ void World::UpdateLocalTransform(entt::registry& registry) {
 }
 
 void World::UpdateOrbitCamera(entt::registry& registry) {
+	registry.view<const OrbitCamera, const CameraDirtyTag>().each([&registry](entt::entity entity, const OrbitCamera& orbit) {
+		registry.remove<CameraDirtyTag>(entity);
+		});
 	const InputState& input = registry.ctx().get<const InputState&>();
 	if (input.GetMouseButton(InputState::MouseButton::eRight) == InputState::ActionState::eRelease) return;
 	glm::vec2 delta = input.GetMousePositionDelta();
 	float scrollY = input.GetMouseScroll().y;
 	auto view = registry.view<LocalPosition, LocalRotation, OrbitCamera>();
-	view.each([&delta, &scrollY, &registry](LocalPosition& position, LocalRotation& rotation, OrbitCamera& orbit) {
+	view.each([&delta, &scrollY, &registry](entt::entity entity, LocalPosition& position, LocalRotation& rotation, OrbitCamera& orbit) {
 		// Todo: fix filp on 90 degree
 		orbit.theta += delta.x;
 		orbit.phi += delta.y;
@@ -66,6 +69,8 @@ void World::UpdateOrbitCamera(entt::registry& registry) {
 		glm::mat4x4 matrix = glm::inverse(glm::lookAt(glm::vec3(x, y, z), look_at, glm::vec3(0, 1, 0)));
 		position.position = matrix[3];
 		rotation.rotation = glm::quat_cast(matrix);
+
+		registry.emplace_or_replace<CameraDirtyTag>(entity);
 		});
 }
 
@@ -104,9 +109,22 @@ entt::entity World::CreateCube(entt::registry& registry) {
 	return e;
 }
 
+entt::entity World::CreateLight(entt::registry& registry) {
+	entt::entity e = registry.create();
+	registry.emplace<LocalPosition>(e, glm::vec3(0, 2, 0));
+	registry.emplace<LocalRotation>(e, glm::quatLookAt(glm::vec3(0, 0, 1), glm::vec3(0, 1, 0)));
+	registry.emplace<LocalScale>(e, glm::vec3(1, 1, 1));
+	registry.emplace<LocalTransform>(e);
+
+	registry.emplace<MeshComponent>(e, Uuid("c98fb2af-8be5-437b-b096-bc44d71b656d"));
+	registry.emplace<MaterialComponent>(e, Uuid("99116883-fd22-4e1c-a6f2-d5ccc1b94a3d"));
+	return e;
+}
+
 void World::CreateDefault(entt::registry& registry) {
 	entt::entity camera = CreateCamera(registry);
 	entt::entity cube = CreateCube(registry);
+	entt::entity light = CreateLight(registry);
 	registry.emplace<OrbitCamera>(camera, cube, 3, 0, 0);
 }
 

@@ -10,6 +10,7 @@ private:
 	// World Creations
 	static entt::entity CreateCamera(entt::registry& registry);
 	static entt::entity CreateCube(entt::registry& registry);
+	static entt::entity CreateLight(entt::registry& registry);
 
 	// Systems
 	static void UpdateMaterialsRegistry(entt::registry& registry);
