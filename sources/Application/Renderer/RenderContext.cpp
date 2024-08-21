@@ -146,6 +146,13 @@ void RenderContext::Destory(const DeviceContext& context) {
 	output_image->Destroy(context);
 }
 
+void RenderContext::RecreateOutputImage(const DeviceContext& context, const vk::Extent2D extent) {
+	if (output_image) {
+		output_image->Destroy(context);
+	}
+	output_image = std::make_unique<OutputImage>(context, extent);
+}
+
 RenderContext::OutputImage::OutputImage(const DeviceContext& context, const vk::Extent2D extent) : 
 	image(context, vk::ImageCreateInfo({}, vk::ImageType::e2D, context.GetSurfaceFormat().format,
 	vk::Extent3D(extent, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
@@ -156,6 +163,8 @@ RenderContext::OutputImage::OutputImage(const DeviceContext& context, const vk::
 		vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA),
 		vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)
 	));
+
+	this->extent = extent;
 }
 
 void RenderContext::OutputImage::Destroy(const DeviceContext& context) {

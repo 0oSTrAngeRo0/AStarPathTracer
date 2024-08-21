@@ -1,11 +1,10 @@
 #include "Core/DeviceContext.h"
 #include "config.h"
-#include "Application/GlfwWindow.h"
+#include "Core/Window.h"
 #include "Application/Renderer/RenderContext.h"
 #include "Application/Renderer/Renderer.h"
-#include "Application/Renderer/RendererApplication.h"
 #include "Application/Renderer/RendererPipeline.h"
-
+#include "Application/Renderer/RendererApplication.h"
 
 RendererApplication::RendererApplication(std::unique_ptr<VulkanWindow> window) : window(std::move(window)) {
 	AppConfig config = AppConfig::CreateDefault();
@@ -13,10 +12,23 @@ RendererApplication::RendererApplication(std::unique_ptr<VulkanWindow> window) :
 	context = std::make_unique<DeviceContext>(*this->window);
 	render_context = std::make_unique<RenderContext>(*context);
 	renderer = std::make_unique<Renderer>(*context);
+	ResizeWindow();
 	pipeline = std::make_unique<RendererPipeline>(*context, *render_context, renderer->GetDescriptorPool());
 }
 
+void RendererApplication::ResizeWindow() {
+	vk::Extent2D extent = window->GetActualExtent();
+	renderer->ResizeSwapchain(*context, extent);
+	render_context->RecreateOutputImage(*context, extent);
+}
+
 void RendererApplication::Update(entt::registry& registry) {
+	renderer->WaitForNextFrame(*context);
+
+	if (window->IsResized()) {
+		ResizeWindow();
+	}
+
 	// prepare resources for rendering
 	render_context->Update(*context, registry); 
 	pipeline->UpdateDescriptorSet(*context, *render_context);
@@ -28,7 +40,7 @@ void RendererApplication::Update(entt::registry& registry) {
 	renderer->EndFrame(*context, frame_data);
 }
 
-bool RendererApplication::IsActive() {
+bool RendererApplication::IsActive() const {
 	return window->IsActive();
 }
 

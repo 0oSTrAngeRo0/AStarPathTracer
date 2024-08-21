@@ -10,17 +10,17 @@ uint32_t GlfwWindow::window_count = 0;
 std::unordered_map<GLFWwindow*, std::reference_wrapper<GlfwWindow>> GlfwWindow::window_inputs = {};
 
 std::unordered_map<int, InputState::Keyboard> GlfwWindow::glfw_key_map = {
-	{GLFW_KEY_A, InputState::Keyboard::eA},	{GLFW_KEY_B, InputState::Keyboard::eB},	
+	{GLFW_KEY_A, InputState::Keyboard::eA},	{GLFW_KEY_B, InputState::Keyboard::eB},
 	{GLFW_KEY_C, InputState::Keyboard::eC},	{GLFW_KEY_D, InputState::Keyboard::eD},
-	{GLFW_KEY_E, InputState::Keyboard::eE},	{GLFW_KEY_F, InputState::Keyboard::eF},	
+	{GLFW_KEY_E, InputState::Keyboard::eE},	{GLFW_KEY_F, InputState::Keyboard::eF},
 	{GLFW_KEY_G, InputState::Keyboard::eG},	{GLFW_KEY_H, InputState::Keyboard::eH},
-	{GLFW_KEY_I, InputState::Keyboard::eI},	{GLFW_KEY_J, InputState::Keyboard::eJ},	
+	{GLFW_KEY_I, InputState::Keyboard::eI},	{GLFW_KEY_J, InputState::Keyboard::eJ},
 	{GLFW_KEY_K, InputState::Keyboard::eK},	{GLFW_KEY_L, InputState::Keyboard::eL},
-	{GLFW_KEY_M, InputState::Keyboard::eM},	{GLFW_KEY_N, InputState::Keyboard::eN},	
+	{GLFW_KEY_M, InputState::Keyboard::eM},	{GLFW_KEY_N, InputState::Keyboard::eN},
 	{GLFW_KEY_O, InputState::Keyboard::eO},	{GLFW_KEY_P, InputState::Keyboard::eP},
-	{GLFW_KEY_Q, InputState::Keyboard::eQ},	{GLFW_KEY_R, InputState::Keyboard::eR},	
+	{GLFW_KEY_Q, InputState::Keyboard::eQ},	{GLFW_KEY_R, InputState::Keyboard::eR},
 	{GLFW_KEY_S, InputState::Keyboard::eS},	{GLFW_KEY_T, InputState::Keyboard::eT},
-	{GLFW_KEY_U, InputState::Keyboard::eU}, {GLFW_KEY_V, InputState::Keyboard::eV}, 
+	{GLFW_KEY_U, InputState::Keyboard::eU}, {GLFW_KEY_V, InputState::Keyboard::eV},
 	{GLFW_KEY_W, InputState::Keyboard::eW}, {GLFW_KEY_X, InputState::Keyboard::eX},
 	{GLFW_KEY_Y, InputState::Keyboard::eY}, {GLFW_KEY_Z, InputState::Keyboard::eZ}
 };
@@ -72,9 +72,15 @@ void GlfwWindow::MousePositionCallback(GLFWwindow* window, double xpos, double y
 
 void GlfwWindow::MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
 	//std::printf("MouseScrollCallback: xoffset:[%f], yoffset:[%f]\n", xoffset, yoffset);
-	auto input = GetInputState(window); 
+	auto input = GetInputState(window);
 	if (!input) return;
 	input.value()->SetMouseScroll(xoffset, yoffset);
+}
+
+void GlfwWindow::FrameBufferSizeCallback(GLFWwindow* window, int width, int height) {
+	if (!window_inputs.contains(window)) return;
+	auto& window_wrapper = window_inputs.at(window).get();
+	window_wrapper.is_resized = true;
 }
 
 std::optional<std::shared_ptr<InputState>> GlfwWindow::GetInputState(GLFWwindow* window) {
@@ -86,6 +92,9 @@ std::optional<std::shared_ptr<InputState>> GlfwWindow::GetInputState(GLFWwindow*
 }
 
 void GlfwWindow::PollEvents() {
+	for (auto& window : window_inputs) {
+		window.second.get().ResetEventState();
+	}
 	glfwPollEvents();
 }
 
@@ -106,6 +115,7 @@ GlfwWindow::GlfwWindow(const AppConfig& config) : name(config.window_title) {
 	glfwSetMouseButtonCallback(window, MouseButtonCallback);
 	glfwSetCursorPosCallback(window, MousePositionCallback);
 	glfwSetScrollCallback(window, MouseScrollCallback);
+	glfwSetFramebufferSizeCallback(window, FrameBufferSizeCallback);
 
 	window_inputs.insert(std::make_pair(window, std::ref(*this)));
 

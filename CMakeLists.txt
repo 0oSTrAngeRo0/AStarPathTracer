@@ -49,6 +49,8 @@ add_executable(${PROJECT_NAME}
     sources/Application/Renderer/RendererApplication.cpp
     sources/Application/Renderer/MeshPool.cpp
     sources/Application/Renderer/MaterialPool.cpp
+    sources/Application/Renderer/RendererPipeline.cpp
+    sources/Application/Materials.cpp
 
     sources/Core/RayTracingShaders.cpp
     sources/Core/EngineDebugger.cpp
@@ -74,7 +76,6 @@ add_executable(${PROJECT_NAME}
     sources/Engine/Resources/Resource.cpp
     sources/Engine/Resources/ResourcesManager.cpp
     sources/Engine/Resources/ResourceData.cpp
-    sources/Application/Materials.cpp
     sources/Engine/Resources/MeshLoader/ObjMeshLoader.cpp
     sources/Engine/Resources/MeshLoader/MikkTSpace/mikktspace.c
     sources/Engine/Resources/MeshLoader/MikkTSpace/MikkTSpaceTangentGenerator.cpp

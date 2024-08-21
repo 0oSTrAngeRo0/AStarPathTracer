@@ -18,9 +18,9 @@
 #include "Engine/Resources/ResourceData.h"
 #include "Engine/HostShaderManager.h"
 #include "Application/Renderer/RendererPipeline.h"
+#include "Core/Swapchain.h"
 
 Renderer::Renderer(const DeviceContext& context) {
-	swapchain = std::make_unique<Swapchain>(context);
 	CreateDescriptorPool(context);
 	command_pool = context.GetDevice().createCommandPool(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, context.GetGrpahicsQueueIndex()));
 	CreateSyncObjects(context);
@@ -44,14 +44,12 @@ void Renderer::CreateDescriptorPool(const DeviceContext& context) {
 	descriptor_pool = context.GetDevice().createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 1, pool_sizes));
 }
 
-const Renderer::FrameData Renderer::BeginFrame(const DeviceContext& context) {
+void Renderer::WaitForNextFrame(const DeviceContext& context) {
 	VK_CHECK(context.GetDevice().waitForFences({ in_flight_fence }, vk::True, UINT64_MAX));
+}
 
+const Renderer::FrameData Renderer::BeginFrame(const DeviceContext& context) {
 	auto next_image_result = context.GetDevice().acquireNextImageKHR(*swapchain, UINT64_MAX, image_available_semaphore);
-	if (next_image_result.result == vk::Result::eErrorOutOfDateKHR || next_image_result.result == vk::Result::eSuboptimalKHR || should_resize_swapchain) {
-		swapchain = std::make_unique<Swapchain>(context); // recreate swapchain
-		return Renderer::FrameData();
-	}
 	VK_CHECK(next_image_result.result);
 	
 	context.GetDevice().resetFences({ in_flight_fence });
@@ -82,6 +80,13 @@ void Renderer::EndFrame(const DeviceContext& context, const Renderer::FrameData&
 	VK_CHECK(context.GetPresentQueue().presentKHR(present_info));
 }
 
+void Renderer::ResizeSwapchain(const DeviceContext& context, const vk::Extent2D extent) {
+	if (swapchain) {
+		swapchain->Destroy(context);
+	}
+	swapchain = std::make_unique<Swapchain>(context, extent);
+}
+
 void Renderer::Destroy(const DeviceContext& context) {
 	vk::Device device = context.GetDevice();
 	device.destroySemaphore(image_available_semaphore);
@@ -90,3 +95,5 @@ void Renderer::Destroy(const DeviceContext& context) {
 	device.destroyCommandPool(command_pool);
 	swapchain->Destroy(context);
 }
+
+Renderer::~Renderer() = default;

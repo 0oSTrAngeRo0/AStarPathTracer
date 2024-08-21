@@ -24,6 +24,8 @@ public:
 	RenderContext(const DeviceContext& context);
 	void Update(const DeviceContext& context, entt::registry& registry);
 	void Destory(const DeviceContext& context);
+	void RecreateOutputImage(const DeviceContext& context, const vk::Extent2D extent);
+
 	inline const Buffer& GetVertexPositionBuffer() const { return mesh_pool.GetVertexPositionBuffer(); }
 	inline const Buffer& GetVertexOtherBuffer() const { return mesh_pool.GetVertexOtherBuffer(); }
 	inline const Buffer& GetIndexBuffer() const { return mesh_pool.GetIndexBuffer(); }

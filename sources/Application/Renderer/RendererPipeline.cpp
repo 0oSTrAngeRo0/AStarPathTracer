@@ -46,13 +46,6 @@ void RendererPipeline::CmdDraw(const vk::CommandBuffer cmd, const RenderContext&
 	vk::Extent2D extent = render.GetOutputImageExtent();
 
 	vk::ImageSubresourceRange subresource(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
-	vk::ImageCopy copy_region(
-		vk::ImageSubresourceLayers(vk::ImageAspectFlagBits::eColor, 0, 0, 1),
-		vk::Offset3D(0, 0, 0),
-		vk::ImageSubresourceLayers(vk::ImageAspectFlagBits::eColor, 0, 0, 1),
-		vk::Offset3D(0, 0, 0),
-		vk::Extent3D(extent, 1)
-	);
 
 	CommandUtilities::CmdInsertImageBarrier(cmd, vk::ImageMemoryBarrier(
 		vk::AccessFlagBits::eNone, vk::AccessFlagBits::eShaderWrite,

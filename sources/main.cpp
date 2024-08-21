@@ -55,15 +55,15 @@ void ApplicationMain() {
 
 int main() {
 
-	//try
-	//{
+	try
+	{
 		ApplicationMain();
 		//EditorMain();
-	//}
-	//catch (const std::exception& e)
-	//{
-	//	printf("%s\n", e.what());
-	//}
+	}
+	catch (const std::exception& e)
+	{
+		printf("%s\n", e.what());
+	}
 
 	return 0;
 }

@@ -85,7 +85,7 @@ vk::DescriptorPool EditorRenderContext::CreateDescriptorPool(const DeviceContext
 
 EditorRenderContext::EditorRenderContext(const DeviceContext& context) {
 	current_frame = 0;
-	swapchain = std::make_unique<Swapchain>(context);
+	swapchain = std::make_unique<Swapchain>(context, context.GetActuralExtent());
 	render_pass = CreateRenderPass(context, swapchain->GetFormat());
 	descriptor_pool = CreateDescriptorPool(context);
 	cmd_pool = context.GetDevice().createCommandPool(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, context.GetGrpahicsQueueIndex()));

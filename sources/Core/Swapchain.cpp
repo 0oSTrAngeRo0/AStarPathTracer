@@ -43,13 +43,13 @@ std::vector<vk::ImageView> Swapchain::CreateImageViews(const DeviceContext& cont
     return image_views;
 }
 
-Swapchain::Swapchain(const DeviceContext& context) {
+Swapchain::Swapchain(const DeviceContext& context, const vk::Extent2D extent) {
     vk::Device device = context.GetDevice();
     vk::SurfaceCapabilitiesKHR capabilities = context.GetSurfaceCapabilities();
 
     vk::SurfaceFormatKHR surface_format = context.GetSurfaceFormat();
     vk::PresentModeKHR present_mode = context.GetSurfacePresentModes();
-    vk::Extent2D surface_extent = GetSwapExtent(capabilities, context.GetActuralExtent());
+    vk::Extent2D surface_extent = GetSwapExtent(capabilities, extent);
     min_image_count = GetMinImageCount(capabilities);
     vk::SwapchainCreateInfoKHR create_info(
         {},
@@ -70,7 +70,7 @@ Swapchain::Swapchain(const DeviceContext& context) {
         {});
 
     swapchain = device.createSwapchainKHR(create_info);
-    extent = context.GetActuralExtent();
+    this->extent = extent;
     format = surface_format.format;
     images = device.getSwapchainImagesKHR(swapchain);
     count = images.size();

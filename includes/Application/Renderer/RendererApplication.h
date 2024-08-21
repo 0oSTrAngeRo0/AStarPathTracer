@@ -16,10 +16,12 @@ private:
 	std::unique_ptr<DeviceContext> context;
 	std::unique_ptr<RendererPipeline> pipeline;
 	std::unique_ptr<VulkanWindow> window;
+
+	void ResizeWindow();
 public:
 	RendererApplication(std::unique_ptr<VulkanWindow> window);
 	void Update(entt::registry& registry);
 	inline RenderContext& GetRenderContext() const { return *render_context; }
-	bool IsActive();
+	bool IsActive() const;
 	~RendererApplication();
 };
