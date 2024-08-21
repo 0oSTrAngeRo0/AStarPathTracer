@@ -19,6 +19,7 @@ add_subdirectory(plugins/glm)
 add_subdirectory(plugins/VulkanMemoryAllocator-Hpp)
 add_subdirectory(plugins/entt)
 add_subdirectory(plugins/crossguid)
+add_subdirectory(plugins/nsight-aftermath)
 
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 set(JSON_ImplicitConversions  OFF)
@@ -34,7 +35,6 @@ set(IMGUI_SOURCE
     ${IMGUI_DIR}/imgui_tables.cpp 
     ${IMGUI_DIR}/imgui_widgets.cpp
 )
-message("[AStar] ${IMGUI_DIR}")
 
 add_executable(${PROJECT_NAME}
     ${IMGUI_SOURCE}
@@ -83,7 +83,7 @@ add_executable(${PROJECT_NAME}
     sources/Engine/ShaderHostBuffer.cpp
 )
 
-target_include_directories(${PROJECT_NAME} PUBLIC ${Vulkan_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PRIVATE plugins/tiny-obj-loader-1.0.6)
 target_include_directories(${PROJECT_NAME} PRIVATE includes)
 target_include_directories(${PROJECT_NAME} PRIVATE sources)
@@ -91,8 +91,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${IMGUI_DIR} ${IMGUI_DIR}/bac
 
 target_link_libraries(${PROJECT_NAME} PRIVATE EnTT::EnTT)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw ${GLFW_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} PUBLIC Vulkan::Vulkan)
+target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
 target_link_libraries(${PROJECT_NAME} PRIVATE glm ${GLM_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanMemoryAllocator-Hpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE crossguid)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
+target_link_libraries(${PROJECT_NAME} PRIVATE NsightAftermath::NsightAftermath)
