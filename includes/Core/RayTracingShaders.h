@@ -58,7 +58,7 @@ public:
 
 	class PipelineData {
 	public:
-		PipelineData(const DeviceContext& context, std::vector<ShaderData>& shaders);
+		PipelineData(const DeviceContext& context, const std::vector<ShaderData>& shaders);
 		inline const std::vector<vk::PipelineShaderStageCreateInfo>& GetStages() const { return stages; }
 		inline const std::vector<vk::RayTracingShaderGroupCreateInfoKHR>& GetGroups() const { return groups; }
 		inline const ShaderCount& GetShaderCount() const { return count; }

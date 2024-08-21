@@ -1,6 +1,7 @@
 #include "Core/DeviceContext.h"
 #include "Core/Swapchain.h"
 #include "math-utils.h"
+#include "vulkan/vulkan_raii.hpp"
 
 vk::Extent2D Swapchain::GetSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities, const vk::Extent2D& preferred_extent) {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {

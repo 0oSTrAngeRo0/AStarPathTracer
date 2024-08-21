@@ -1,11 +1,11 @@
 #include "Core/VulkanUsages.h"
 
 #include "Application/GlfwWindow.h"
+#include "config.h"
+#include "Editor/EditorApplication.h"
 #include <vector>
 #include "Application/World.h"
 #include "Application/Renderer/RendererApplication.h"
-#include "Editor/EditorApplication.h"
-#include "config.h"
 #include "Engine/InputSystem.h"
 #include "Engine/ShaderHostBuffer.h"
 #include "Engine/HostShaderManager.h"
@@ -19,17 +19,22 @@ entt::registry CreateWorld(const InputState& input) {
 	return registry;
 }
 
-void EditorMain() {
-	InputState input;
-	GlfwWindow renderer_window(AppConfig::CreateDefault());
-	renderer_window.RegisterInputState(input);
-	RendererApplication renderer(static_cast<const VulkanWindow&>(renderer_window));
-	EditorApplication editor;
-	entt::registry registry = CreateWorld(input);
+std::unique_ptr<GlfwWindow> CreateWindow(std::shared_ptr<InputState> input) {
+	const auto& config = AppConfig::CreateDefault();
+	std::unique_ptr<GlfwWindow> window = std::make_unique<GlfwWindow>(config);
+	window->RegisterInputState(std::move(input));
+	return window;
+}
 
-	while (editor.IsActive() && !renderer_window.ShouldClose()) {
-		input.ClearFrameData();
-		glfwPollEvents();
+void EditorMain() {
+	std::shared_ptr<InputState> input = std::make_shared<InputState>();
+	RendererApplication renderer(std::move(CreateWindow(input)));
+	EditorApplication editor;
+	entt::registry registry = CreateWorld(*input);
+
+	while (editor.IsActive() && renderer.IsActive()) {
+		GlfwWindow::PollEvents();
+		input->ClearFrameData();
 		World::Update(registry, 0.01);
 		editor.Update(registry);
 		renderer.Update(registry);
@@ -37,15 +42,12 @@ void EditorMain() {
 }
 
 void ApplicationMain() {
-	InputState input;
-	GlfwWindow renderer_window(AppConfig::CreateDefault());
-	renderer_window.RegisterInputState(input);
-	RendererApplication renderer(static_cast<const VulkanWindow&>(renderer_window));
-	entt::registry registry = CreateWorld(input);
+	std::shared_ptr<InputState> input = std::make_shared<InputState>();
+	RendererApplication renderer(std::move(CreateWindow(input)));
+	entt::registry registry = CreateWorld(*input);
 
-	while (!renderer_window.ShouldClose()) {
-		input.ClearFrameData();
-		glfwPollEvents();
+	while (renderer.IsActive()) {
+		GlfwWindow::PollEvents();
 		World::Update(registry, 0.01);
 		renderer.Update(registry);
 	}

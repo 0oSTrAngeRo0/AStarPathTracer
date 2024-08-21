@@ -2,8 +2,8 @@
 #include "glm/glm.hpp"
 #include "Core/DeviceContext.h"
 #include "Core/Swapchain.h"
-#include "config.h"
 #include "Application/GlfwWindow.h"
+#include "config.h"
 #include "Editor/EditorRenderContext.h"
 #include "Editor/EditorUI.h"
 #include "Editor/EditorUIDrawer.h"
@@ -21,9 +21,8 @@ EditorApplication::EditorApplication() {
 
 void EditorApplication::Update(entt::registry& registry) {
 	if (!is_active) return;
-	is_active = !window->ShouldClose();
+	is_active = window->IsActive();
 
-	window->Update();
 	ui->UpdateBeginFrame();
 	ui_drawer->DrawUI(registry);
 	ui->UpdateRenderData();

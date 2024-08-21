@@ -84,9 +84,9 @@ RayTracingShaders::BindingTable::BindingTable(
 
 RayTracingShaders::PipelineData::PipelineData(
 	const DeviceContext& context, 
-	std::vector<ShaderData>& shaders
+	const std::vector<ShaderData>& shaders
 ) {
-	std::sort(shaders.begin(), shaders.end(), StageComparer);
+	assert(std::is_sorted(shaders.begin(), shaders.end(), StageComparer));
 
 	for (size_t i = 0, end = shaders.size(); i < end; i++) {
 		const auto& shader = shaders[i];

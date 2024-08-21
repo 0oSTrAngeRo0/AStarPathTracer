@@ -1,27 +1,41 @@
+#include "Core/DeviceContext.h"
 #include "config.h"
 #include "Application/GlfwWindow.h"
-#include "Core/DeviceContext.h"
 #include "Application/Renderer/RenderContext.h"
 #include "Application/Renderer/Renderer.h"
-
 #include "Application/Renderer/RendererApplication.h"
+#include "Application/Renderer/RendererPipeline.h"
 
 
-RendererApplication::RendererApplication(const VulkanWindow& window) {
+RendererApplication::RendererApplication(std::unique_ptr<VulkanWindow> window) : window(std::move(window)) {
 	AppConfig config = AppConfig::CreateDefault();
 	config.window_title = "Path Tracer Renderer";
-	context = std::make_unique<DeviceContext>(window);
+	context = std::make_unique<DeviceContext>(*this->window);
 	render_context = std::make_unique<RenderContext>(*context);
-	renderer = std::make_unique<Renderer>(*context, *render_context);
+	renderer = std::make_unique<Renderer>(*context);
+	pipeline = std::make_unique<RendererPipeline>(*context, *render_context, renderer->GetDescriptorPool());
 }
 
 void RendererApplication::Update(entt::registry& registry) {
-	render_context->Update(*context, registry);
-	renderer->Draw(*context, *render_context);
+	// prepare resources for rendering
+	render_context->Update(*context, registry); 
+	pipeline->UpdateDescriptorSet(*context, *render_context);
+
+	// draw frame
+	const auto& frame_data = renderer->BeginFrame(*context);
+	pipeline->CmdDraw(frame_data.command_buffer, *render_context);
+	pipeline->CmdCopyOutputTo(frame_data.command_buffer, *render_context, frame_data.image);
+	renderer->EndFrame(*context, frame_data);
+}
+
+bool RendererApplication::IsActive() {
+	return window->IsActive();
 }
 
 RendererApplication::~RendererApplication() {
+	context->GetDevice().waitIdle();
 	render_context->Destory(*context);
+	pipeline->Destroy(*context);
 	renderer->Destroy(*context);
 	context.reset();
 }

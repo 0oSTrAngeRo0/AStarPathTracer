@@ -8,6 +8,7 @@
 #include <tuple>
 #include "Engine/HostShaderManager.h"
 #include "Engine/ShaderHostBuffer.h"
+#include "Core/Image.h"
 
 
 vk::TransformMatrixKHR GetTransformMatrixKHR(const glm::mat4 transform) {
@@ -39,7 +40,7 @@ void RenderContext::UploadMeshes(const DeviceContext& context, entt::registry& r
 	std::vector<std::tuple<Uuid, Uuid>> used_meshes;
 	view.each([&used_meshes](const LocalTransform& transform, const MeshComponent& mesh, const MaterialComponent& material) {
 		used_meshes.emplace_back(std::make_tuple(mesh.device_id, mesh.resource_id));
-		});
+	});
 	mesh_pool.EnsureMeshes(context, used_meshes);
 }
 
@@ -81,7 +82,7 @@ void RenderContext::RecreateInstances(const DeviceContext& context, entt::regist
 		const Mesh& device_mesh = mesh_pool.GetMesh(mesh.device_id);
 		const auto& [shader_id, material_index] = host_shaders.GetMaterialRuntimeData(material.resource_id);
 		as_instances.emplace_back(vk::AccelerationStructureInstanceKHR(
-			GetTransformMatrixKHR(transform.matrix), index, 0xFF, 0,
+			GetTransformMatrixKHR(transform.matrix), index, 0xFF, 1,
 			vk::GeometryInstanceFlagBitsKHR::eTriangleCullDisable,
 			device_mesh.GetAsAddress()
 		));
@@ -141,4 +142,23 @@ void RenderContext::Destory(const DeviceContext& context) {
 	material_pool.Destroy(context);
 	instances_buffer.Destroy(context);
 	constants_buffer.Destroy(context);
+
+	output_image->Destroy(context);
+}
+
+RenderContext::OutputImage::OutputImage(const DeviceContext& context, const vk::Extent2D extent) : 
+	image(context, vk::ImageCreateInfo({}, vk::ImageType::e2D, context.GetSurfaceFormat().format,
+	vk::Extent3D(extent, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
+	vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferSrc)) {
+
+	image_view = context.GetDevice().createImageView(vk::ImageViewCreateInfo({}, image,
+		vk::ImageViewType::e2D, context.GetSurfaceFormat().format,
+		vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA),
+		vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)
+	));
+}
+
+void RenderContext::OutputImage::Destroy(const DeviceContext& context) {
+	context.GetDevice().destroyImageView(image_view);
+	image.Destroy(context);
 }
