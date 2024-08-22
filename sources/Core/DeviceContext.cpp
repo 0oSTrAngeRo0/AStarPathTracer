@@ -3,7 +3,7 @@
 #define APP_NAME "AStarPathTracer"
 #define ENGINE_NAME "AStarPathTracerEngine"
 
-#if ENABLE_DEBUG
+#if defined(ENABLE_DEBUG)
 #include "Core/EngineDebugger.h"
 #endif // ENABLE_DEBUG
 
@@ -17,8 +17,12 @@ vk::Instance CreateInstance(const VulkanWindow& window) {
 	std::vector<const char*> extensions = {
 		VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
 
-		#if ENABLE_DEBUG
-		VK_EXT_DEBUG_UTILS_EXTENSION_NAME
+		#if defined(ENABLE_DEBUG)
+		VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
+		#if defined(ENABLE_NSIGHT_AFTERMATH)
+		VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME,
+		VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME,
+		#endif
 		#endif // ENABLE_DEBUG
 	};
 	std::vector<const char*> window_extensions = window.GetVulkanExtensions();
@@ -26,7 +30,7 @@ vk::Instance CreateInstance(const VulkanWindow& window) {
 
 	std::vector<const char*> layers = {
 
-		#if ENABLE_DEBUG
+		#if defined(ENABLE_DEBUG)
 		"VK_LAYER_KHRONOS_validation"
 		#endif // ENABLE_DEBUG
 	};
@@ -167,7 +171,25 @@ vk::Device CreateDevice(const vk::PhysicalDevice gpu, const int graphics_queue_i
 		vk::PhysicalDeviceScalarBlockLayoutFeatures
 	>();
 
-	return gpu.createDevice(vk::DeviceCreateInfo({}, queue_create_infos, {}, extensions, 0, &features.get()));
+
+	vk::StructureChain<
+		vk::DeviceCreateInfo 
+		#if defined(ENABLE_NSIGHT_AFTERMATH)
+		, vk::DeviceDiagnosticsConfigCreateInfoNV
+		#endif // defined(ENABLE_NSIGHT_AFTERMATH)
+	> device_create_info_chain(
+		vk::DeviceCreateInfo({}, queue_create_infos, {}, extensions, 0, &features.get())
+		#if defined(ENABLE_NSIGHT_AFTERMATH)
+		, vk::DeviceDiagnosticsConfigCreateInfoNV(
+			  vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableAutomaticCheckpoints
+			| vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableResourceTracking
+			| vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderDebugInfo
+			| vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderErrorReporting
+		)
+		#endif // defined(ENABLE_NSIGHT_AFTERMATH)
+	);
+
+	return gpu.createDevice(device_create_info_chain.get<vk::DeviceCreateInfo>());
 }
 
 #pragma endregion
@@ -193,13 +215,12 @@ vma::Allocator CreateVmaAllocator(const vk::Instance instance, const vk::Physica
 #pragma endregion
 
 
-DeviceContext::DeviceContext(const VulkanWindow& window)
-{
+DeviceContext::DeviceContext(const VulkanWindow& window) {
 	VULKAN_HPP_DEFAULT_DISPATCHER.init();
 	instance = CreateInstance(window);
 	VULKAN_HPP_DEFAULT_DISPATCHER.init(instance);
 
-#if ENABLE_DEBUG
+#if defined(ENABLE_DEBUG)
 	debugger.reset(new EngineDebugger(instance));
 #endif // ENABLE_DEBUG
 
@@ -231,8 +252,7 @@ DeviceContext::DeviceContext(const VulkanWindow& window)
 	temp_cmd_pool = std::make_unique<TemporaryCommandBufferPool>(device, graphics_queue_index);
 }
 
-DeviceContext::~DeviceContext()
-{
+DeviceContext::~DeviceContext() {
 	temp_cmd_pool->Destroy(device);
 	temp_cmd_pool.reset();
 	allocator.destroy();

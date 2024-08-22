@@ -96,17 +96,17 @@ inline std::string  AftermathErrorMessage(GFSDK_Aftermath_Result result) {
 
 // Helper macro for checking Nsight Aftermath results and throwing exception
 // in case of a failure.
-#ifdef _WIN32
-#define AFTERMATH_CHECK_ERROR(FC)                                                                       \
-[&]() {                                                                                                 \
-    GFSDK_Aftermath_Result _result = FC;                                                                \
-    if (!GFSDK_Aftermath_SUCCEED(_result))                                                              \
-    {                                                                                                   \
-        MessageBoxA(0, AftermathErrorMessage(_result).c_str(), "Aftermath Error", MB_OK);               \
-        exit(1);                                                                                        \
-    }                                                                                                   \
-}()
-#else
+//#ifdef _WIN32
+//#define AFTERMATH_CHECK_ERROR(FC)                                                                       \
+//[&]() {                                                                                                 \
+//    GFSDK_Aftermath_Result _result = FC;                                                                \
+//    if (!GFSDK_Aftermath_SUCCEED(_result))                                                              \
+//    {                                                                                                   \
+//        MessageBoxA(0, AftermathErrorMessage(_result).c_str(), "Aftermath Error", MB_OK);               \
+//        exit(1);                                                                                        \
+//    }                                                                                                   \
+//}()
+//#else
 #define AFTERMATH_CHECK_ERROR(FC)                                                                       \
 [&]() {                                                                                                 \
     GFSDK_Aftermath_Result _result = FC;                                                                \
@@ -117,4 +117,4 @@ inline std::string  AftermathErrorMessage(GFSDK_Aftermath_Result result) {
         exit(1);                                                                                        \
     }                                                                                                   \
 }()
-#endif
+//#endif

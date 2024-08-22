@@ -10,6 +10,7 @@
 #include "Engine/ShaderHostBuffer.h"
 #include "Engine/HostShaderManager.h"
 #include "Engine/Resources/ResourcesManager.h"
+#include "Application/NsightAftermath/NsightAftermathGpuCrashTracker.h"
 
 entt::registry CreateWorld(const InputState& input) {
 	entt::registry registry;
@@ -57,6 +58,10 @@ int main() {
 
 	try
 	{
+		GpuCrashTracker::MarkerMap marker_map;
+		GpuCrashTracker profiler(marker_map);
+		profiler.Initialize();
+
 		ApplicationMain();
 		//EditorMain();
 	}

@@ -51,6 +51,8 @@ add_executable(${PROJECT_NAME}
     sources/Application/Renderer/MaterialPool.cpp
     sources/Application/Renderer/RendererPipeline.cpp
     sources/Application/Materials.cpp
+    sources/Application/NsightAftermath/NsightAftermathGpuCrashTracker.cpp
+    sources/Application/NsightAftermath/NsightAftermathShaderDatabase.cpp
 
     sources/Core/RayTracingShaders.cpp
     sources/Core/EngineDebugger.cpp
@@ -96,4 +98,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE glm ${GLM_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanMemoryAllocator-Hpp)
 target_link_libraries(${PROJECT_NAME} PRIVATE crossguid)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
-target_link_libraries(${PROJECT_NAME} PRIVATE NsightAftermath::NsightAftermath)
+target_link_libraries(${PROJECT_NAME} PRIVATE NsightAftermath)

@@ -1,5 +1,14 @@
+cmake_minimum_required(VERSION 3.21)
+
 set(NSIGHT_AFTERMATH_SDK ${CMAKE_CURRENT_LIST_DIR})
-set(NSIGHT_AFTERMATH_SDK_TARGET_NAME ${PROJECT_NAME})
+set(NsightAftermath_VERSION 0.1)
+set(NSIGHT_AFTERMATH_PROJECT_NAME NsightAftermath)
+
+project(
+    ${NSIGHT_AFTERMATH_PROJECT_NAME}
+    VERSION ${NsightAftermath_VERSION}
+    LANGUAGES C CXX
+)
 
 if(WIN32 OR UNIX)
   find_path(NsightAftermath_INCLUDE_DIR
@@ -34,16 +43,18 @@ else()
         "${NSIGHT_AFTERMATH_SDK}/lib")
 endif()
 
-set(NsightAftermath_LIBRARIES ${NsightAftermath_LIBRARY})
-set(NsightAftermath_INCLUDE_DIRS ${NsightAftermath_INCLUDE_DIR})
+set(NSIGHT_AFTERMATH_LIBRARIES ${NsightAftermath_LIBRARY})
+set(NSIGHT_AFTERMATH_INCLUDE_DIRS ${NsightAftermath_INCLUDE_DIR})
+get_filename_component(NSIGHT_AFTERMATH_LIB_DIR ${NSIGHT_AFTERMATH_LIBRARIES} DIRECTORY)
+file(GLOB NSIGHT_AFTERMATH_DLL "${NSIGHT_AFTERMATH_LIB_DIR}/*.dll")
 
-add_library(NsightAftermath INTERFACE)
-add_library(NsightAftermath::NsightAftermath ALIAS NsightAftermath)
+add_library(${NSIGHT_AFTERMATH_PROJECT_NAME} SHARED IMPORTED GLOBAL)
+add_library(${NSIGHT_AFTERMATH_PROJECT_NAME}::${NSIGHT_AFTERMATH_PROJECT_NAME} ALIAS ${NSIGHT_AFTERMATH_PROJECT_NAME})
 
-target_include_directories(NsightAftermath INTERFACE 
-    ${NsightAftermath_LIBRARIES} 
-    ${NsightAftermath_INCLUDE_DIRS}
-    ${NSIGHT_AFTERMATH_SDK}/wrapper
+set_target_properties(${NSIGHT_AFTERMATH_PROJECT_NAME} PROPERTIES 
+    IMPORTED_LOCATION ${NSIGHT_AFTERMATH_DLL}
+    IMPORTED_IMPLIB  ${NsightAftermath_LIBRARY}
+    INTERFACE_INCLUDE_DIRECTORIES ${NSIGHT_AFTERMATH_INCLUDE_DIRS}
 )
 
-mark_as_advanced(NsightAftermath_INCLUDE_DIR NsightAftermath_LIBRARY)
+file(COPY ${NSIGHT_AFTERMATH_DLL} DESTINATION ${CMAKE_BINARY_DIR})
