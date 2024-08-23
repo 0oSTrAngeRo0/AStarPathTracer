@@ -1,7 +1,7 @@
 #include "Core/DeviceContext.h"
 #include "Core/Swapchain.h"
 #include "math-utils.h"
-#include "vulkan/vulkan_raii.hpp"
+#include "Core/Surface.h"
 
 vk::Extent2D Swapchain::GetSwapExtent(const vk::SurfaceCapabilitiesKHR& capabilities, const vk::Extent2D& preferred_extent) {
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
@@ -43,17 +43,17 @@ std::vector<vk::ImageView> Swapchain::CreateImageViews(const DeviceContext& cont
     return image_views;
 }
 
-Swapchain::Swapchain(const DeviceContext& context, const vk::Extent2D extent) {
+Swapchain::Swapchain(const DeviceContext& context, const Surface& surcface, const vk::Extent2D extent) {
     vk::Device device = context.GetDevice();
-    vk::SurfaceCapabilitiesKHR capabilities = context.GetSurfaceCapabilities();
+    vk::SurfaceCapabilitiesKHR capabilities = surcface.GetSurfaceCapabilities();
 
-    vk::SurfaceFormatKHR surface_format = context.GetSurfaceFormat();
-    vk::PresentModeKHR present_mode = context.GetSurfacePresentModes();
+    vk::SurfaceFormatKHR surface_format = surcface.GetSurfaceFormat();
+    vk::PresentModeKHR present_mode = surcface.GetSurfacePresentModes();
     vk::Extent2D surface_extent = GetSwapExtent(capabilities, extent);
     min_image_count = GetMinImageCount(capabilities);
     vk::SwapchainCreateInfoKHR create_info(
         {},
-        context.GetSurface(),
+        surcface,
         min_image_count,
         surface_format.format,
         surface_format.colorSpace,

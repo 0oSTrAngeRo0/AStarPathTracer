@@ -4,6 +4,7 @@
 
 class DeviceContext;
 class Swapchain;
+class Surface;
 
 class Renderer {
 public:
@@ -16,7 +17,7 @@ public:
 			command_buffer(command_buffer), image_index(image_index), image(image) {}
 	};
 
-	Renderer(const DeviceContext& context);
+	Renderer(const DeviceContext& context, vk::SurfaceKHR surface);
 	void Destroy(const DeviceContext& context);
 	~Renderer();
 	void WaitForNextFrame(const DeviceContext& context);
@@ -25,8 +26,10 @@ public:
 	void ResizeSwapchain(const DeviceContext& context, const vk::Extent2D extent);
 
 	inline const vk::DescriptorPool GetDescriptorPool() const { return descriptor_pool; }
+	const vk::Format GetSwapchainFormat() const;
 private:
 	std::unique_ptr<Swapchain> swapchain;
+	std::unique_ptr<Surface> surface;
 	vk::CommandPool command_pool;
 	vk::Semaphore image_available_semaphore;
 	vk::Semaphore render_finished_semaphore;

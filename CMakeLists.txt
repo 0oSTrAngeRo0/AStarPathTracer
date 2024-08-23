@@ -64,15 +64,15 @@ add_executable(${PROJECT_NAME}
     sources/Core/Swapchain.cpp
     sources/Core/DeviceContext.cpp
 
-    sources/Editor/EditorUIDrawer.cpp
-    sources/Editor/EditorApplication.cpp 
-    sources/Editor/EditorUI.cpp
-    sources/Editor/EditorRenderContext.cpp
-    sources/Editor/EditorSelection.cpp
-    sources/Editor/UI/Inspectors/ResourceInspector.cpp
-    sources/Editor/UI/ImGuiFileDialog.cpp
-    sources/Editor/UI/ResourcesPanel.cpp
-    sources/Editor/UI/FileBrowser.cpp
+    #sources/Editor/EditorUIDrawer.cpp
+    #sources/Editor/EditorApplication.cpp 
+    #sources/Editor/EditorUI.cpp
+    #sources/Editor/EditorRenderContext.cpp
+    #sources/Editor/EditorSelection.cpp
+    #sources/Editor/UI/Inspectors/ResourceInspector.cpp
+    #sources/Editor/UI/ImGuiFileDialog.cpp
+    #sources/Editor/UI/ResourcesPanel.cpp
+    #sources/Editor/UI/FileBrowser.cpp
     
 
     sources/Engine/Resources/Resource.cpp
@@ -83,7 +83,7 @@ add_executable(${PROJECT_NAME}
     sources/Engine/Resources/MeshLoader/MikkTSpace/MikkTSpaceTangentGenerator.cpp
     sources/Engine/Resources/MeshLoader/MeshResourceUtilities.cpp
     sources/Engine/ShaderHostBuffer.cpp
-)
+  "sources/Core/Surface.cpp")
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PRIVATE plugins/tiny-obj-loader-1.0.6)

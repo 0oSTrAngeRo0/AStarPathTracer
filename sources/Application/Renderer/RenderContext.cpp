@@ -146,20 +146,20 @@ void RenderContext::Destory(const DeviceContext& context) {
 	output_image->Destroy(context);
 }
 
-void RenderContext::RecreateOutputImage(const DeviceContext& context, const vk::Extent2D extent) {
+void RenderContext::RecreateOutputImage(const DeviceContext& context, const vk::Extent2D extent, vk::Format format) {
 	if (output_image) {
 		output_image->Destroy(context);
 	}
-	output_image = std::make_unique<OutputImage>(context, extent);
+	output_image = std::make_unique<OutputImage>(context, extent, format);
 }
 
-RenderContext::OutputImage::OutputImage(const DeviceContext& context, const vk::Extent2D extent) : 
-	image(context, vk::ImageCreateInfo({}, vk::ImageType::e2D, context.GetSurfaceFormat().format,
+RenderContext::OutputImage::OutputImage(const DeviceContext& context, const vk::Extent2D extent, vk::Format format) : 
+	image(context, vk::ImageCreateInfo({}, vk::ImageType::e2D, format,
 	vk::Extent3D(extent, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
 	vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferSrc)) {
 
 	image_view = context.GetDevice().createImageView(vk::ImageViewCreateInfo({}, image,
-		vk::ImageViewType::e2D, context.GetSurfaceFormat().format,
+		vk::ImageViewType::e2D, format,
 		vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA),
 		vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)
 	));

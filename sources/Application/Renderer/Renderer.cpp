@@ -19,11 +19,13 @@
 #include "Engine/HostShaderManager.h"
 #include "Application/Renderer/RendererPipeline.h"
 #include "Core/Swapchain.h"
+#include "Core/Surface.h"
 
-Renderer::Renderer(const DeviceContext& context) {
+Renderer::Renderer(const DeviceContext& context, vk::SurfaceKHR surface) {
 	CreateDescriptorPool(context);
 	command_pool = context.GetDevice().createCommandPool(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, context.GetGrpahicsQueueIndex()));
 	CreateSyncObjects(context);
+	this->surface = std::make_unique<Surface>(context, surface);
 }
 
 void Renderer::CreateSyncObjects(const DeviceContext& context) {
@@ -84,7 +86,11 @@ void Renderer::ResizeSwapchain(const DeviceContext& context, const vk::Extent2D 
 	if (swapchain) {
 		swapchain->Destroy(context);
 	}
-	swapchain = std::make_unique<Swapchain>(context, extent);
+	swapchain = std::make_unique<Swapchain>(context, *surface, extent);
+}
+
+const vk::Format Renderer::GetSwapchainFormat() const {
+	return surface->GetSurfaceFormat().format;
 }
 
 void Renderer::Destroy(const DeviceContext& context) {

@@ -5,6 +5,7 @@
 class DeviceContext;
 class Swapchain;
 class EditorUI;
+class Surface;
 
 class EditorFrameContext {
 private:
@@ -33,6 +34,7 @@ class EditorRenderContext {
 private:
 	vk::RenderPass render_pass;
 	std::unique_ptr<Swapchain> swapchain;
+	std::unique_ptr<Surface> surface;
 	vk::DescriptorPool descriptor_pool;
 	vk::CommandPool cmd_pool;
 	uint32_t current_frame;

@@ -3,6 +3,7 @@
 #include <vulkan/vulkan.hpp>
 
 class DeviceContext;
+class Surface;
 
 class Swapchain {
 private:
@@ -17,7 +18,7 @@ private:
     static uint32_t GetMinImageCount(const VkSurfaceCapabilitiesKHR& capabilities);
     static std::vector<vk::ImageView> CreateImageViews(const DeviceContext& context, std::vector<vk::Image>& images, const vk::Format format);
 public:
-    Swapchain(const DeviceContext& context, const vk::Extent2D extent);
+    Swapchain(const DeviceContext& context, const Surface& surcface, const vk::Extent2D extent);
     void Destroy(const DeviceContext& context);
 
     inline operator vk::SwapchainKHR() const { return swapchain; }

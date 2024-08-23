@@ -5,13 +5,17 @@
 #include "Application/Renderer/Renderer.h"
 #include "Application/Renderer/RendererPipeline.h"
 #include "Application/Renderer/RendererApplication.h"
+#include "Application/Renderer/RendererDeviceContextCreateConfig.h"
 
 RendererApplication::RendererApplication(std::unique_ptr<VulkanWindow> window) : window(std::move(window)) {
 	AppConfig config = AppConfig::CreateDefault();
 	config.window_title = "Path Tracer Renderer";
-	context = std::make_unique<DeviceContext>(*this->window);
+
+	RendererDeviceContextCreateInfo context_create_info(*this->window);
+
+	context = std::make_unique<DeviceContext>(context_create_info);
 	render_context = std::make_unique<RenderContext>(*context);
-	renderer = std::make_unique<Renderer>(*context);
+	renderer = std::make_unique<Renderer>(*context, context_create_info.GetSurface().value());
 	ResizeWindow();
 	pipeline = std::make_unique<RendererPipeline>(*context, *render_context, renderer->GetDescriptorPool());
 }
@@ -19,7 +23,7 @@ RendererApplication::RendererApplication(std::unique_ptr<VulkanWindow> window) :
 void RendererApplication::ResizeWindow() {
 	vk::Extent2D extent = window->GetActualExtent();
 	renderer->ResizeSwapchain(*context, extent);
-	render_context->RecreateOutputImage(*context, extent);
+	render_context->RecreateOutputImage(*context, extent, renderer->GetSwapchainFormat());
 }
 
 void RendererApplication::Update(entt::registry& registry) {

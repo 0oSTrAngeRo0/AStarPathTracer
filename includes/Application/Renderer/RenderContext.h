@@ -24,7 +24,7 @@ public:
 	RenderContext(const DeviceContext& context);
 	void Update(const DeviceContext& context, entt::registry& registry);
 	void Destory(const DeviceContext& context);
-	void RecreateOutputImage(const DeviceContext& context, const vk::Extent2D extent);
+	void RecreateOutputImage(const DeviceContext& context, const vk::Extent2D extent, vk::Format format);
 
 	inline const Buffer& GetVertexPositionBuffer() const { return mesh_pool.GetVertexPositionBuffer(); }
 	inline const Buffer& GetVertexOtherBuffer() const { return mesh_pool.GetVertexOtherBuffer(); }
@@ -60,7 +60,7 @@ private:
 		vk::ImageView image_view;
 		vk::Extent2D extent;
 
-		OutputImage(const DeviceContext& context, const vk::Extent2D extent);
+		OutputImage(const DeviceContext& context, const vk::Extent2D extent, vk::Format format);
 		void Destroy(const DeviceContext& context);
 	};
 	std::unique_ptr<OutputImage> output_image;

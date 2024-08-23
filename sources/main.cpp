@@ -27,24 +27,25 @@ std::unique_ptr<GlfwWindow> CreateWindow(std::shared_ptr<InputState> input) {
 	return window;
 }
 
-void EditorMain() {
-	std::shared_ptr<InputState> input = std::make_shared<InputState>();
-	RendererApplication renderer(std::move(CreateWindow(input)));
-	EditorApplication editor;
-	entt::registry registry = CreateWorld(*input);
-
-	while (editor.IsActive() && renderer.IsActive()) {
-		GlfwWindow::PollEvents();
-		input->ClearFrameData();
-		World::Update(registry, 0.01);
-		editor.Update(registry);
-		renderer.Update(registry);
-	}
-}
+//void EditorMain() {
+//	std::shared_ptr<InputState> input = std::make_shared<InputState>();
+//	RendererApplication renderer(std::move(CreateWindow(input)));
+//	EditorApplication editor;
+//	entt::registry registry = CreateWorld(*input);
+//
+//	while (editor.IsActive() && renderer.IsActive()) {
+//		GlfwWindow::PollEvents();
+//		input->ClearFrameData();
+//		World::Update(registry, 0.01);
+//		editor.Update(registry);
+//		renderer.Update(registry);
+//	}
+//}
 
 void ApplicationMain() {
 	std::shared_ptr<InputState> input = std::make_shared<InputState>();
-	RendererApplication renderer(std::move(CreateWindow(input)));
+	std::unique_ptr<VulkanWindow> window = CreateWindow(input);
+	RendererApplication renderer(std::move(window));
 	entt::registry registry = CreateWorld(*input);
 
 	while (renderer.IsActive()) {

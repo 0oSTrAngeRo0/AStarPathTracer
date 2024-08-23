@@ -133,10 +133,14 @@ GlfwWindow::~GlfwWindow() {
 	}
 }
 
-std::vector<const char*> GlfwWindow::GetVulkanExtensions() const {
+std::vector<std::string> GlfwWindow::GetVulkanExtensions() const {
 	uint32_t count = 0;
 	const char** extensions = glfwGetRequiredInstanceExtensions(&count);
-	return std::vector<const char*>(extensions, extensions + count);
+	std::vector<std::string> extensions_str;
+	for (uint32_t i = 0; i < count; i++) {
+		extensions_str.emplace_back(extensions[i]);
+	}
+	return extensions_str;
 }
 
 std::expected<vk::SurfaceKHR, vk::Result> GlfwWindow::CreateWindowSurface(const vk::Instance instance, const vk::AllocationCallbacks* allocator) const {

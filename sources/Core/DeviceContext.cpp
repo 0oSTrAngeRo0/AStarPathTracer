@@ -9,32 +9,22 @@
 
 #include "Core/Window.h"
 #include "Utilities/Algorithm.h"
+#include <unordered_set>
 
 #pragma region Instance
 
-vk::Instance CreateInstance(const VulkanWindow& window) {
+vk::Instance DeviceContext::CreateInstance(const DeviceContextCreateConfig& config) {
 	vk::ApplicationInfo app_info = vk::ApplicationInfo(APP_NAME, vk::makeVersion(1, 0, 0), ENGINE_NAME, vk::makeVersion(1, 3, 0), vk::ApiVersion13);
-	std::vector<const char*> extensions = {
-		VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
 
-		#if defined(ENABLE_DEBUG)
-		VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
-		#if defined(ENABLE_NSIGHT_AFTERMATH)
-		VK_NV_DEVICE_DIAGNOSTIC_CHECKPOINTS_EXTENSION_NAME,
-		VK_NV_DEVICE_DIAGNOSTICS_CONFIG_EXTENSION_NAME,
-		#endif
-		#endif // ENABLE_DEBUG
-	};
-	std::vector<const char*> window_extensions = window.GetVulkanExtensions();
-	extensions.insert(extensions.end(), window_extensions.begin(), window_extensions.end());
+	auto str_extensions = config.GetInstanceExtensions();
+	std::vector<const char*> extensions(str_extensions.size());
+	std::transform(str_extensions.begin(), str_extensions.end(), extensions.begin(), [](auto& extension) { return extension.c_str(); });
 
-	std::vector<const char*> layers = {
+	auto str_layers = config.GetInstanceLayers();
+	std::vector<const char*> layers(str_layers.size());
+	std::transform(str_layers.begin(), str_layers.end(), layers.begin(), [](auto& layer) { return layer.c_str(); });
 
-		#if defined(ENABLE_DEBUG)
-		"VK_LAYER_KHRONOS_validation"
-		#endif // ENABLE_DEBUG
-	};
-
+	PrintInstanceExtensions();
 	vk::InstanceCreateInfo create_info = vk::InstanceCreateInfo(vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR, &app_info, layers, extensions);
 	return vk::createInstance(create_info);
 }
@@ -43,160 +33,103 @@ vk::Instance CreateInstance(const VulkanWindow& window) {
 
 #pragma region GPU
 
-struct SwapchainSupportInfo {
-	vk::SurfaceCapabilitiesKHR capabilities;
-	vk::SurfaceFormatKHR formats;
-	vk::PresentModeKHR present_modes;
-};
-
-struct PhysicalDeviceInfo {
-	vk::PhysicalDevice device;
-	uint32_t graphics_queue_index;
-	uint32_t present_queue_index;
-	SwapchainSupportInfo swapchain_info;
-	vk::StructureChain<GPU_FEATURE> features;
-	vk::StructureChain<GPU_PROPERTY> properties;
-};
-
-bool GetSuitableQueueFamilies(const vk::PhysicalDevice device, PhysicalDeviceInfo* device_info, const vk::SurfaceKHR surface) {
+std::optional<DeviceContext::QueueIndices> DeviceContext::GetSuitableQueueFamilies(vk::PhysicalDevice device, vk::SurfaceKHR surface) {
 	auto properties = device.getQueueFamilyProperties();
 	bool contains_graphics = false;
 	bool contains_present = false;
+	QueueIndices indices;
 	for (int i = 0, end = properties.size(); i < end; ++i) {
 		const vk::QueueFamilyProperties& property = properties[i];
 		if (property.queueFlags & vk::QueueFlagBits::eGraphics) {
-			device_info->graphics_queue_index = i;
+			indices.graphics = i;
 			contains_graphics = true;
 		}
 
 		auto is_present_supported = device.getSurfaceSupportKHR(i, surface);
 		if (is_present_supported) {
-			device_info->present_queue_index = i;
+			indices.present = i;
 			contains_present = true;
 		}
 	}
-	return contains_graphics && contains_present;
+	return (contains_graphics && contains_present) ? std::make_optional(indices) : std::nullopt;
 }
 
-std::optional<SwapchainSupportInfo> GetSwapSupportInfo(const vk::PhysicalDevice device, const vk::SurfaceKHR surface) {
-	auto formats = device.getSurfaceFormatsKHR(surface);
-	auto present_modes = device.getSurfacePresentModesKHR(surface);
+std::optional<vk::PhysicalDevice> DeviceContext::PickPhysicalDevice(vk::Instance instance, const DeviceContextCreateConfig& config) {
+	auto gpus = instance.enumeratePhysicalDevices();
 
-	auto format = Find(formats, vk::SurfaceFormatKHR(vk::Format::eR8G8B8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear));
-	auto present_mode = Find(present_modes, vk::PresentModeKHR::eMailbox);
+	const auto extensions = config.GetGpuExtensions();
+	std::remove_if(gpus.begin(), gpus.end(), [&extensions = extensions](auto gpu) { return !IsGpuExtensionsValid(gpu, extensions); });
 
-	if (!format.has_value() || !present_mode.has_value()) return std::nullopt;
+	const auto surface = config.GetSurface();
+	std::remove_if(gpus.begin(), gpus.end(), [&surface = surface.value()](auto gpu) { return !GetSuitableQueueFamilies(gpu, surface); });
 
-	SwapchainSupportInfo swapchain_info;
-	swapchain_info.capabilities = device.getSurfaceCapabilitiesKHR(surface);
-	swapchain_info.formats = format.value();
-	swapchain_info.present_modes = present_mode.value();
-	return swapchain_info;
+	std::remove_if(gpus.begin(), gpus.end(), [&config = config](auto gpu) { return config.OtherGpuCheck(gpu); });
+
+	if (gpus.size() == 0) return std::nullopt;
+	return gpus[0];
 }
 
-std::vector<PhysicalDeviceInfo> GetPhysicalDevices(const vk::Instance instance, const vk::SurfaceKHR surface) {
-	auto physical_devices = instance.enumeratePhysicalDevices();
-
-	std::vector<PhysicalDeviceInfo> candidates;
-	for (const vk::PhysicalDevice& device : physical_devices) {
-		PhysicalDeviceInfo info;
-		info.device = device;
-
-		// vk::PhysicalDeviceProperties properties = device.getProperties();
-
-		// check devices featured is supported
-		auto features = device.getFeatures2<GPU_FEATURE>();
-		if (!features.get<vk::PhysicalDeviceAccelerationStructureFeaturesKHR>().accelerationStructure) continue;
-		if (!features.get<vk::PhysicalDeviceRayTracingPipelineFeaturesKHR>().rayTracingPipeline) continue;
-		if (!features.get<vk::PhysicalDevice16BitStorageFeaturesKHR>().storageBuffer16BitAccess) continue;
-		if (!features.get<vk::PhysicalDeviceScalarBlockLayoutFeatures>().scalarBlockLayout) continue;
-		info.features = features;
-
-		auto properties = device.getProperties2<GPU_PROPERTY>();
-		info.properties = properties;
-
-		// get swapchain info
-		auto swapchain_info = GetSwapSupportInfo(device, surface);
-		if (!swapchain_info.has_value()) continue;
-		info.swapchain_info = swapchain_info.value();
-
-		// check queue families is supported
-		bool isSuitable = GetSuitableQueueFamilies(device, &info, surface);
-		if (!isSuitable) continue;
-
-		candidates.push_back(info);
+bool DeviceContext::IsGpuExtensionsValid(vk::PhysicalDevice gpu, std::vector<std::string> extensions) {
+	auto avaliable = gpu.enumerateDeviceExtensionProperties();
+	std::vector<std::string> avaliable_str(avaliable.size());
+	std::transform(avaliable.begin(), avaliable.end(), avaliable_str.begin(), [](auto& extension) { return std::string(extension.extensionName.data()); });
+	std::unordered_set<std::string> set(avaliable_str.begin(), avaliable_str.end());
+	for (const auto& extension : extensions) {
+		if (set.contains(extension)) continue;
+		return false;
 	}
-	return candidates;
+	return true;
 }
 
 #pragma endregion
 
 #pragma region Device
 
-vk::Device CreateDevice(const vk::PhysicalDevice gpu, const int graphics_queue_index, const int present_queue_index) {
+vk::Device DeviceContext::CreateDevice(const vk::PhysicalDevice gpu, const DeviceContextCreateConfig& config, const QueueIndices& queue_indices) {
 	std::vector<float> queue_priorities = { 1.0f };
 	std::vector<vk::DeviceQueueCreateInfo> queue_create_infos = {
-		vk::DeviceQueueCreateInfo({}, graphics_queue_index, queue_priorities, {}),
-		vk::DeviceQueueCreateInfo({}, present_queue_index, queue_priorities, {})
+		vk::DeviceQueueCreateInfo({}, queue_indices.graphics, queue_priorities, {}),
+		vk::DeviceQueueCreateInfo({}, queue_indices.present, queue_priorities, {})
 	};
 
-	std::vector<const char*> extensions = {
-		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+	auto str_extensions = config.GetGpuExtensions();
+	std::vector<const char*> extensions(str_extensions.size());
+	std::transform(str_extensions.begin(), str_extensions.end(), extensions.begin(), [](auto& extension) { return extension.c_str(); });
 
-		VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME,
-		VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME,
+	auto features = config.GetGpuFeatures();
+	gpu.getFeatures2(&features);
 
-		VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-		VK_KHR_BUFFER_DEVICE_ADDRESS_EXTENSION_NAME,
-		VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME,
+	vk::DeviceCreateInfo device_info({}, queue_create_infos, {}, extensions, 0, &features);
 
-		VK_KHR_SPIRV_1_4_EXTENSION_NAME,
-
-		VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
-		VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
-		VK_EXT_SCALAR_BLOCK_LAYOUT_EXTENSION_NAME,
-	};
-
-	auto features = gpu.getFeatures2<
-		vk::PhysicalDeviceFeatures2,
-		vk::PhysicalDeviceBufferDeviceAddressFeatures,
-		vk::PhysicalDeviceDynamicRenderingFeatures,
-		vk::PhysicalDeviceSynchronization2Features,
-		vk::PhysicalDeviceDescriptorIndexingFeatures,
-		vk::PhysicalDeviceMaintenance4Features,
-		vk::PhysicalDeviceAccelerationStructureFeaturesKHR,
-		vk::PhysicalDeviceRayTracingPipelineFeaturesKHR,
-		vk::PhysicalDeviceRobustness2FeaturesEXT,
-		vk::PhysicalDevice16BitStorageFeaturesKHR,
-		vk::PhysicalDeviceScalarBlockLayoutFeatures
-	>();
-
+	#if defined(ENABLE_NSIGHT_AFTERMATH)
+	vk::DeviceDiagnosticsConfigCreateInfoNV device_diagnostics_config_create_info(
+		vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableAutomaticCheckpoints
+		| vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableResourceTracking
+		| vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderDebugInfo
+		| vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderErrorReporting
+	)
+	#endif
 
 	vk::StructureChain<
-		vk::DeviceCreateInfo 
+		vk::DeviceCreateInfo
 		#if defined(ENABLE_NSIGHT_AFTERMATH)
 		, vk::DeviceDiagnosticsConfigCreateInfoNV
 		#endif // defined(ENABLE_NSIGHT_AFTERMATH)
 	> device_create_info_chain(
-		vk::DeviceCreateInfo({}, queue_create_infos, {}, extensions, 0, &features.get())
+		device_info
 		#if defined(ENABLE_NSIGHT_AFTERMATH)
-		, vk::DeviceDiagnosticsConfigCreateInfoNV(
-			  vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableAutomaticCheckpoints
-			| vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableResourceTracking
-			| vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderDebugInfo
-			| vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderErrorReporting
-		)
+		, device_diagnostics_config_create_info
 		#endif // defined(ENABLE_NSIGHT_AFTERMATH)
 	);
 
-	return gpu.createDevice(device_create_info_chain.get<vk::DeviceCreateInfo>());
+	return gpu.createDevice(device_create_info_chain.get());
 }
 
 #pragma endregion
 
 #pragma region Vma
 
-vma::Allocator CreateVmaAllocator(const vk::Instance instance, const vk::PhysicalDevice gpu, const vk::Device device) {
+vma::Allocator DeviceContext::CreateVmaAllocator(const vk::Instance instance, const vk::PhysicalDevice gpu, const vk::Device device) {
 	vma::VulkanFunctions functions = vma::functionsFromDispatcher(VULKAN_HPP_DEFAULT_DISPATCHER);
 	return vma::createAllocator(vma::AllocatorCreateInfo(
 		vma::AllocatorCreateFlagBits::eExtMemoryBudget | vma::AllocatorCreateFlagBits::eBufferDeviceAddress,
@@ -215,33 +148,39 @@ vma::Allocator CreateVmaAllocator(const vk::Instance instance, const vk::Physica
 #pragma endregion
 
 
-DeviceContext::DeviceContext(const VulkanWindow& window) {
+void DeviceContext::PrintInstanceExtensions() {
+	auto extensions = vk::enumerateInstanceExtensionProperties();
+	std::printf("----------------------------------\n");
+	std::printf("InstanceExtensions:\n");
+	std::printf("|Version\t|Name\n");
+	std::printf("----------------------------------\n");
+	for (auto& extension : extensions) {
+		std::printf("|%u\t\t|%s\n", extension.specVersion, extension.extensionName.data());
+	}
+	std::printf("----------------------------------\n");
+}
+
+DeviceContext::DeviceContext(DeviceContextCreateConfig& config) {
 	VULKAN_HPP_DEFAULT_DISPATCHER.init();
-	instance = CreateInstance(window);
+	instance = CreateInstance(config);
 	VULKAN_HPP_DEFAULT_DISPATCHER.init(instance);
 
 #if defined(ENABLE_DEBUG)
 	debugger.reset(new EngineDebugger(instance));
 #endif // ENABLE_DEBUG
 
-	auto result = window.CreateWindowSurface(instance, nullptr);
-	if (!result.has_value()) throw std::runtime_error("Failed to create window surface. Error: " + vk::to_string(result.error()));
-	surface = result.value();
-	extent = window.GetActualExtent();
+	vk::SurfaceKHR surface = config.CreateSurface(instance);
+	auto gpu_result = PickPhysicalDevice(instance, config);
+	if (!gpu_result) {
+		throw std::runtime_error("Failed to find a valid physical device");
+	}
+	gpu = gpu_result.value();
+	auto queue_indices = GetSuitableQueueFamilies(gpu, surface).value();
 
-	std::vector<PhysicalDeviceInfo> physical_devices = GetPhysicalDevices(instance, surface);
-	if (physical_devices.empty()) throw std::runtime_error("No suitable devices!");
-	auto& physical_device = physical_devices[0];
-	gpu = physical_device.device;
-	graphics_queue_index = physical_device.graphics_queue_index;
-	present_queue_index = physical_device.present_queue_index;
-	surface_capabilities = physical_device.swapchain_info.capabilities;
-	surface_format = physical_device.swapchain_info.formats;
-	surface_present_modes = physical_device.swapchain_info.present_modes;
-	gpu_features = physical_device.features;
-	gpu_properties = physical_device.properties;
+	graphics_queue_index = queue_indices.graphics;
+	present_queue_index = queue_indices.present;
 
-	device = CreateDevice(gpu, physical_device.graphics_queue_index, physical_device.present_queue_index);
+	device = CreateDevice(gpu, config, queue_indices);
 	VULKAN_HPP_DEFAULT_DISPATCHER.init(device);
 
 	allocator = CreateVmaAllocator(instance, gpu, device);
@@ -257,7 +196,6 @@ DeviceContext::~DeviceContext() {
 	temp_cmd_pool.reset();
 	allocator.destroy();
 	device.destroy();
-	instance.destroySurfaceKHR(surface);
 	debugger->Destroy(instance);
 	debugger.reset();
 	instance.destroy();
