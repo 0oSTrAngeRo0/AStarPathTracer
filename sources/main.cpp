@@ -49,6 +49,7 @@ void ApplicationMain() {
 	entt::registry registry = CreateWorld(*input);
 
 	while (renderer.IsActive()) {
+		input->ClearFrameData();
 		GlfwWindow::PollEvents();
 		World::Update(registry, 0.01);
 		renderer.Update(registry);

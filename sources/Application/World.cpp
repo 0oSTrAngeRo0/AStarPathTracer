@@ -53,13 +53,14 @@ void World::UpdateOrbitCamera(entt::registry& registry) {
 	const InputState& input = registry.ctx().get<const InputState&>();
 	if (input.GetMouseButton(InputState::MouseButton::eRight) == InputState::ActionState::eRelease) return;
 	glm::vec2 delta = input.GetMousePositionDelta();
-	float scrollY = input.GetMouseScroll().y;
+	float scroll_y = input.GetMouseScroll().y;
+	//std::printf("Mouse Delta: [(%f, %f)]; Mouse Scroll: [%f]\n", delta.x, delta.y, scroll_y);
 	auto view = registry.view<LocalPosition, LocalRotation, OrbitCamera>();
-	view.each([&delta, &scrollY, &registry](entt::entity entity, LocalPosition& position, LocalRotation& rotation, OrbitCamera& orbit) {
+	view.each([&delta, &scroll_y, &registry](entt::entity entity, LocalPosition& position, LocalRotation& rotation, OrbitCamera& orbit) {
 		// Todo: fix filp on 90 degree
 		orbit.theta += delta.x;
 		orbit.phi += delta.y;
-		orbit.distance -= scrollY;
+		orbit.distance -= scroll_y;
 
 		float x = orbit.distance * sin(glm::radians(orbit.phi)) * cos(glm::radians(orbit.theta));
 		float y = orbit.distance * cos(glm::radians(orbit.phi));
