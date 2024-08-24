@@ -68,24 +68,25 @@ public:
 		std::vector<vk::RayTracingShaderGroupCreateInfoKHR> groups;
 		ShaderCount count;
 		std::vector<vk::ShaderModule> modules;
-		static inline int GetStagePeriority(vk::ShaderStageFlagBits stage) {
-			if (stage == vk::ShaderStageFlagBits::eRaygenKHR) {
-				return 1;
-			}
-			else if (stage == vk::ShaderStageFlagBits::eClosestHitKHR) {
-				return 3;
-			}
-			else if (stage == vk::ShaderStageFlagBits::eMissKHR) {
-				return 2;
-			}
-			else if (stage == vk::ShaderStageFlagBits::eCallableKHR) {
-				return 4;
-			}
-			else return -1;
-		}
-		static inline int StageComparer(const ShaderData& a, const ShaderData& b) {
-			return GetStagePeriority(a.stage) < GetStagePeriority(b.stage);
-		}
 		void IncreaseCount(const vk::ShaderStageFlagBits stage);
 	};
+
+	static inline int GetStagePeriority(vk::ShaderStageFlagBits stage) {
+		if (stage == vk::ShaderStageFlagBits::eRaygenKHR) {
+			return 1;
+		}
+		else if (stage == vk::ShaderStageFlagBits::eClosestHitKHR) {
+			return 3;
+		}
+		else if (stage == vk::ShaderStageFlagBits::eMissKHR) {
+			return 2;
+		}
+		else if (stage == vk::ShaderStageFlagBits::eCallableKHR) {
+			return 4;
+		}
+		else return -1;
+	}
+	static inline int StageComparer(const ShaderData& a, const ShaderData& b) {
+		return GetStagePeriority(a.stage) < GetStagePeriority(b.stage);
+	}
 };

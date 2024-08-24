@@ -86,7 +86,7 @@ RayTracingShaders::PipelineData::PipelineData(
 	const DeviceContext& context, 
 	const std::vector<ShaderData>& shaders
 ) {
-	//assert(std::is_sorted(shaders.begin(), shaders.end(), StageComparer));
+	assert(std::is_sorted(shaders.begin(), shaders.end(), StageComparer));
 
 	for (size_t i = 0, end = shaders.size(); i < end; i++) {
 		const auto& shader = shaders[i];

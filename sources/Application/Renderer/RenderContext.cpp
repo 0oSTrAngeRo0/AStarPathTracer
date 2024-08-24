@@ -82,7 +82,7 @@ void RenderContext::RecreateInstances(const DeviceContext& context, entt::regist
 		const Mesh& device_mesh = mesh_pool.GetMesh(mesh.device_id);
 		const auto& [shader_id, material_index] = host_shaders.GetMaterialRuntimeData(material.resource_id);
 		as_instances.emplace_back(vk::AccelerationStructureInstanceKHR(
-			GetTransformMatrixKHR(transform.matrix), index, 0xFF, 1,
+			GetTransformMatrixKHR(transform.matrix), index, 0xFF, 0,
 			vk::GeometryInstanceFlagBitsKHR::eTriangleCullDisable,
 			device_mesh.GetAsAddress()
 		));

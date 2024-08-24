@@ -59,9 +59,9 @@ int main() {
 
 	try
 	{
-		GpuCrashTracker::MarkerMap marker_map;
-		GpuCrashTracker profiler(marker_map);
-		profiler.Initialize();
+		//GpuCrashTracker::MarkerMap marker_map;
+		//GpuCrashTracker profiler(marker_map);
+		//profiler.Initialize();
 
 		ApplicationMain();
 		//EditorMain();

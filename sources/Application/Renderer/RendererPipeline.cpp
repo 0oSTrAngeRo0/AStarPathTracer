@@ -117,7 +117,8 @@ void RendererPipeline::CreatePipelineAndBindingTable(const DeviceContext& contex
 		if (resource.GetResourceType() != Resource<ShaderResourceData>::GetResourceTypeStatic()) return;
 		const ShaderResourceData& shader = static_cast<const Resource<ShaderResourceData>&>(resource).resource_data;
 		shaders.emplace_back(RayTracingShaders::ShaderData(shader.compiled_code_path, shader.entry_function, shader.shader_stage));
-		});
+	});
+	std::sort(shaders.begin(), shaders.end(), RayTracingShaders::StageComparer);
 
 	RayTracingShaders::PipelineData pipeline_data(context, shaders);
 	vk::RayTracingPipelineCreateInfoKHR create_info({}, pipeline_data.GetStages(), pipeline_data.GetGroups(), 1, {}, {}, {}, pipeline_layout);
