@@ -111,16 +111,29 @@ void RendererPipeline::CreateRayTracingPipelineLayout(const DeviceContext& conte
 }
 
 void RendererPipeline::CreatePipelineAndBindingTable(const DeviceContext& context) {
-	std::vector<RayTracingShaders::ShaderData> shaders;
+	std::vector<std::tuple<Uuid, RayTracingShaders::ShaderData>> shaders;
 	const auto& shader_resources = HostShaderManager::GetInstance().GetAllShaders();
 	ResourcesManager::GetInstance().IterateResources([&shaders](const std::string& path, const ResourceBase& resource) {
 		if (resource.GetResourceType() != Resource<ShaderResourceData>::GetResourceTypeStatic()) return;
 		const ShaderResourceData& shader = static_cast<const Resource<ShaderResourceData>&>(resource).resource_data;
-		shaders.emplace_back(RayTracingShaders::ShaderData(shader.compiled_code_path, shader.entry_function, shader.shader_stage));
+		RayTracingShaders::ShaderData data(shader.compiled_code_path, shader.entry_function, shader.shader_stage);
+		shaders.emplace_back(std::make_tuple(resource.uuid, data));
 	});
-	std::sort(shaders.begin(), shaders.end(), RayTracingShaders::StageComparer);
+	std::sort(shaders.begin(), shaders.end(), [](const auto& a, const auto& b) {
+		return RayTracingShaders::StageComparer(std::get<1>(a), std::get<1>(b));
+	});
 
-	RayTracingShaders::PipelineData pipeline_data(context, shaders);
+	uint32_t shader_index = 0;
+	for (size_t i = 0, end = shaders.size(); i < end; i++) {
+		if (std::get<1>(shaders[i]).stage != vk::ShaderStageFlagBits::eClosestHitKHR) continue;
+		shader_indices.insert(std::make_pair(std::get<0>(shaders[i]), shader_index));
+		shader_index++;
+	}
+
+	std::vector<RayTracingShaders::ShaderData> shader_data(shaders.size());
+	std::transform(shaders.begin(), shaders.end(), shader_data.begin(), [](const auto& shader) { return std::get<1>(shader); });
+
+	RayTracingShaders::PipelineData pipeline_data(context, shader_data);
 	vk::RayTracingPipelineCreateInfoKHR create_info({}, pipeline_data.GetStages(), pipeline_data.GetGroups(), 1, {}, {}, {}, pipeline_layout);
 	pipeline = context.GetDevice().createRayTracingPipelineKHR({}, {}, create_info).value;
 

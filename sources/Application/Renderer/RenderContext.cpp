@@ -44,7 +44,11 @@ void RenderContext::UploadMeshes(const DeviceContext& context, entt::registry& r
 	mesh_pool.EnsureMeshes(context, used_meshes);
 }
 
-void RenderContext::UploadMaterials(const DeviceContext& context, entt::registry& registry) {
+void RenderContext::UploadMaterials(
+	const DeviceContext& context, 
+	entt::registry& registry,
+	const std::unordered_map<Uuid, uint32_t>& shader_indices
+) {
 	const auto& host_shaders = registry.ctx().get<const HostShaderManager&>();
 	auto view = registry.view<const LocalTransform, const MeshComponent, const MaterialComponent>();
 
@@ -56,12 +60,20 @@ void RenderContext::UploadMaterials(const DeviceContext& context, entt::registry
 	std::vector<std::tuple<const Uuid, const std::vector<std::byte>, const bool, const size_t>> data;
 	for (const auto& shader_wrapper : host_shaders.GetAllShaders()) {
 		const auto& shader = shader_wrapper.get();
-		data.emplace_back(std::make_tuple(shader.GetId(), shader.GetData(), shader.IsDirty(), shader.GetStride()));
+		const auto& id = shader.GetId();
+		if (!shader_indices.contains(id)) {
+			throw std::runtime_error("Unuploaded shader: [" + id.str() + "]");
+		}
+		data.emplace_back(std::make_tuple(id, shader.GetData(), shader.IsDirty(), shader.GetStride()));
 	}
 	material_pool.EnsureBuffers(context, data);
 }
 
-void RenderContext::RecreateInstances(const DeviceContext& context, entt::registry& registry) {
+void RenderContext::RecreateInstances(
+	const DeviceContext& context, 
+	entt::registry& registry,
+	const std::unordered_map<Uuid, uint32_t>& shader_indices
+) {
 	auto view = registry.view<const LocalTransform, const MeshComponent, const MaterialComponent>();
 	std::vector<vk::AccelerationStructureInstanceKHR> as_instances;
 	std::vector<InstanceData> instances_data;
@@ -74,7 +86,8 @@ void RenderContext::RecreateInstances(const DeviceContext& context, entt::regist
 		&instances_data,
 		&mesh_pool = this->mesh_pool, 
 		&material_pool = this->material_pool,
-		&host_shaders
+		&host_shaders,
+		&shader_indices
 	](  const LocalTransform& transform,
 		const MeshComponent& mesh, 
 		const MaterialComponent& material
@@ -82,7 +95,7 @@ void RenderContext::RecreateInstances(const DeviceContext& context, entt::regist
 		const Mesh& device_mesh = mesh_pool.GetMesh(mesh.device_id);
 		const auto& [shader_id, material_index] = host_shaders.GetMaterialRuntimeData(material.resource_id);
 		as_instances.emplace_back(vk::AccelerationStructureInstanceKHR(
-			GetTransformMatrixKHR(transform.matrix), index, 0xFF, 0,
+			GetTransformMatrixKHR(transform.matrix), index, 0xFF, shader_indices.at(shader_id),
 			vk::GeometryInstanceFlagBitsKHR::eTriangleCullDisable,
 			device_mesh.GetAsAddress()
 		));
@@ -126,11 +139,15 @@ void RenderContext::UpdatePushConstants(const DeviceContext& context, entt::regi
 	constants_data.sample_per_pixel++;
 }
 
-void RenderContext::Update(const DeviceContext& context, entt::registry& registry) {
-	UploadMaterials(context, registry);
+void RenderContext::Update(
+	const DeviceContext& context,
+	entt::registry& registry, 
+	const std::unordered_map<Uuid, uint32_t>& shader_indices
+) {
+	UploadMaterials(context, registry, shader_indices);
 	UploadMeshes(context, registry);
 	UpdatePushConstants(context, registry);
-	RecreateInstances(context, registry);
+	RecreateInstances(context, registry, shader_indices);
 }
 
 void RenderContext::Destory(const DeviceContext& context) {

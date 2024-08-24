@@ -34,7 +34,7 @@ void RendererApplication::Update(entt::registry& registry) {
 	}
 
 	// prepare resources for rendering
-	render_context->Update(*context, registry); 
+	render_context->Update(*context, registry, pipeline->GetShaderIndices()); 
 	pipeline->UpdateDescriptorSet(*context, *render_context);
 
 	// draw frame

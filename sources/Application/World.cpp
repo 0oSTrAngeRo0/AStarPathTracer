@@ -89,7 +89,7 @@ void World::UpdateProjectiveCamera(entt::registry& registry) {
 
 entt::entity World::CreateCamera(entt::registry& registry) {
 	entt::entity e = registry.create();
-	registry.emplace<LocalPosition>(e, glm::vec3(0, 0, -3));
+	registry.emplace<LocalPosition>(e, glm::vec3(0, 0, 3));
 	registry.emplace<LocalRotation>(e, glm::quatLookAt(glm::vec3(0, 0, 1), glm::vec3(0, 1, 0)));
 	registry.emplace<LocalScale>(e, glm::vec3(1, 1, 1));
 	registry.emplace<LocalTransform>(e);
@@ -112,7 +112,7 @@ entt::entity World::CreateCube(entt::registry& registry) {
 
 entt::entity World::CreateLight(entt::registry& registry) {
 	entt::entity e = registry.create();
-	registry.emplace<LocalPosition>(e, glm::vec3(0, 2, 0));
+	registry.emplace<LocalPosition>(e, glm::vec3(2, 2, 2));
 	registry.emplace<LocalRotation>(e, glm::quatLookAt(glm::vec3(0, 0, 1), glm::vec3(0, 1, 0)));
 	registry.emplace<LocalScale>(e, glm::vec3(1, 1, 1));
 	registry.emplace<LocalTransform>(e);

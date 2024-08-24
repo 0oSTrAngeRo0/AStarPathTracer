@@ -52,6 +52,8 @@ public:
 		std::string spv_path;
 		vk::ShaderStageFlagBits stage;
 		std::string entry_function;
+		ShaderData() {}
+		ShaderData(const ShaderData& other) : ShaderData(other.spv_path, other.entry_function, other.stage) {}
 		ShaderData(const std::string& spv_path, const std::string& entry, const vk::ShaderStageFlagBits stage) :
 			spv_path(spv_path), entry_function(entry), stage(stage) {}
 	};

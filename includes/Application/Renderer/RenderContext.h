@@ -22,7 +22,7 @@ class Mesh;
 class RenderContext {
 public:
 	RenderContext(const DeviceContext& context);
-	void Update(const DeviceContext& context, entt::registry& registry);
+	void Update(const DeviceContext& context, entt::registry& registry, const std::unordered_map<Uuid, uint32_t>& shader_indices);
 	void Destory(const DeviceContext& context);
 	void RecreateOutputImage(const DeviceContext& context, const vk::Extent2D extent, vk::Format format);
 
@@ -66,7 +66,15 @@ private:
 	std::unique_ptr<OutputImage> output_image;
 
 	void UploadMeshes(const DeviceContext& context, entt::registry& registry);
-	void UploadMaterials(const DeviceContext& context, entt::registry& registry);
-	void RecreateInstances(const DeviceContext& context, entt::registry& registry);
+	void UploadMaterials(
+		const DeviceContext& context, 
+		entt::registry& registry,
+		const std::unordered_map<Uuid, uint32_t>& shader_indices
+	);
+	void RecreateInstances(
+		const DeviceContext& context, 
+		entt::registry& registry, 
+		const std::unordered_map<Uuid, uint32_t>& shader_indices
+	);
 	void UpdatePushConstants(const DeviceContext& context, entt::registry& registry);
 };
