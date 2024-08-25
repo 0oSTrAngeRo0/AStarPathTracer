@@ -14,6 +14,7 @@ RAY_CLOSEST_HIT_MATERIAL_DESCRIPTOR(SimpleLitMaterial);
 RAY_CLOSEST_HIT_RAY_TRACING_VARIABLES();
 
 void main() {
+
 	RAY_CLOSEST_HIT_RAY_TRACING_FETCH_DATA(instance, barycentric, index, vertex, SimpleLitMaterial, material);
 
 	payload.position = vertex.position;
@@ -29,6 +30,6 @@ void main() {
 	ray_direction = mat3x3(vertex.tangent, vertex.bitangent, vertex.normal) * ray_direction;
 	float cosine_theta = dot(vertex.normal, ray_direction);
 	vec3 throughput = 2 * cosine_theta * material.color.xyz; 
-	payload.throughput = vec3(1);
+	payload.throughput = throughput;
 	payload.next_ray_direction = ray_direction;
 }

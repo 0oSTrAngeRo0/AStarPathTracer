@@ -73,9 +73,6 @@ void main() {
     if(constant.samples_per_pixel != 0) {
         old_radiance = imageLoad(img, ivec2(gl_LaunchIDEXT).xy).xyz;
     }
-    if(ray_depth > 1) {
-        debugPrintfEXT("Pixel Coord: [(%u, %u)] Samples Per Pixel: [%u] Ray Depth:[%u]\n", gl_LaunchIDEXT.x, gl_LaunchIDEXT.y, constant.samples_per_pixel, ray_depth);
-    }
-    vec3 new_radiance = mix(old_radiance, radiance, 1 / (constant.samples_per_pixel + 1));
-    imageStore(img, ivec2(gl_LaunchIDEXT).xy, vec4(radiance.xyz, 1.0));
+    vec3 new_radiance = mix(old_radiance, radiance, 1.0 / (constant.samples_per_pixel + 1.0));
+    imageStore(img, ivec2(gl_LaunchIDEXT).xy, vec4(new_radiance.xyz, 1.0));
 }
