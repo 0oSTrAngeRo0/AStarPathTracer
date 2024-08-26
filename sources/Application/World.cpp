@@ -78,7 +78,9 @@ void World::UpdateOrbitCamera(entt::registry& registry) {
 void World::UpdateProjectiveCamera(entt::registry& registry) {
 	auto view = registry.view<const LocalTransform, const ProjectionCamera, Camera>();
 	view.each([](const LocalTransform& transform, const ProjectionCamera& data, Camera& camera) {
-		camera.projection = glm::perspective(glm::radians(data.fov_y), data.aspect, data.near_z, data.far_z);
+		glm::mat4x4 projection = glm::perspective(glm::radians(data.fov_y), data.aspect, data.near_z, data.far_z);
+		projection[1][1] *= -1;
+		camera.projection = projection;
 		camera.view = glm::inverse(transform.matrix);
 		});
 }
