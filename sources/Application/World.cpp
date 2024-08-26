@@ -89,8 +89,8 @@ void World::UpdateProjectiveCamera(entt::registry& registry) {
 
 entt::entity World::CreateCamera(entt::registry& registry) {
 	entt::entity e = registry.create();
-	registry.emplace<LocalPosition>(e, glm::vec3(0, 0, -3));
-	registry.emplace<LocalRotation>(e, glm::quatLookAt(glm::vec3(0, 0, 1), glm::vec3(0, 1, 0)));
+	registry.emplace<LocalPosition>(e, glm::vec3(0, 0, 3));
+	registry.emplace<LocalRotation>(e, glm::quatLookAt(glm::vec3(0, 0, -1), glm::vec3(0, 1, 0)));
 	registry.emplace<LocalScale>(e, glm::vec3(1, 1, 1));
 	registry.emplace<LocalTransform>(e);
 	registry.emplace<ProjectionCamera>(e, 45, 1, 0.1, 100);
@@ -112,17 +112,50 @@ entt::entity World::CreateCube(entt::registry& registry) {
 
 entt::entity World::CreateLight(entt::registry& registry) {
 	entt::entity e = registry.create();
-	registry.emplace<LocalPosition>(e, glm::vec3(1, 1, 1));
+	registry.emplace<LocalPosition>(e, glm::vec3(0, 2, 0));
 	registry.emplace<LocalRotation>(e, glm::quat(1, 0, 0, 0));
 	registry.emplace<LocalScale>(e, glm::vec3(1, 1, 1));
 	registry.emplace<LocalTransform>(e);
 
-	registry.emplace<MeshComponent>(e, Uuid("c98fb2af-8be5-437b-b096-bc44d71b656d"));
+	registry.emplace<MeshComponent>(e, Uuid("0ba11610-6979-4284-a533-10a61c70363d"));
 	registry.emplace<MaterialComponent>(e, Uuid("99116883-fd22-4e1c-a6f2-d5ccc1b94a3d"));
 	return e;
 }
 
+void World::CreateCornellBox(entt::registry& registry) {
+}
+
+void World::CreateAxises(entt::registry& registry, float length, float size) {
+	Uuid materials[] = { 
+		Uuid("283e6726-58d0-4ffb-a92f-7b0599bca3d9"), 
+		Uuid("7c39efcd-3c1e-4735-b390-799a2b7cf736"), 
+		Uuid("aae8b14d-42cd-4ad5-8bd8-b7cbb19dac64") 
+	};
+	glm::vec3 scales[] = {
+		glm::vec3(length, size, size),
+		glm::vec3(size, length, size),
+		glm::vec3(size, size, length),
+	};
+	float offset = length * 0.5;
+	glm::vec3 positions[] = {
+		glm::vec3(offset, 0, 0),
+		glm::vec3(0, offset, 0),
+		glm::vec3(0, 0, offset),
+	};
+	for (size_t i = 0; i < 3; i++) {
+		entt::entity e = registry.create();
+		registry.emplace<LocalPosition>(e, positions[i]);
+		registry.emplace<LocalRotation>(e, glm::quat(1, 0, 0, 0));
+		registry.emplace<LocalScale>(e, scales[i]);
+		registry.emplace<LocalTransform>(e);
+
+		registry.emplace<MeshComponent>(e, Uuid("c98fb2af-8be5-437b-b096-bc44d71b656d"));
+		registry.emplace<MaterialComponent>(e, materials[i]);
+	}
+}
+
 void World::CreateDefault(entt::registry& registry) {
+	CreateAxises(registry, 2, 0.1);
 	entt::entity camera = CreateCamera(registry);
 	entt::entity cube = CreateCube(registry);
 	entt::entity light = CreateLight(registry);

@@ -11,6 +11,8 @@ private:
 	static entt::entity CreateCamera(entt::registry& registry);
 	static entt::entity CreateCube(entt::registry& registry);
 	static entt::entity CreateLight(entt::registry& registry);
+	static void CreateCornellBox(entt::registry& registry);
+	static void CreateAxises(entt::registry& registry, float length, float size);
 
 	// Systems
 	static void UpdateMaterialsRegistry(entt::registry& registry);
