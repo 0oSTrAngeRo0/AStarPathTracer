@@ -77,4 +77,5 @@ private:
 		const std::unordered_map<Uuid, uint32_t>& shader_indices
 	);
 	void UpdatePushConstants(const DeviceContext& context, entt::registry& registry);
+	static vk::TransformMatrixKHR GetTransformMatrixKHR(const glm::mat4 transform);
 };
