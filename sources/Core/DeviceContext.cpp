@@ -99,7 +99,7 @@ vk::Device DeviceContext::CreateDevice(const vk::PhysicalDevice gpu, const Devic
 	auto features = config.GetGpuFeatures();
 	gpu.getFeatures2(&features);
 
-	vk::DeviceCreateInfo device_info({}, queue_create_infos, {}, extensions, 0, &features);
+	vk::DeviceCreateInfo device_info({}, queue_create_infos, {}, extensions, nullptr, &features);
 
 	#if defined(ENABLE_NSIGHT_AFTERMATH)
 	vk::DeviceDiagnosticsConfigCreateInfoNV device_diagnostics_config_create_info(
@@ -107,7 +107,7 @@ vk::Device DeviceContext::CreateDevice(const vk::PhysicalDevice gpu, const Devic
 		| vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableResourceTracking
 		| vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderDebugInfo
 		| vk::DeviceDiagnosticsConfigFlagBitsNV::eEnableShaderErrorReporting
-	)
+	);
 	#endif
 
 	vk::StructureChain<
