@@ -1,0 +1,16 @@
+{
+  "references": [ "157bcddc-17e2-4983-bf39-e5d1bc3494a6" ],
+  "resource_data": {
+    "material_data": {
+      "color": {
+        "x": 1.0,
+        "y": 1.0,
+        "z": 1.0
+      },
+      "intensity": 250.0
+    },
+    "shader_id": "157bcddc-17e2-4983-bf39-e5d1bc3494a6"
+  },
+  "resource_type": "MaterialLight",
+  "uuid": "24c95852-9e30-4738-90ec-066619e1fc63"
+}

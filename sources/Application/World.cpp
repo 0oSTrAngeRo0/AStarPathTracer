@@ -98,10 +98,12 @@ template <> MeshComponent World::GetMeshInstance<World::MeshInstance::eCube>() {
 template <> MeshComponent World::GetMeshInstance<World::MeshInstance::eCornellBox>() {
 	return MeshComponent(
 		{
-			Uuid("d48a6460-96d6-483a-bf44-c57b89f5dd22"),
-			Uuid("5f11b07b-6e6e-49cd-800d-f8395046b244"),
-			Uuid("a3cbc5ef-0c6d-4597-a22f-b6ad8cfc6c89"),
-			Uuid("96708ac9-5d83-45e0-8064-8678326d3d0a"),
+			Uuid("d48a6460-96d6-483a-bf44-c57b89f5dd22"), // light
+			Uuid("5f11b07b-6e6e-49cd-800d-f8395046b244"), // large_box
+			Uuid("a3cbc5ef-0c6d-4597-a22f-b6ad8cfc6c89"), // small_box
+			Uuid("96708ac9-5d83-45e0-8064-8678326d3d0a"), // shell_box
+			Uuid("45c77a4b-a91a-44cf-9db3-0c46234398f2"), // red_wall
+			Uuid("0d4a3638-4c78-4d67-8fbe-a072152d7376"), // green_wall
 		}, Uuid("71182908-0fd0-448e-8cf8-357119beede8")
 	);
 }
@@ -161,19 +163,35 @@ entt::entity World::AttachOrbitCamera(entt::registry& registry, entt::entity cam
 
 
 void World::CreateCornellBox(entt::registry& registry) {
-	entt::entity e = registry.create();
-	registry.emplace<LocalPosition>(e, glm::vec3(0, 0, 0));
-	registry.emplace<LocalRotation>(e, glm::quat(1, 0, 0, 0));
-	registry.emplace<LocalScale>(e, glm::vec3(0.01, 0.01, 0.01));
-	registry.emplace<LocalTransform>(e);
+	entt::entity cornell_box = registry.create();
+	registry.emplace<LocalPosition>(cornell_box, glm::vec3(0, 0, 0));
+	registry.emplace<LocalRotation>(cornell_box, glm::quat(1, 0, 0, 0));
+	registry.emplace<LocalScale>(cornell_box, glm::vec3(0.01));
+	registry.emplace<LocalTransform>(cornell_box);
 
-	registry.emplace<MeshComponent>(e, GetMeshInstance<MeshInstance::eCornellBox>());
-	registry.emplace<MaterialComponent>(e, std::vector<Uuid>{ 
-		Uuid("99116883-fd22-4e1c-a6f2-d5ccc1b94a3d"), // light
-		Uuid("5ba3b79d-2f7e-479a-961b-04b58ba8fc6c"), // large_box
-		Uuid("5ba3b79d-2f7e-479a-961b-04b58ba8fc6c"), // small_box
-		Uuid("5ba3b79d-2f7e-479a-961b-04b58ba8fc6c")  // cornell_box
+	registry.emplace<MeshComponent>(cornell_box, GetMeshInstance<MeshInstance::eCornellBox>());
+	registry.emplace<MaterialComponent>(cornell_box, std::vector<Uuid>{ 
+		Uuid("24c95852-9e30-4738-90ec-066619e1fc63"), // light
+		Uuid("38108883-47be-4128-b75e-f6f93ebf677e"), // large_box
+		Uuid("38108883-47be-4128-b75e-f6f93ebf677e"), // small_box
+		Uuid("47ccb184-7c7c-4dc6-9245-3acf67bd2a55"), // shell_box
+		Uuid("8bd67ff6-a6dd-4550-afdd-64018465f3bd"), // red_box
+		Uuid("68bdece3-5889-419c-a314-28e7b0f12975"), // green_box
 	});
+
+	// fov_y = 2 * arctan(sensor_size_y / (2 * focal_length)) * ( pi / 180)
+	// cornell box camera data: 
+	//	sensor size: (width, height) = (0.025, 0.025)
+	//	focal length: 0.035
+	//float fov_y = 2 * glm::atan(0.025 / (2 * 0.035)) * glm::pi<float>() / 180;
+	float fov_y = 45;
+	entt::entity camera = registry.create();
+	registry.emplace<LocalPosition>(camera, glm::vec3(-2.78, 2.73, 8));
+	registry.emplace<LocalRotation>(camera, glm::quatLookAt(glm::vec3(0, 0, -1), glm::vec3(0, 1, 0)));
+	registry.emplace<LocalScale>(camera, glm::vec3(1, 1, 1));
+	registry.emplace<LocalTransform>(camera);
+	registry.emplace<ProjectionCamera>(camera, fov_y, 1, 0.1, 50);
+	registry.emplace<Camera>(camera);
 }
 
 void World::CreateAxises(entt::registry& registry, float length, float size) {
@@ -206,12 +224,12 @@ void World::CreateAxises(entt::registry& registry, float length, float size) {
 }
 
 void World::CreateDefault(entt::registry& registry) {
-	CreateAxises(registry, 2, 0.1);
-	entt::entity camera = CreateCamera(registry);
+	//CreateAxises(registry, 2, 0.1);
+	//entt::entity camera = CreateCamera(registry);
 	//entt::entity cube = CreateCube(registry);
 	//entt::entity light = CreateLight(registry);
+	//entt::entity look_at = AttachOrbitCamera(registry, camera, glm::vec3(0, 0, 0), 3.0);
 	CreateCornellBox(registry);
-	entt::entity look_at = AttachOrbitCamera(registry, camera, glm::vec3(0, 0, 0), 3.0);
 }
 
 #pragma endregion
