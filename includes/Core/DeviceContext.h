@@ -3,7 +3,7 @@
 #include "Core/VulkanUsages.h"
 
 #define ENABLE_DEBUG 1
-#define ENABLE_NSIGHT_AFTERMATH 1
+//#define ENABLE_NSIGHT_AFTERMATH 1
 
 #if ENABLE_DEBUG
 class EngineDebugger;
