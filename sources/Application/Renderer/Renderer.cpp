@@ -99,7 +99,9 @@ void Renderer::Destroy(const DeviceContext& context) {
 	device.destroySemaphore(render_finished_semaphore);
 	device.destroyFence(in_flight_fence);
 	device.destroyCommandPool(command_pool);
+	device.destroyDescriptorPool(descriptor_pool);
 	swapchain->Destroy(context);
+	surface->Destroy(context);
 }
 
 Renderer::~Renderer() = default;
