@@ -7,7 +7,7 @@
 #include "Engine/Resources/MeshLoader/MeshResourceUtilities.h"
 
 template <>
-MeshData MeshResourceUtilities::Load<ObjResourceData>(const Resource<ObjResourceData>& resource) {
+std::vector<MeshData> MeshResourceUtilities::Load<ObjResourceData>(const Resource<ObjResourceData>& resource) {
     printf("Start Loading Obj File: [%s]\n", resource.resource_data.path.c_str());
     tinyobj::ObjReader reader;
     tinyobj::ObjReaderConfig reader_config;
@@ -24,19 +24,21 @@ MeshData MeshResourceUtilities::Load<ObjResourceData>(const Resource<ObjResource
     auto& shapes = reader.GetShapes();
     auto& materials = reader.GetMaterials();
 
-    std::vector<glm::vec3> positions;
-    std::vector<glm::vec3> normals;
-    std::vector<glm::vec2> uvs;
-    std::vector<uint32_t> indices;
+    std::vector<MeshData> submeshes;
 
     // Loop over shapes
     for (const auto& shape : shapes) {
+        std::vector<glm::vec3> positions;
+        std::vector<glm::vec3> normals;
+        std::vector<glm::vec2> uvs;
+        std::vector<uint32_t> indices;
+
         printf("Loading Shape: [%s]\n", shape.name.c_str());
         size_t offset = 0;
         for (size_t n = 0; n < shape.mesh.num_face_vertices.size(); n++) {
             // per face
             auto ngon = shape.mesh.num_face_vertices[n];
-            assert(ngon == 3);
+            ASTAR_ASSERT(ngon == 3);
             auto material_id = shape.mesh.material_ids[n];
             for (size_t f = 0; f < ngon; f++) {
                 const auto& index = shape.mesh.indices[offset + f];
@@ -46,10 +48,15 @@ MeshData MeshResourceUtilities::Load<ObjResourceData>(const Resource<ObjResource
                     attrib.vertices[3 * index.vertex_index + 2]
                 ));
 
-                uvs.emplace_back(glm::vec2(
-                    attrib.texcoords[2 * index.texcoord_index + 0],
-                    1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-                ));
+                if (index.texcoord_index < 0) {
+                    uvs.emplace_back(glm::vec2(0, 0));
+                }
+                else {
+                    uvs.emplace_back(glm::vec2(
+                        attrib.texcoords[2 * index.texcoord_index + 0],
+                        1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+                    ));
+                }
 
                 normals.emplace_back(glm::vec3(
                     attrib.normals[3 * index.normal_index + 0],
@@ -60,20 +67,21 @@ MeshData MeshResourceUtilities::Load<ObjResourceData>(const Resource<ObjResource
             }
             offset += ngon;
         }
-        printf("\n");
+
+        ASTAR_ASSERT(indices.size() % 3 == 0);
+        MeshData mesh;
+        mesh.indices = reinterpret_cast<std::vector<glm::uvec3>&>(indices);
+        mesh.positions = positions;
+        mesh.normals = normals;
+        mesh.uvs = uvs;
+        mesh.tangents = std::vector<glm::vec4>(positions.size());
+
+        MikkTSpaceTangentGenerator::GenerateTangent(mesh);
+
+        submeshes.emplace_back(mesh);
     }
 
-    assert(indices.size() % 3 == 0);
-    MeshData mesh;
-    mesh.indices = reinterpret_cast<std::vector<glm::uvec3>&>(indices);
-    mesh.positions = positions;
-    mesh.normals = normals;
-    mesh.uvs = uvs;
-    mesh.tangents = std::vector<glm::vec4>(positions.size());
-    
-    MikkTSpaceTangentGenerator::GenerateTangent(mesh);
-
-    return mesh;
+    return submeshes;
 }
 
 REGISTER_RESOURCE_MESH_LOADER(ObjResourceData);

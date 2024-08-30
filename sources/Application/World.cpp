@@ -13,8 +13,10 @@
 void World::UpdateMaterialsRegistry(entt::registry& registry) {
 	auto view = registry.view<const MaterialComponent>();
 	view.each([&](const MaterialComponent& material) {
-		const auto& [shader_id, index] = HostShaderManager::GetInstance().RegisterMaterial(material.resource_id);
-	});
+		for (const auto& id : material.resource_ids) {
+			const auto& [shader_id, index] = HostShaderManager::GetInstance().RegisterMaterial(id);
+		}
+		});
 }
 
 void World::UpdateLinearVelocity(entt::registry& registry, float delta_time) {
@@ -87,6 +89,29 @@ void World::UpdateProjectiveCamera(entt::registry& registry) {
 
 #pragma endregion
 
+#pragma region Mesh Instance Creators
+
+template <> MeshComponent World::GetMeshInstance<World::MeshInstance::eCube>() {
+	return MeshComponent({ Uuid("91a4aa06-5c68-49ac-a4c1-41edf127c58c") }, Uuid("c98fb2af-8be5-437b-b096-bc44d71b656d"));
+}
+
+template <> MeshComponent World::GetMeshInstance<World::MeshInstance::eCornellBox>() {
+	return MeshComponent(
+		{
+			Uuid("d48a6460-96d6-483a-bf44-c57b89f5dd22"),
+			Uuid("5f11b07b-6e6e-49cd-800d-f8395046b244"),
+			Uuid("a3cbc5ef-0c6d-4597-a22f-b6ad8cfc6c89"),
+			Uuid("96708ac9-5d83-45e0-8064-8678326d3d0a"),
+		}, Uuid("71182908-0fd0-448e-8cf8-357119beede8")
+	);
+}
+
+template <> MeshComponent World::GetMeshInstance<World::MeshInstance::eQuad>() {
+	return MeshComponent({ Uuid("f0c2ce17-d812-4dbc-b2e1-9499fcdff90c") }, Uuid("0ba11610-6979-4284-a533-10a61c70363d"));
+}
+
+#pragma endregion
+
 #pragma region World Creations
 
 entt::entity World::CreateCamera(entt::registry& registry) {
@@ -107,8 +132,8 @@ entt::entity World::CreateCube(entt::registry& registry) {
 	registry.emplace<LocalScale>(e, glm::vec3(1, 1, 1));
 	registry.emplace<LocalTransform>(e);
 
-	registry.emplace<MeshComponent>(e, Uuid("c98fb2af-8be5-437b-b096-bc44d71b656d"));
-	registry.emplace<MaterialComponent>(e, Uuid("5ba3b79d-2f7e-479a-961b-04b58ba8fc6c"));
+	registry.emplace<MeshComponent>(e, GetMeshInstance<MeshInstance::eCube>());
+	registry.emplace<MaterialComponent>(e, std::vector<Uuid>{ Uuid("5ba3b79d-2f7e-479a-961b-04b58ba8fc6c") });
 	return e;
 }
 
@@ -119,19 +144,43 @@ entt::entity World::CreateLight(entt::registry& registry) {
 	registry.emplace<LocalScale>(e, glm::vec3(1, 1, 1));
 	registry.emplace<LocalTransform>(e);
 
-	registry.emplace<MeshComponent>(e, Uuid("0ba11610-6979-4284-a533-10a61c70363d"));
-	registry.emplace<MaterialComponent>(e, Uuid("99116883-fd22-4e1c-a6f2-d5ccc1b94a3d"));
+	registry.emplace<MeshComponent>(e, GetMeshInstance<MeshInstance::eQuad>());
+	registry.emplace<MaterialComponent>(e, std::vector<Uuid>{ Uuid("99116883-fd22-4e1c-a6f2-d5ccc1b94a3d") });
 	return e;
 }
 
+entt::entity World::AttachOrbitCamera(entt::registry& registry, entt::entity camera, glm::vec3 position, float distance) {
+	entt::entity look_at = registry.create();
+	registry.emplace<LocalPosition>(look_at, position);
+	registry.emplace<LocalRotation>(look_at, glm::quat(1, 0, 0, 0));
+	registry.emplace<LocalScale>(look_at, glm::vec3(1, 1, 1));
+	registry.emplace<LocalTransform>(look_at);
+	registry.emplace<OrbitCamera>(camera, look_at, distance, 0, 0);
+	return look_at;
+}
+
+
 void World::CreateCornellBox(entt::registry& registry) {
+	entt::entity e = registry.create();
+	registry.emplace<LocalPosition>(e, glm::vec3(0, 0, 0));
+	registry.emplace<LocalRotation>(e, glm::quat(1, 0, 0, 0));
+	registry.emplace<LocalScale>(e, glm::vec3(0.01, 0.01, 0.01));
+	registry.emplace<LocalTransform>(e);
+
+	registry.emplace<MeshComponent>(e, GetMeshInstance<MeshInstance::eCornellBox>());
+	registry.emplace<MaterialComponent>(e, std::vector<Uuid>{ 
+		Uuid("99116883-fd22-4e1c-a6f2-d5ccc1b94a3d"), // light
+		Uuid("5ba3b79d-2f7e-479a-961b-04b58ba8fc6c"), // large_box
+		Uuid("5ba3b79d-2f7e-479a-961b-04b58ba8fc6c"), // small_box
+		Uuid("5ba3b79d-2f7e-479a-961b-04b58ba8fc6c")  // cornell_box
+	});
 }
 
 void World::CreateAxises(entt::registry& registry, float length, float size) {
-	Uuid materials[] = { 
-		Uuid("283e6726-58d0-4ffb-a92f-7b0599bca3d9"), 
-		Uuid("7c39efcd-3c1e-4735-b390-799a2b7cf736"), 
-		Uuid("aae8b14d-42cd-4ad5-8bd8-b7cbb19dac64") 
+	Uuid materials[] = {
+		Uuid("283e6726-58d0-4ffb-a92f-7b0599bca3d9"),
+		Uuid("7c39efcd-3c1e-4735-b390-799a2b7cf736"),
+		Uuid("aae8b14d-42cd-4ad5-8bd8-b7cbb19dac64")
 	};
 	glm::vec3 scales[] = {
 		glm::vec3(length, size, size),
@@ -151,17 +200,18 @@ void World::CreateAxises(entt::registry& registry, float length, float size) {
 		registry.emplace<LocalScale>(e, scales[i]);
 		registry.emplace<LocalTransform>(e);
 
-		registry.emplace<MeshComponent>(e, Uuid("c98fb2af-8be5-437b-b096-bc44d71b656d"));
-		registry.emplace<MaterialComponent>(e, materials[i]);
+		registry.emplace<MeshComponent>(e, GetMeshInstance<MeshInstance::eCube>());
+		registry.emplace<MaterialComponent>(e, std::vector<Uuid>({ materials[i] }));
 	}
 }
 
 void World::CreateDefault(entt::registry& registry) {
 	CreateAxises(registry, 2, 0.1);
 	entt::entity camera = CreateCamera(registry);
-	entt::entity cube = CreateCube(registry);
-	entt::entity light = CreateLight(registry);
-	registry.emplace<OrbitCamera>(camera, cube, 3, 0, 0);
+	//entt::entity cube = CreateCube(registry);
+	//entt::entity light = CreateLight(registry);
+	CreateCornellBox(registry);
+	entt::entity look_at = AttachOrbitCamera(registry, camera, glm::vec3(0, 0, 0), 3.0);
 }
 
 #pragma endregion

@@ -10,19 +10,27 @@ const Mesh& MeshPool::GetMesh(const Uuid& device_id) {
 	return meshes.at(device_id);
 }
 
-void MeshPool::EnsureMeshes(const DeviceContext& context, const std::vector<std::tuple<Uuid, Uuid>>& used_meshes) {
+void MeshPool::EnsureMeshes(const DeviceContext& context, const std::vector<UsedMesh>& used_meshes) {
 	std::vector<std::reference_wrapper<Mesh>> uninitialized_meshes;
 	for (const auto& pair : used_meshes) {
-		const auto& device_id = std::get<0>(pair);
-		if (meshes.contains(device_id)) {
-			continue;
+		const auto& device_ids = std::get<0>(pair);
+		uint32_t unloaded_mesh_count = 0;
+		for(const auto& id : device_ids) {
+			if (!meshes.contains(id)) unloaded_mesh_count++;
 		}
+		if (unloaded_mesh_count == 0) continue;
+		ASTAR_ASSERT(unloaded_mesh_count == device_ids.size()); // some submesh are uploaded but some are not uploaded, it's invalid
+
 		const auto& resource = std::get<1>(pair);
-		const auto& data = MeshResourceUtilities::Load(resource);
-		Mesh mesh(context, data.positions, data.normals, data.tangents, data.uvs, data.indices);
-		mesh.SetName(context, resource.str());
-		meshes.insert(std::make_pair(device_id, mesh));
-		uninitialized_meshes.emplace_back(meshes.at(device_id));
+		const auto& submeshes = MeshResourceUtilities::Load(resource);
+		for (size_t i = 0, end = submeshes.size(); i < end; i++) {
+			const auto& submesh = submeshes[i];
+			const auto& id = device_ids[i];
+			Mesh mesh(context, submesh.positions, submesh.normals, submesh.tangents, submesh.uvs, submesh.indices);
+			mesh.SetName(context, resource.str());
+			meshes.insert(std::make_pair(id, mesh));
+			uninitialized_meshes.emplace_back(meshes.at(id));
+		}
 	}
 	if (uninitialized_meshes.size() == 0) return;
 	CreateBlases(context, uninitialized_meshes);

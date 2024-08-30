@@ -18,10 +18,10 @@ public:
 	std::vector<glm::uvec3> indices; // triangles
 };
 
-class MeshResourceUtilities : public StaticRegistry<std::string, std::function<MeshData(const ResourceBase&)>> {
+class MeshResourceUtilities : public StaticRegistry<std::string, std::function<std::vector<MeshData>(const ResourceBase&)>> {
 public:
-	static MeshData Load(Uuid id);
-	template <typename T> static MeshData Load(const Resource<T>& resource);
+	static std::vector<MeshData> Load(Uuid id);
+	template <typename T> static std::vector<MeshData> Load(const Resource<T>& resource);
 };
 
 #define REGISTER_RESOURCE_MESH_LOADER(type) \

@@ -1,7 +1,7 @@
 #include "Engine/Resources/MeshLoader/MeshResourceUtilities.h"
 #include "Engine/Resources/ResourcesManager.h"
 
-MeshData MeshResourceUtilities::Load(Uuid id) {
+std::vector<MeshData> MeshResourceUtilities::Load(Uuid id) {
 	auto& resource = ResourcesManager::GetInstance().GetResource(id);
 	auto& type = resource.GetResourceType();
 

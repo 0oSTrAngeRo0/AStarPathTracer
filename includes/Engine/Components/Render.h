@@ -4,11 +4,13 @@
 
 struct MeshComponent {
 public:
-	Uuid device_id;
+	std::vector<Uuid> device_ids;
 	Uuid resource_id;
 
-	MeshComponent(const Uuid& device_id, const Uuid& resource_id) : device_id(device_id), resource_id(resource_id) {}
-	MeshComponent(const Uuid& resource_id) : MeshComponent(xg::newGuid(), resource_id) {}
+	MeshComponent(const MeshComponent& other) = default;
+	MeshComponent(MeshComponent&& other) = default;
+
+	MeshComponent(const std::vector<Uuid>& device_ids, const Uuid& resource_id) : device_ids(device_ids), resource_id(resource_id) {}
 };
 
 struct StaticMeshTag {};
@@ -16,7 +18,7 @@ struct StaticMeshTag {};
 struct DeformableMeshTag {};
 
 struct MaterialComponent {
-	Uuid resource_id;
+	std::vector<Uuid> resource_ids;
 
-	MaterialComponent(const Uuid& resource_id) : resource_id(resource_id) {}
+	MaterialComponent(const std::vector<Uuid>& resource_ids) : resource_ids(resource_ids) {}
 };

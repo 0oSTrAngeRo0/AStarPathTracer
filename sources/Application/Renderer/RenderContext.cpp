@@ -37,9 +37,9 @@ RenderContext::RenderContext(const DeviceContext& context) {
 void RenderContext::UploadMeshes(const DeviceContext& context, entt::registry& registry) {
 	auto view = registry.view<const LocalTransform, const MeshComponent, const MaterialComponent>();
 
-	std::vector<std::tuple<Uuid, Uuid>> used_meshes;
+	std::vector<MeshPool::UsedMesh> used_meshes;
 	view.each([&used_meshes](const LocalTransform& transform, const MeshComponent& mesh, const MaterialComponent& material) {
-		used_meshes.emplace_back(std::make_tuple(mesh.device_id, mesh.resource_id));
+		used_meshes.emplace_back(std::make_tuple(mesh.device_ids, mesh.resource_id));
 	});
 	mesh_pool.EnsureMeshes(context, used_meshes);
 }
@@ -54,7 +54,7 @@ void RenderContext::UploadMaterials(
 
 	std::vector<Uuid> used_materials;
 	view.each([&used_materials](const LocalTransform& transform, const MeshComponent& mesh, const MaterialComponent& material) {
-		used_materials.emplace_back(material.resource_id);
+		used_materials.insert(used_materials.end(), material.resource_ids.begin(), material.resource_ids.end());
 	});
 
 	std::vector<std::tuple<const Uuid, const std::vector<std::byte>, const bool, const size_t>> data;
@@ -92,23 +92,25 @@ void RenderContext::RecreateInstances(
 		const MeshComponent& mesh, 
 		const MaterialComponent& material
 	) {
-		const Mesh& device_mesh = mesh_pool.GetMesh(mesh.device_id);
-		const auto& [shader_id, material_index] = host_shaders.GetMaterialRuntimeData(material.resource_id);
-		as_instances.emplace_back(vk::AccelerationStructureInstanceKHR(
-			GetTransformMatrixKHR(transform.matrix), index, 0xFF, shader_indices.at(shader_id),
-			vk::GeometryInstanceFlagBitsKHR::eTriangleCullDisable,
-			device_mesh.GetAsAddress()
-		));
+		for (size_t i = 0, end = mesh.device_ids.size(); i < end; i++) {
+			const Mesh& device_mesh = mesh_pool.GetMesh(mesh.device_ids[i]);
+			const auto& [shader_id, material_index] = host_shaders.GetMaterialRuntimeData(material.resource_ids[i]);
+			as_instances.emplace_back(vk::AccelerationStructureInstanceKHR(
+				GetTransformMatrixKHR(transform.matrix), index, 0xFF, shader_indices.at(shader_id),
+				vk::GeometryInstanceFlagBitsKHR::eTriangleCullDisable,
+				device_mesh.GetAsAddress()
+			));
 
-		InstanceData instance_data(
-			device_mesh.GetVertexPositionAddress(),
-			device_mesh.GetVertexOtherAddress(),
-			device_mesh.GetIndexAddress(),
-			material_pool.GetShaderBuffer(shader_id).GetDeviceAddress(),
-			material_index
-		);
-		instances_data.emplace_back(instance_data);
-		index++;
+			InstanceData instance_data(
+				device_mesh.GetVertexPositionAddress(),
+				device_mesh.GetVertexOtherAddress(),
+				device_mesh.GetIndexAddress(),
+				material_pool.GetShaderBuffer(shader_id).GetDeviceAddress(),
+				material_index
+			);
+			instances_data.emplace_back(instance_data);
+			index++;
+		}
 	});
 
 	// Recreate buffers
