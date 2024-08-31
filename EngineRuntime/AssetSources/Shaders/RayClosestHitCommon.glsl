@@ -57,17 +57,29 @@ do { \
 	vec3 p0 = VerticesPosition(vertex_position_address).data[index.x]; \
 	vec3 p1 = VerticesPosition(vertex_position_address).data[index.y]; \
 	vec3 p2 = VerticesPosition(vertex_position_address).data[index.z]; \
- \
+\
 	uint64_t vertex_other_address = instance.vertex_other_address; \
 	VertexOther v0 = VerticesOther(vertex_other_address).data[index.x]; \
 	VertexOther v1 = VerticesOther(vertex_other_address).data[index.y]; \
 	VertexOther v2 = VerticesOther(vertex_other_address).data[index.z]; \
- \
-	out_vertex.position = INTERPOLATE_BARYCENTRIC(p0, p1, p2, barycentric, DO_NOTHING); \
-	out_vertex.normal = INTERPOLATE_BARYCENTRIC(v0, v1, v2, barycentric, VERTEX_GET_NORMAL); \
-	out_vertex.tangent = INTERPOLATE_BARYCENTRIC(v0, v1, v2, barycentric, VERTEX_GET_TANGENT); \
-	out_vertex.bitangent = INTERPOLATE_BARYCENTRIC(v0, v1, v2, barycentric, VERTEX_GET_BITANGENT); \
-	out_vertex.uv = INTERPOLATE_BARYCENTRIC(v0, v1, v2, barycentric, VERTEX_GET_UV); \
+\
+	vec3 position = INTERPOLATE_BARYCENTRIC(p0, p1, p2, barycentric, DO_NOTHING); \
+	vec3 normal = INTERPOLATE_BARYCENTRIC(v0, v1, v2, barycentric, VERTEX_GET_NORMAL); \
+	vec3 tangent = INTERPOLATE_BARYCENTRIC(v0, v1, v2, barycentric, VERTEX_GET_TANGENT); \
+	vec3 bitangent = INTERPOLATE_BARYCENTRIC(v0, v1, v2, barycentric, VERTEX_GET_BITANGENT); \
+	vec2 uv = INTERPOLATE_BARYCENTRIC(v0, v1, v2, barycentric, VERTEX_GET_UV); \
+\
+	mat3x4 o2w = gl_ObjectToWorld3x4EXT; \
+	position = (o2w * position).xyz; \
+	normal = (o2w * normal).xyz; \
+	tangent = (o2w * tangent).xyz; \
+	bitangent = (o2w * bitangent).xyz; \
+\
+	out_vertex.position = position; \
+	out_vertex.normal = normalize(normal); \
+	out_vertex.tangent = normalize(tangent); \
+	out_vertex.bitangent = normalize(bitangent); \
+	out_vertex.uv = uv; \
 } while(false) \
 
 #define RAY_CLOSEST_HIT_RAY_TRACING_FETCH_INSTANCE_DATA(out_instance) \
