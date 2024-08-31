@@ -39,7 +39,7 @@ void Renderer::CreateSyncObjects(const DeviceContext& context) {
 void Renderer::CreateDescriptorPool(const DeviceContext& context) {
 	std::vector<vk::DescriptorPoolSize> pool_sizes = {
 		vk::DescriptorPoolSize(vk::DescriptorType::eAccelerationStructureKHR, 1),
-		vk::DescriptorPoolSize(vk::DescriptorType::eStorageImage, 1),
+		vk::DescriptorPoolSize(vk::DescriptorType::eStorageImage, 2),
 		vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 5),
 		vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 1)
 	};

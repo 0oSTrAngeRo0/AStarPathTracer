@@ -29,6 +29,7 @@ void RendererPipeline::UpdateDescriptorSet(const DeviceContext& context, const R
 	vk::DescriptorBufferInfo write_material_buffer(render.GetMaterialBuffer(), 0, vk::WholeSize);
 	vk::DescriptorBufferInfo write_instance_buffer(render.GetInstancesBuffer(), 0, vk::WholeSize);
 	vk::DescriptorBufferInfo write_constants_buffer(render.GetConstantsBuffer(), 0, vk::WholeSize);
+	vk::DescriptorImageInfo write_accumulate_image({}, render.GetAccumulateImageView(), vk::ImageLayout::eGeneral);
 	std::vector<vk::WriteDescriptorSet> writes = {
 		vk::WriteDescriptorSet(set, 0, 0, 1, vk::DescriptorType::eAccelerationStructureKHR, {}, {}, {}, &write_tlas),
 		vk::WriteDescriptorSet(set, 1, 0, vk::DescriptorType::eStorageImage, write_rt_image),
@@ -38,6 +39,7 @@ void RendererPipeline::UpdateDescriptorSet(const DeviceContext& context, const R
 		vk::WriteDescriptorSet(set, 5, 0, vk::DescriptorType::eStorageBuffer, {}, write_material_buffer),
 		vk::WriteDescriptorSet(set, 6, 0, vk::DescriptorType::eStorageBuffer, {}, write_instance_buffer),
 		vk::WriteDescriptorSet(set, 7, 0, vk::DescriptorType::eUniformBuffer, {}, write_constants_buffer),
+		vk::WriteDescriptorSet(set, 8, 0, vk::DescriptorType::eStorageImage, write_accumulate_image),
 	};
 	context.GetDevice().updateDescriptorSets(writes, {});
 }
@@ -100,7 +102,8 @@ vk::DescriptorSetLayout RendererPipeline::CreateDescriptorSetLayout(const vk::De
 		vk::DescriptorSetLayoutBinding(4, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eClosestHitKHR), // index buffer
 		vk::DescriptorSetLayoutBinding(5, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eClosestHitKHR), // material buffer
 		vk::DescriptorSetLayoutBinding(6, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eClosestHitKHR), // instance buffer
-		vk::DescriptorSetLayoutBinding(7, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eRaygenKHR) // constants buffer
+		vk::DescriptorSetLayoutBinding(7, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eRaygenKHR), // constants buffer
+		vk::DescriptorSetLayoutBinding(8, vk::DescriptorType::eStorageImage, 1, vk::ShaderStageFlagBits::eRaygenKHR), // accumulate image
 	};
 	return device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, bindings));
 }

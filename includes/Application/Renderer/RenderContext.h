@@ -32,8 +32,10 @@ public:
 	inline const Buffer& GetMaterialBuffer() const { return material_pool.GetMainBuffer(); }
 	inline const Buffer& GetInstancesBuffer() const { return instances_buffer; }
 	inline const Buffer& GetConstantsBuffer() const { return constants_buffer; }
-	inline const vk::ImageView GetOutputImageView() const { return output_image->image_view; }
-	inline const Image& GetOutputImage() const { return output_image->image; }
+	inline const vk::ImageView GetOutputImageView() const { return output_image->output_image_view; }
+	inline const Image& GetOutputImage() const { return output_image->output_image; }
+	inline const vk::ImageView GetAccumulateImageView() const { return output_image->accumulate_image_view; }
+	inline const Image& GetAccumulateImage() const { return output_image->accumulate_image; }
 	inline const vk::Extent2D GetOutputImageExtent() const { return output_image->extent; }
 	inline const vk::AccelerationStructureKHR GetTlas() const { return tlas; }
 private:
@@ -56,8 +58,10 @@ private:
 	ConstantsData constants_data;
 
 	struct OutputImage {
-		Image image;
-		vk::ImageView image_view;
+		Image output_image;
+		vk::ImageView output_image_view;
+		Image accumulate_image;
+		vk::ImageView accumulate_image_view;
 		vk::Extent2D extent;
 
 		OutputImage(const DeviceContext& context, const vk::Extent2D extent, vk::Format format);

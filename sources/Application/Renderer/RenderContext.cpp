@@ -173,12 +173,28 @@ void RenderContext::RecreateOutputImage(const DeviceContext& context, const vk::
 }
 
 RenderContext::OutputImage::OutputImage(const DeviceContext& context, const vk::Extent2D extent, vk::Format format) : 
-	image(context, vk::ImageCreateInfo({}, vk::ImageType::e2D, format,
-	vk::Extent3D(extent, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
-	vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferSrc)) {
+	output_image(context, vk::ImageCreateInfo({}, vk::ImageType::e2D, format,
+		vk::Extent3D(extent, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
+		vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferSrc)),
+    accumulate_image(context, vk::ImageCreateInfo({}, vk::ImageType::e2D, vk::Format::eR32G32B32A32Sfloat, 
+		vk::Extent3D(extent, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
+		vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst,
+		vk::SharingMode::eExclusive, {}, vk::ImageLayout::eGeneral
+	)) {
 
-	image_view = context.GetDevice().createImageView(vk::ImageViewCreateInfo({}, image,
+	vk::CommandBuffer cmd = context.GetTempCmd();
+	cmd.clearColorImage(accumulate_image, vk::ImageLayout::eGeneral, vk::ClearColorValue(0, 0, 0, 0),
+		vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
+	context.ReleaseTempCmd(cmd);
+
+	output_image_view = context.GetDevice().createImageView(vk::ImageViewCreateInfo({}, output_image,
 		vk::ImageViewType::e2D, format,
+		vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA),
+		vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)
+	));
+
+	accumulate_image_view = context.GetDevice().createImageView(vk::ImageViewCreateInfo({}, accumulate_image,
+		vk::ImageViewType::e2D, vk::Format::eR32G32B32A32Sfloat,
 		vk::ComponentMapping(vk::ComponentSwizzle::eR, vk::ComponentSwizzle::eG, vk::ComponentSwizzle::eB, vk::ComponentSwizzle::eA),
 		vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1)
 	));
@@ -187,6 +203,8 @@ RenderContext::OutputImage::OutputImage(const DeviceContext& context, const vk::
 }
 
 void RenderContext::OutputImage::Destroy(const DeviceContext& context) {
-	context.GetDevice().destroyImageView(image_view);
-	image.Destroy(context);
+	context.GetDevice().destroyImageView(output_image_view);
+	context.GetDevice().destroyImageView(accumulate_image_view);
+	output_image.Destroy(context);
+	accumulate_image.Destroy(context);
 }
