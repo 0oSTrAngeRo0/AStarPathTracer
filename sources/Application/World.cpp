@@ -80,7 +80,7 @@ void World::UpdateOrbitCamera(entt::registry& registry) {
 void World::UpdateProjectiveCamera(entt::registry& registry) {
 	auto view = registry.view<const LocalTransform, const ProjectionCamera, Camera>();
 	view.each([](const LocalTransform& transform, const ProjectionCamera& data, Camera& camera) {
-		glm::mat4x4 projection = glm::perspective(glm::radians(data.fov_y), data.aspect, data.near_z, data.far_z);
+		glm::mat4x4 projection = glm::perspectiveZO(glm::radians(data.fov_y_degree), data.aspect, data.near_z, data.far_z);
 		projection[1][1] *= -1;
 		camera.projection = projection;
 		camera.view = glm::inverse(transform.matrix);
@@ -179,11 +179,11 @@ void World::CreateCornellBox(entt::registry& registry) {
 		Uuid("68bdece3-5889-419c-a314-28e7b0f12975"), // green_box
 	});
 
-	// fov_y = 2 * arctan(sensor_size_y / (2 * focal_length)) * ( pi / 180)
+	// fov_y_degree = 2 * arctan(sensor_size_y / (2 * focal_length))
 	// cornell box camera data: 
 	//	sensor size: (width, height) = (0.025, 0.025)
 	//	focal length: 0.035
-	//float fov_y = 2 * glm::atan(0.025 / (2 * 0.035)) * glm::pi<float>() / 180;
+	//float fov_y = 2 * glm::atan(0.025 / (2 * 0.035));
 	float fov_y = 45;
 	entt::entity camera = registry.create();
 	registry.emplace<LocalPosition>(camera, glm::vec3(-2.78, 2.73, 8));
