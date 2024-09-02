@@ -1,0 +1,15 @@
+# Todo List of This Renderer
+
+## Real-time Rendering
+ - GPU Instancing + SRP Batcher + GPU Instancing for Skinned Mesh
+ - Mesh Shader
+
+## Path Tracer
+ - More materials:
+    - Mirror
+    - Glass
+    - Microface
+ - Volume
+ - Russian roulatte
+ - Auto stop progressive rendering when torrance is less enough
+ - Merge BLAS, by changing SBT when merge
