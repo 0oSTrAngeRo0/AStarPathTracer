@@ -45,4 +45,13 @@ vec3 HemiSphereSampleUniform(inout uint random_state) {
     return vec3(cos(phi) * sine_theta, sin(phi) * sine_theta, cosine_theta);
 }
 
+vec3 HemiSphereSampleCosineWeighted(inout uint random_state) {
+    float u = Rnd(random_state);
+    float v = Rnd(random_state);
+    float phi = v * 2.0 * PI;
+    float sine_theta = sqrt(u);
+    float cosine_theta = sqrt(1 - u);
+    return vec3(cos(phi) * sine_theta, sin(phi) * sine_theta, cosine_theta);
+}
+
 #endif

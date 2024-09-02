@@ -26,10 +26,11 @@ void main() {
 	// brdf of lamertian: brdf = albedo / PI
 	// sampling of omege_input is uniform sampling, pdf(omega_input) = 1 / (2 * PI)
 	// further reduction, throughput = 2 * albedo * cos;
-	vec3 ray_direction = HemiSphereSampleUniform(payload.random_seed);
+	// if use cosine weighted sampling, then pdf(omega_input) = cosine(omega_input) / PI, throughput = albedo
+	vec3 ray_direction = HemiSphereSampleCosineWeighted(payload.random_seed);
 	ray_direction = mat3x3(vertex.tangent, vertex.bitangent, vertex.normal) * ray_direction;
 	float cosine_theta = dot(vertex.normal, ray_direction);
-	vec3 throughput = 2 * cosine_theta * material.color.xyz; 
+	vec3 throughput = material.color.xyz; 
 	payload.throughput = throughput;
 	payload.next_ray_direction = ray_direction;
 }
