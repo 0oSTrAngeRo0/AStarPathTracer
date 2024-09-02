@@ -18,18 +18,17 @@ layout(binding = 7, set = 0) uniform Constants { ConstantsData constant; };
 layout(binding = 8, set = 0, rgba32f) uniform image2D accumulate_image;
 
 void InitializePayload(inout HitPayload payload) {
-    vec2 pixel_sample = vec2(gl_LaunchIDEXT.xy) + vec2(Rnd(payload.random_seed), Rnd(payload.random_seed)); //将像素坐标从像素左下角移至像素中间
-    vec2 uv = pixel_sample / vec2(gl_LaunchSizeEXT.xy); // 归一化像素坐标
-    vec2 d = uv * 2.0 - 1.0;  // 将坐标原点移动至屏幕中心
+    payload.random_seed = Tea(gl_LaunchIDEXT.y * gl_LaunchSizeEXT.x + gl_LaunchIDEXT.x, constant.samples_per_pixel);
 
-    vec4 ray_origin = constant.view_inverse * vec4(0, 0, 0, 1); // 相机的世界坐标
-    vec4 ray_target = constant.projection_inverse * vec4(d.x, d.y, 1, 1); // 像素点的世界坐标
-    vec4 ray_direction = constant.view_inverse * vec4(normalize(ray_target.xyz), 0); // 光线方向
+    vec2 pixel_sample = vec2(gl_LaunchIDEXT.xy) + vec2(Rnd(payload.random_seed), Rnd(payload.random_seed)); // apply jitter
+    pixel_sample = pixel_sample / vec2(gl_LaunchSizeEXT.xy); // normalize the pixel coordinate
+    pixel_sample = pixel_sample * 2.0 - 1.0;  // move screen origin to the center
 
-    uint random_seed = Tea(gl_LaunchIDEXT.y * gl_LaunchSizeEXT.x + gl_LaunchIDEXT.x, constant.samples_per_pixel);
+    vec4 ray_origin = constant.view_inverse * vec4(0, 0, 0, 1); // world position of camera
+    vec4 ray_target = constant.projection_inverse * vec4(pixel_sample.x, pixel_sample.y, 1, 1); // ray direction in camera space
+    vec4 ray_direction = constant.view_inverse * vec4(normalize(ray_target.xyz), 0); // ray direction in world space
     
     payload.next_ray_direction = ray_direction.xyz;
-    payload.random_seed = random_seed;
     payload.position = ray_origin.xyz;
     payload.is_stopped = false;
     payload.normal = vec3(0);
