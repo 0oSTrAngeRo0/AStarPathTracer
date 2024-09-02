@@ -5,3 +5,5 @@
 /cmake-build-release/*
 /build/*
 /out/*
+
+*.spv
