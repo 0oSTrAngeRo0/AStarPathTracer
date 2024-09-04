@@ -1,9 +1,9 @@
 #version 460
 #extension GL_GOOGLE_include_directive : enable
 
-#include "Common.glsl"
-#include "Math.glsl"
-#include "RayClosestHitCommon.glsl"
+#include "../Includes/Common.glsl"
+#include "../Includes/Math.glsl"
+#include "../Includes/RayClosestHitCommon.glsl"
 
 struct SimpleLitMaterial {
 	vec4 color;

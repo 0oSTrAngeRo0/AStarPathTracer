@@ -1,8 +1,8 @@
 {
   "references": [],
   "resource_data": {
-    "source_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Shaders/sample.rgen",
-    "compiled_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Shaders/sample.rgen.spv",
+    "source_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Shaders/Sources/RayGenerator.rgen",
+    "compiled_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Shaders/Binarys/RayGenerator.rgen.spv",
     "shader_stage": "RaygenKHR",
     "instance_stride": 0,
     "entry_function": "main"

@@ -1,8 +1,8 @@
 {
   "references": [],
   "resource_data": {
-    "source_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Shaders/sample.rchit",
-    "compiled_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Shaders/sample.rchit.spv",
+    "source_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Shaders/Sources/Lambert.rchit",
+    "compiled_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Shaders/Binarys/Lambert.rchit.spv",
     "shader_stage": "ClosestHitKHR",
     "instance_stride": 16,
     "entry_function": "main"

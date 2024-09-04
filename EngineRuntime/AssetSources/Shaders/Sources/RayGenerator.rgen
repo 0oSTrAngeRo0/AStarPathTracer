@@ -3,8 +3,8 @@
 #extension GL_GOOGLE_include_directive : enable
 #extension GL_EXT_debug_printf : enable
 
-#include "Common.glsl"
-#include "Math.glsl"
+#include "../Includes/Common.glsl"
+#include "../Includes/Math.glsl"
 
 #define RAY_TMIN 0.001
 #define RAY_TMAX 100.0
