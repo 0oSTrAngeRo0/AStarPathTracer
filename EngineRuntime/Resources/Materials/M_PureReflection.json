@@ -1,0 +1,16 @@
+{
+  "references": [ "575c8c0b-09c4-43cc-9c59-80acf49b3c34" ],
+  "resource_data": {
+    "shader_id": "575c8c0b-09c4-43cc-9c59-80acf49b3c34",
+    "material_data": {
+      "color": {
+        "w": 1.0,
+        "x": 0.0,
+        "y": 0.0,
+        "z": 0.0
+      }
+    }
+  },
+  "resource_type": "MaterialPureReflection",
+  "uuid": "4bc5b6cf-6323-48b0-980d-83d28e943537"
+}

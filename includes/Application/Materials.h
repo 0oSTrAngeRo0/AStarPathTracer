@@ -10,3 +10,7 @@ struct LitghtMaterialData {
 	glm::vec3 color;
 	float intensity;
 };
+
+struct PureReflectionMaterialData {
+	glm::vec4 color;
+};

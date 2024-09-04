@@ -1,0 +1,12 @@
+{
+  "references": [],
+  "resource_data": {
+    "source_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Shaders/Sources/PureReflection.rchit",
+    "compiled_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Shaders/Binarys/PureReflection.rchit.spv",
+    "shader_stage": "ClosestHitKHR",
+    "instance_stride": 16,
+    "entry_function": "main"
+  },
+  "resource_type": "Shader",
+  "uuid": "575c8c0b-09c4-43cc-9c59-80acf49b3c34"
+}
