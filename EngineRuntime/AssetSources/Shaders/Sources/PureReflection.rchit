@@ -24,7 +24,7 @@ void main() {
 
 	vec3 ray_direction = reflect(gl_WorldRayDirectionEXT, vertex.normal);
 	float cosine_theta = dot(vertex.normal, ray_direction);
-	vec3 throughput = vec3(cosine_theta); 
+	vec3 throughput = vec3(1); 
 	payload.throughput = throughput;
 	payload.next_ray_direction = ray_direction;
 }
