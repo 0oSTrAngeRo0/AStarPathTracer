@@ -9,6 +9,7 @@
 #include "Engine/HostShaderManager.h"
 #include "Engine/ShaderHostBuffer.h"
 #include "Core/Image.h"
+#include "Application/Renderer/CommandUtilities.h"
 
 
 vk::TransformMatrixKHR RenderContext::GetTransformMatrixKHR(const glm::mat4 transform) {
@@ -178,11 +179,15 @@ RenderContext::OutputImage::OutputImage(const DeviceContext& context, const vk::
 		vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferSrc)),
     accumulate_image(context, vk::ImageCreateInfo({}, vk::ImageType::e2D, vk::Format::eR32G32B32A32Sfloat, 
 		vk::Extent3D(extent, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
-		vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst,
-		vk::SharingMode::eExclusive, {}, vk::ImageLayout::eGeneral
+		vk::ImageUsageFlagBits::eStorage | vk::ImageUsageFlagBits::eTransferDst
 	)) {
 
+	vk::ImageSubresourceRange accumulate_image_subresource(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1);
 	vk::CommandBuffer cmd = context.GetTempCmd();
+	CommandUtilities::CmdInsertImageBarrier(cmd, vk::ImageMemoryBarrier(
+		vk::AccessFlagBits::eNone, vk::AccessFlagBits::eShaderWrite,
+		vk::ImageLayout::eUndefined, vk::ImageLayout::eGeneral,
+		{}, {}, accumulate_image, accumulate_image_subresource));
 	cmd.clearColorImage(accumulate_image, vk::ImageLayout::eGeneral, vk::ClearColorValue(0, 0, 0, 0),
 		vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1));
 	context.ReleaseTempCmd(cmd);
