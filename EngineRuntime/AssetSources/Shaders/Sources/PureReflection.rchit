@@ -21,10 +21,6 @@ void main() {
 	payload.normal = vertex.normal;
 	payload.is_stopped = false;
 	payload.emittence = vec3(0);
-
-	vec3 ray_direction = reflect(gl_WorldRayDirectionEXT, vertex.normal);
-	float cosine_theta = dot(vertex.normal, ray_direction);
-	vec3 throughput = vec3(1); 
-	payload.throughput = throughput;
-	payload.next_ray_direction = ray_direction;
+	payload.throughput = vec3(1);
+	payload.next_ray_direction = reflect(gl_WorldRayDirectionEXT, vertex.normal);
 }
