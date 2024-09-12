@@ -167,6 +167,7 @@ void RenderContext::Destory(const DeviceContext& context) {
 }
 
 void RenderContext::RecreateOutputImage(const DeviceContext& context, const vk::Extent2D extent, vk::Format format) {
+	constants_data.sample_per_pixel = 0;
 	if (output_image) {
 		output_image->Destroy(context);
 	}

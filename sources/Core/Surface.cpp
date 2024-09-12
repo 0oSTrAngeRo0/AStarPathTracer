@@ -1,7 +1,7 @@
 #include "Core/Surface.h"
 #include "Core/DeviceContext.h"
 
-Surface::Surface(const DeviceContext& context, vk::SurfaceKHR surface) : surface(surface) {
+void Surface::ReacquireProperties(const DeviceContext& context) {
 	auto gpu = context.GetGpu();
 	auto formats = gpu.getSurfaceFormatsKHR(surface);
 	auto present_modes = gpu.getSurfacePresentModesKHR(surface);

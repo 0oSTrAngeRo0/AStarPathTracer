@@ -21,9 +21,11 @@ RendererApplication::RendererApplication(std::unique_ptr<VulkanWindow> window) :
 }
 
 void RendererApplication::ResizeWindow() {
+	renderer->RefreshSurfaceData(*context);
 	vk::Extent2D extent = window->GetActualExtent();
 	renderer->ResizeSwapchain(*context, extent);
 	render_context->RecreateOutputImage(*context, extent, renderer->GetSwapchainFormat());
+	std::printf("Window resized to [%dx%d]\n", extent.width, extent.height);
 }
 
 void RendererApplication::Update(entt::registry& registry) {

@@ -24,6 +24,7 @@ public:
 	const FrameData BeginFrame(const DeviceContext& context);
 	void EndFrame(const DeviceContext& context, const FrameData& frame_data);
 	void ResizeSwapchain(const DeviceContext& context, const vk::Extent2D extent);
+	void RefreshSurfaceData(const DeviceContext& context);
 
 	inline const vk::DescriptorPool GetDescriptorPool() const { return descriptor_pool; }
 	const vk::Format GetSwapchainFormat() const;

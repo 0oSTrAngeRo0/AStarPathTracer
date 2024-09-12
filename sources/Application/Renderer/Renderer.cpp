@@ -89,6 +89,10 @@ void Renderer::ResizeSwapchain(const DeviceContext& context, const vk::Extent2D 
 	swapchain = std::make_unique<Swapchain>(context, *surface, extent);
 }
 
+void Renderer::RefreshSurfaceData(const DeviceContext& context) {
+	return surface->ReacquireProperties(context);
+}
+
 const vk::Format Renderer::GetSwapchainFormat() const {
 	return surface->GetSurfaceFormat().format;
 }
