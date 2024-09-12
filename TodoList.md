@@ -6,8 +6,8 @@
 
 ## Path Tracer
  - More materials:
-    - Mirror
-    - Glass
+    - ~~Mirror~~
+    - ~~Glass~~
     - Microface
  - Strand-base hair ray closest hit shader
  - Volume
@@ -15,3 +15,4 @@
  - Auto stop progressive rendering when torrance is less enough
  - Merge BLAS, by changing SBT when merge
  - ReSTIR
+ - Texture support
