@@ -13,6 +13,7 @@ struct HitPayload {
 	vec3 position; // hit world position
 	vec3 throughput;
 	vec3 emittence;
+	float eta;
 	uint32_t random_seed; // seed for generate random number
 	bool is_stopped;
 };

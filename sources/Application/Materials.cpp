@@ -31,6 +31,14 @@ REGISTER_RESOURCE_SERIALIZER(MaterialResourceData<PureReflectionMaterialData>);
 REGISTER_RESOURCE_DESERIALIZER(MaterialResourceData<PureReflectionMaterialData>, ASTAR_DO_NOTHING);
 REGISTER_GET_BASE_MATERIAL_DATA(MaterialResourceData<PureReflectionMaterialData>);
 
+template <> const std::string& Resource<MaterialResourceData<DielectricMaterialData>>::GetResourceTypeStatic() {
+	static std::string type = "MaterialDielectric";
+	return type;
+}
+JSON_SERIALIZER(DielectricMaterialData, <>, eta);
+REGISTER_RESOURCE_SERIALIZER(MaterialResourceData<DielectricMaterialData>);
+REGISTER_RESOURCE_DESERIALIZER(MaterialResourceData<DielectricMaterialData>, ASTAR_DO_NOTHING);
+REGISTER_GET_BASE_MATERIAL_DATA(MaterialResourceData<DielectricMaterialData>);
 
 #include "Editor/UI/Inspectors/ResourceInspector.h"
 #include "Editor/UI/Inspectors/ResourceEditorRegistry.h"
@@ -61,11 +69,12 @@ REGISTER_INSPECTOR_CREATOR(MaterialResourceData<LitghtMaterialData>);
 REGISTER_RESOURCE_CREATE_MENU({ "Material" }, MaterialResourceData<LitghtMaterialData>);
 
 template <> void ResourceInspector<MaterialResourceData<PureReflectionMaterialData>>::Draw() {
-	ImGuiColorEditFlags flags =
-		ImGuiColorEditFlags_AlphaBar |
-		ImGuiColorEditFlags_Float |
-		ImGuiColorEditFlags_PickerHueWheel |
-		ImGuiColorEditFlags_DisplayRGB;
 }
 REGISTER_INSPECTOR_CREATOR(MaterialResourceData<PureReflectionMaterialData>);
 REGISTER_RESOURCE_CREATE_MENU({ "Material" }, MaterialResourceData<PureReflectionMaterialData>);
+
+template <> void ResourceInspector<MaterialResourceData<DielectricMaterialData>>::Draw() {
+	is_dirty |= ImGui::InputFloat("Eta", &data.resource_data.material_data.eta);
+}
+REGISTER_INSPECTOR_CREATOR(MaterialResourceData<DielectricMaterialData>);
+REGISTER_RESOURCE_CREATE_MENU({ "Material" }, MaterialResourceData<DielectricMaterialData>);

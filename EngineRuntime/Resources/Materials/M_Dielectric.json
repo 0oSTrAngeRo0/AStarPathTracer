@@ -1,0 +1,11 @@
+{
+  "references": [ "2b47dc84-fc5f-4cf8-b8b4-a7e934d685bd" ],
+  "resource_data": {
+    "shader_id": "2b47dc84-fc5f-4cf8-b8b4-a7e934d685bd",
+    "material_data": {
+      "eta": 1.5
+    }
+  },
+  "resource_type": "MaterialDielectric",
+  "uuid": "5c6f3562-6774-4d8a-adc0-3e22d42f8d02"
+}

@@ -173,7 +173,7 @@ void World::CreateCornellBox(entt::registry& registry) {
 	registry.emplace<MaterialComponent>(cornell_box, std::vector<Uuid>{ 
 		Uuid("24c95852-9e30-4738-90ec-066619e1fc63"), // light
 		Uuid("38108883-47be-4128-b75e-f6f93ebf677e"), // large_box
-		Uuid("38108883-47be-4128-b75e-f6f93ebf677e"), // small_box
+		Uuid("5c6f3562-6774-4d8a-adc0-3e22d42f8d02"), // small_box
 		Uuid("47ccb184-7c7c-4dc6-9245-3acf67bd2a55"), // shell_box
 		Uuid("8bd67ff6-a6dd-4550-afdd-64018465f3bd"), // red_box
 		Uuid("68bdece3-5889-419c-a314-28e7b0f12975"), // green_box

@@ -54,4 +54,11 @@ vec3 HemiSphereSampleCosineWeighted(inout uint random_state) {
     return vec3(cos(phi) * sine_theta, sin(phi) * sine_theta, cosine_theta);
 }
 
+float Fresnel(float cosine_i, float cosine_t, float eta) {
+    float r_parl = (eta * cosine_i - cosine_t) / (eta * cosine_i + cosine_t); // reflectance parallel
+    float r_perp = (cosine_i - eta * cosine_t) / (cosine_i + eta * cosine_t); // reflectance perpendicular
+    float reflectance = ((r_parl * r_parl) + (r_perp * r_perp)) * 0.5;
+    return reflectance;
+}
+
 #endif

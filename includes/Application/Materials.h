@@ -14,3 +14,7 @@ struct LitghtMaterialData {
 struct PureReflectionMaterialData {
 	glm::vec4 color;
 };
+
+struct DielectricMaterialData {
+	float eta;
+};

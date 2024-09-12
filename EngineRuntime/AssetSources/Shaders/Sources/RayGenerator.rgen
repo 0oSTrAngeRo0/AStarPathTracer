@@ -34,6 +34,7 @@ void InitializePayload(inout HitPayload payload) {
     payload.normal = vec3(0);
     payload.emittence = vec3(0);
     payload.throughput = vec3(1);
+    payload.eta = 1.0;
 }
 
 void main() {
