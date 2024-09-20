@@ -19,6 +19,21 @@ public:
 	}
 	inline const std::unordered_map<Uuid, uint32_t>& GetShaderIndices() const { return shader_indices; }
 private:
+	/*enum class DescriptorBinding : uint8_t {
+		eTlas,
+		eOutputImage,
+		eVertexPositionsBuffer,
+		eVertexOthersBuffer,
+		eIndicesBuffer,
+		eMaterialsBuffer,
+		eInstancesBuffer,
+		eConstantsBuffer,
+		eAccumulateImage,
+		eTextures
+	};*/
+	static constexpr uint32_t MaxTextureCount = 65535;
+	static constexpr uint32_t MaxSamplerCount = 65535;
+
 	vk::PipelineLayout pipeline_layout;
 	vk::Pipeline pipeline;
 	std::unique_ptr<RayTracingShaders::BindingTable> shader_binding_table;

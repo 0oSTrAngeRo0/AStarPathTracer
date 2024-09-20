@@ -13,11 +13,11 @@ class ResourceCreateMenuRegistry : public StaticTreeRegistry<std::string, std::f
 static bool ASTAR_UNIQUE_VARIABLE_NAME(resource_inspector_register_) = (ResourceInspectorCreateRegistry::Register(Resource<type>::GetResourceTypeStatic(), \
 	[](ResourceBase& resource) { \
 		return std::make_unique<ResourceInspector<type>>(static_cast<Resource<type>&>(resource)); \
-	}), true)
+	}), true);
 
 #define REGISTER_RESOURCE_CREATE_MENU(path, type) \
 static bool ASTAR_UNIQUE_VARIABLE_NAME(resource_create_menu_register_) = (ResourceCreateMenuRegistry::AddLeaf( \
 	[](const std::string& directory) {	\
 		std::string filename = directory + "/New " + Resource<type>::GetResourceTypeStatic() + ".json"; \
 		ResourcesManager::GetInstance().CreateNewResource<type>(filename); \
-	}, path, Resource<type>::GetResourceTypeStatic()), true)
+	}, path, Resource<type>::GetResourceTypeStatic()), true);

@@ -14,10 +14,35 @@
 #include "Engine/HostBuffer.h"
 #include "Application/Renderer/MeshPool.h"
 #include "Application/Renderer/MaterialPool.h"
+#include "Application/Renderer/TexturePool.h"
 #include "Core/Image.h"
+
+#include "Engine/StaticRegistry.h"
+#include "Utilities/MacroUtilities.h"
 
 class DeviceContext;
 class Mesh;
+
+class MaterialVisiableContext {
+public:
+	const TexturePool& textures;
+};
+
+using GetMaterialRawDataFunction = std::function<std::vector<std::byte>(const ResourceBase&, const MaterialVisiableContext&)>;
+class GetMaterialRawDataRegistry : public StaticRegistry<ResourceType, GetMaterialRawDataFunction> {
+public:
+	template <typename TResource>
+	static std::vector<std::byte> GetMaterialRawData(const Resource<TResource>& resource, const MaterialVisiableContext& context);
+};
+
+#define REGISTER_GET_MATERIAL_RAW_DATA(type) \
+static bool ASTAR_UNIQUE_VARIABLE_NAME(get_material_raw_data_register_) = (  \
+GetMaterialRawDataRegistry::Register(Resource<type>::GetResourceTypeStatic(), \
+	[](const ResourceBase& resource, const MaterialVisiableContext& context) { \
+		auto resource_impl = static_cast<const Resource<type>&>(resource); \
+		return GetMaterialRawDataRegistry::GetMaterialRawData<type>(resource_impl, context); \
+	})\
+, true);
 
 class RenderContext {
 public:
@@ -38,8 +63,10 @@ public:
 	inline const Image& GetAccumulateImage() const { return output_image->accumulate_image; }
 	inline const vk::Extent2D GetOutputImageExtent() const { return output_image->extent; }
 	inline const vk::AccelerationStructureKHR GetTlas() const { return tlas; }
+	inline const std::vector<vk::DescriptorImageInfo> GetTextures() const { return texture_pool.GetDescriptorData(); }
 private:
 	MaterialPool material_pool;
+	TexturePool texture_pool;
 	MeshPool mesh_pool;
 
 	vk::AccelerationStructureKHR tlas;

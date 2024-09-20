@@ -6,6 +6,8 @@
 #define ASSET_SOURCES_DIR "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources"
 #define RESOURCES_DIR "D:/C++/Projects/PathTracer/EngineRuntime/Resources"
 
+using ResourceType = std::string;
+
 /// <summary>
 /// 不允许实例化，只能实例化其子类
 /// </summary>
@@ -15,7 +17,7 @@ public:
 	std::vector<Uuid> references;
 	ResourceBase() : uuid(xg::newGuid()) {}
 
-	virtual const std::string& GetResourceType() const = 0;
+	virtual const ResourceType& GetResourceType() const = 0;
 	static std::string Serialize(const ResourceBase& data);
 	static std::unique_ptr<ResourceBase> Deserialize(const std::string& str);
 	virtual ~ResourceBase() = default;
@@ -26,9 +28,9 @@ class Resource : public ResourceBase {
 public:
 	TData resource_data;
 
-	static const std::string& GetResourceTypeStatic();
+	static const ResourceType& GetResourceTypeStatic();
 
-	const std::string& GetResourceType() const override {
+	const ResourceType& GetResourceType() const override {
 		return Resource<TData>::GetResourceTypeStatic();
 	}
 };

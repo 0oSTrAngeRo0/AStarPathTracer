@@ -6,7 +6,7 @@ struct SimpleLitMaterialData {
 	glm::vec4 color;
 };
 
-struct LitghtMaterialData {
+struct LightMaterialData {
 	glm::vec3 color;
 	float intensity;
 };

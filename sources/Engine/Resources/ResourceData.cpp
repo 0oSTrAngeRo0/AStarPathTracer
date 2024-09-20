@@ -12,8 +12,13 @@ template <> const std::string& Resource<ObjResourceData>::GetResourceTypeStatic(
 }
 JSON_SERIALIZER(ObjResourceData, <>, path);
 REGISTER_RESOURCE_SERIALIZER(ObjResourceData);
-REGISTER_RESOURCE_DESERIALIZER(ObjResourceData, ASTAR_DO_NOTHING);
+REGISTER_RESOURCE_DESERIALIZER(ObjResourceData);
 
+#define SHADER_RESOURCE_AFTER_DESERIALIZE(resource) \
+do { \
+	if (resource.resource_data.shader_stage != vk::ShaderStageFlagBits::eClosestHitKHR) break; \
+	HostShaderManager::GetInstance().RegisterShader(resource.uuid, resource.resource_data.instance_stride); \
+} while(false)
 template <> const std::string& Resource<ShaderResourceData>::GetResourceTypeStatic() {
 	static std::string type = "Shader";
 	return type;
@@ -27,9 +32,5 @@ JSON_ENUM_SERIALIZER(vk::ShaderStageFlagBits, {
 });
 JSON_SERIALIZER(ShaderResourceData, <>, source_code_path, compiled_code_path, shader_stage, instance_stride, entry_function);
 REGISTER_RESOURCE_SERIALIZER(ShaderResourceData);
-REGISTER_RESOURCE_DESERIALIZER(ShaderResourceData, \
-[](const Resource<ShaderResourceData>& resource) { \
-	if (resource.resource_data.shader_stage != vk::ShaderStageFlagBits::eClosestHitKHR) return; \
-	HostShaderManager::GetInstance().RegisterShader(resource.uuid, resource.resource_data.instance_stride); \
-});
+REGISTER_RESOURCE_DESERIALIZER_WITHAFTER(ShaderResourceData, SHADER_RESOURCE_AFTER_DESERIALIZE);
 
