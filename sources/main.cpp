@@ -16,7 +16,8 @@ entt::registry CreateWorld(const InputState& input) {
 	entt::registry registry;
 	World::CreateDefault(registry);
 	registry.ctx().emplace<const InputState&>(input);
-	registry.ctx().emplace<const HostShaderManager&>(HostShaderManager::GetInstance());
+	registry.ctx().emplace<HostShaderManager&>(HostShaderManager::GetInstance());
+	registry.ctx().emplace<ResourcesManager&>(ResourcesManager::GetInstance());
 	return registry;
 }
 

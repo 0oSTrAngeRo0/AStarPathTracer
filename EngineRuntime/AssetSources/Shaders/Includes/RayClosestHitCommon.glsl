@@ -8,7 +8,11 @@
 #extension GL_EXT_shader_explicit_arithmetic_types_int64 : require
 #extension GL_EXT_shader_explicit_arithmetic_types_int16 : require
 #extension GL_EXT_debug_printf : enable
+#extension GL_EXT_nonuniform_qualifier : enable
 
+#include "Math.glsl"
+
+#define INVALID_TEXTURE_ID UINT_MAX
 #define DO_NOTHING(v) v
 #define VERTEX_GET_NORMAL(v) (v.normal)
 #define VERTEX_GET_TANGENT(v) (v.tangent.xyz)
@@ -42,6 +46,7 @@ layout(set = 0, binding = 2, buffer_reference, scalar) readonly buffer VerticesP
 layout(set = 0, binding = 3, buffer_reference, scalar) readonly buffer VerticesOther { VertexOther data[]; }; \
 layout(set = 0, binding = 4, buffer_reference, scalar) readonly buffer Indices { uvec3 data[]; }; \
 layout(set = 0, binding = 6, buffer_reference, scalar) readonly buffer Instances { InstanceData data[]; } instances; \
+layout(set = 0, binding = 9) uniform sampler2D textures2D[];
 
 #define RAY_CLOSEST_HIT_MATERIAL_DESCRIPTOR(material_type) \
 layout(set = 0, binding = 5, buffer_reference, scalar) readonly buffer Materials { material_type data[]; }; \

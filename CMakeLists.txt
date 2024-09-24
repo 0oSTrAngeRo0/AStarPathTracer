@@ -83,7 +83,7 @@ add_executable(${PROJECT_NAME}
     sources/Engine/Resources/MeshLoader/MikkTSpace/MikkTSpaceTangentGenerator.cpp
     sources/Engine/Resources/MeshLoader/MeshResourceUtilities.cpp
     sources/Engine/ShaderHostBuffer.cpp
-  "sources/Core/Surface.cpp")
+  "sources/Core/Surface.cpp" "sources/Application/Renderer/TexturePool.cpp" "sources/Engine/Resources/TextureLoader/StbImageUtilities.cpp" )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PRIVATE plugins/tiny-obj-loader-1.0.6)

@@ -4,7 +4,7 @@
     "source_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Shaders/Sources/Diffuse.rchit",
     "compiled_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Shaders/Binarys/Diffuse.rchit.spv",
     "shader_stage": "ClosestHitKHR",
-    "instance_stride": 16,
+    "instance_stride": 20,
     "entry_function": "main"
   },
   "resource_type": "Shader",

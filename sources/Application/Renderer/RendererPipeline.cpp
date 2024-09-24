@@ -9,14 +9,31 @@
 #include "Engine/Resources/ResourcesManager.h"
 #include "Engine/Resources/ResourceData.h"
 #include "Engine/HostShaderManager.h"
+#include "Utilities/EnumX.h"
 
 RendererPipeline::RendererPipeline(const DeviceContext& context, const RenderContext& render, const vk::DescriptorPool descriptor_pool) {
 	descriptor_set_layout = CreateDescriptorSetLayout(context.GetDevice());
-	std::vector<vk::DescriptorSet> sets = context.GetDevice().allocateDescriptorSets(vk::DescriptorSetAllocateInfo(descriptor_pool, descriptor_set_layout));
+	std::vector<vk::DescriptorSet> sets = AllocateDescriptorSet(context.GetDevice(), descriptor_pool, descriptor_set_layout);
 	descriptor_set = sets[0];
 	UpdateDescriptorSet(context, render, descriptor_set);
 	CreateRayTracingPipelineLayout(context);
 	CreatePipelineAndBindingTable(context);
+}
+
+std::vector<vk::DescriptorSet> RendererPipeline::AllocateDescriptorSet(
+	vk::Device device, 
+	vk::DescriptorPool pool, 
+	vk::DescriptorSetLayout layout
+) {
+	std::vector<uint32_t> max_counts = {
+		MaxTextureCount
+	};
+
+	vk::StructureChain<vk::DescriptorSetAllocateInfo, vk::DescriptorSetVariableDescriptorCountAllocateInfo> ci(
+		vk::DescriptorSetAllocateInfo(pool, layout),
+		vk::DescriptorSetVariableDescriptorCountAllocateInfo(max_counts)
+	);
+	return device.allocateDescriptorSets(ci.get<vk::DescriptorSetAllocateInfo>());
 }
 
 void RendererPipeline::UpdateDescriptorSet(const DeviceContext& context, const RenderContext& render, const vk::DescriptorSet& set) {
@@ -41,6 +58,14 @@ void RendererPipeline::UpdateDescriptorSet(const DeviceContext& context, const R
 		vk::WriteDescriptorSet(set, 7, 0, vk::DescriptorType::eUniformBuffer, {}, write_constants_buffer),
 		vk::WriteDescriptorSet(set, 8, 0, vk::DescriptorType::eStorageImage, write_accumulate_image),
 	};
+	std::vector<vk::DescriptorImageInfo> write_textures = render.GetTextures();
+	if (write_textures.size() > 0) {
+		size_t size = write_textures.size();
+		for (size_t index = 0; index < size; index++) {
+			writes.emplace_back(vk::WriteDescriptorSet(set, 9, index, vk::DescriptorType::eCombinedImageSampler, write_textures[index]));
+		}
+	}
+
 	context.GetDevice().updateDescriptorSets(writes, {});
 }
 
@@ -104,8 +129,21 @@ vk::DescriptorSetLayout RendererPipeline::CreateDescriptorSetLayout(const vk::De
 		vk::DescriptorSetLayoutBinding(6, vk::DescriptorType::eStorageBuffer, 1, vk::ShaderStageFlagBits::eClosestHitKHR), // instance buffer
 		vk::DescriptorSetLayoutBinding(7, vk::DescriptorType::eUniformBuffer, 1, vk::ShaderStageFlagBits::eRaygenKHR), // constants buffer
 		vk::DescriptorSetLayoutBinding(8, vk::DescriptorType::eStorageImage, 1, vk::ShaderStageFlagBits::eRaygenKHR), // accumulate image
+		vk::DescriptorSetLayoutBinding(9, vk::DescriptorType::eCombinedImageSampler, MaxTextureCount, vk::ShaderStageFlagBits::eAll), // textures
 	};
-	return device.createDescriptorSetLayout(vk::DescriptorSetLayoutCreateInfo({}, bindings));
+
+	std::vector<vk::DescriptorBindingFlags> binding_flags = {
+		{}, {}, {}, {}, {}, {}, {}, {}, {},
+		vk::DescriptorBindingFlagBits::ePartiallyBound | 
+		vk::DescriptorBindingFlagBits::eUpdateAfterBind | 
+		vk::DescriptorBindingFlagBits::eVariableDescriptorCount
+	};
+
+	vk::StructureChain<vk::DescriptorSetLayoutCreateInfo, vk::DescriptorSetLayoutBindingFlagsCreateInfo> ci(
+		vk::DescriptorSetLayoutCreateInfo(vk::DescriptorSetLayoutCreateFlagBits::eUpdateAfterBindPool, bindings),
+		vk::DescriptorSetLayoutBindingFlagsCreateInfo(binding_flags)
+	);
+	return device.createDescriptorSetLayout(ci.get<vk::DescriptorSetLayoutCreateInfo>());
 }
 
 void RendererPipeline::CreateRayTracingPipelineLayout(const DeviceContext& context) {

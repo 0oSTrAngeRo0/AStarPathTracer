@@ -50,3 +50,9 @@ public:
 
 JSON_SERIALIZER(MaterialResourceData<TMatData>, <typename TMatData>, material_data, shader_id);
 
+
+struct TextureResourceData {
+public:
+	std::string path;
+};
+

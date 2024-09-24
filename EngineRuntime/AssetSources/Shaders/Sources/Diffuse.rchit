@@ -6,7 +6,8 @@
 #include "../Includes/RayClosestHitCommon.glsl"
 
 struct SimpleLitMaterial {
-	vec4 color;
+	uint32_t diffuse_texture;
+	vec4 diffuse_color;
 };
 
 RAY_CLOSEST_HIT_DESCRIPTORS();
@@ -30,7 +31,13 @@ void main() {
 	vec3 ray_direction = HemiSphereSampleCosineWeighted(payload.random_seed);
 	ray_direction = mat3x3(vertex.tangent, vertex.bitangent, vertex.normal) * ray_direction;
 	float cosine_theta = dot(vertex.normal, ray_direction);
-	vec3 throughput = material.color.xyz; 
+
+	vec3 diffuse = material.diffuse_color.xyz;
+	if (material.diffuse_texture != INVALID_TEXTURE_ID) {
+		diffuse *= texture(textures2D[material.diffuse_texture], vertex.uv).xyz;
+	}
+
+	vec3 throughput = diffuse; 
 	payload.throughput = throughput;
 	payload.next_ray_direction = ray_direction;
 }

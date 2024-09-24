@@ -10,6 +10,7 @@ public:
 	ResourcesManager();
 	ResourceBase& LoadResource(const std::string& path);
 	ResourceBase& GetResource(const Uuid& id);
+	const ResourceBase& GetResource(const Uuid& id) const;
 	void SaveResource(const Uuid& uuid);
 	void IterateResources(std::function<void(const std::string&, const ResourceBase&)> callback) {
 		for (const auto& pair : resources) {

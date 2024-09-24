@@ -31,8 +31,7 @@ private:
 		eAccumulateImage,
 		eTextures
 	};*/
-	static constexpr uint32_t MaxTextureCount = 65535;
-	static constexpr uint32_t MaxSamplerCount = 65535;
+	static constexpr uint32_t MaxTextureCount = 1024;
 
 	vk::PipelineLayout pipeline_layout;
 	vk::Pipeline pipeline;
@@ -44,6 +43,11 @@ private:
 	void CreateRayTracingPipelineLayout(const DeviceContext& context);
 	void CreatePipelineAndBindingTable(const DeviceContext& context);
 
+	static std::vector<vk::DescriptorSet> AllocateDescriptorSet(
+		vk::Device device,
+		vk::DescriptorPool pool,
+		vk::DescriptorSetLayout layout
+	);
 	static void UpdateDescriptorSet(const DeviceContext& context, const RenderContext& render, const vk::DescriptorSet& set);
 	static vk::DescriptorSetLayout CreateDescriptorSetLayout(const vk::Device device);
 };

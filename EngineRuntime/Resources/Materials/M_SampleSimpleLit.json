@@ -3,7 +3,8 @@
   "resource_data": {
     "shader_id": "11f481af-3787-4b34-83a6-c883ffc8a3c6",
     "material_data": {
-      "color": {
+      "diffuse_texture": null,
+      "diffuse_color": {
         "w": 0.7458563446998596,
         "x": 0.5058674812316895,
         "y": 0.22315074503421783,

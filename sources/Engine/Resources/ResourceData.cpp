@@ -34,3 +34,11 @@ JSON_SERIALIZER(ShaderResourceData, <>, source_code_path, compiled_code_path, sh
 REGISTER_RESOURCE_SERIALIZER(ShaderResourceData);
 REGISTER_RESOURCE_DESERIALIZER_WITHAFTER(ShaderResourceData, SHADER_RESOURCE_AFTER_DESERIALIZE);
 
+
+template <> const std::string& Resource<TextureResourceData>::GetResourceTypeStatic() {
+	static std::string type = "Texture";
+	return type;
+}
+JSON_SERIALIZER(TextureResourceData, <>, path);
+REGISTER_RESOURCE_SERIALIZER(TextureResourceData)
+REGISTER_RESOURCE_DESERIALIZER(TextureResourceData)

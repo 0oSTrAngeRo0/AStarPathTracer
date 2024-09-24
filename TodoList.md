@@ -15,4 +15,6 @@
  - Auto stop progressive rendering when torrance is less enough
  - Merge BLAS, by changing SBT when merge
  - ReSTIR
- - Texture support
+ - ~~Texture support~~
+
+## Code Arrange

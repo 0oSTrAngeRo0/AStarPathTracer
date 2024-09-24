@@ -8,21 +8,23 @@ class DeviceContext;
 class TexturePool {
 public:
 	static constexpr uint32_t InvalidHandle = std::numeric_limits<uint32_t>::max();
-	std::vector<vk::DescriptorImageInfo> GetDescriptorData() const;
-	inline uint32_t GetHandle(const Uuid& id) const { 
-		auto it = texture_map.find(id);
-		return (it != texture_map.end()) ? it->second : InvalidHandle;
-	}
+
+	TexturePool() : is_dirty(false) {}
+	inline std::vector<vk::DescriptorImageInfo> GetDescriptorData() const { return texture_array; }
+	inline bool IsDirty() const { return is_dirty; }
+	inline void SetDirty(bool dirty) { is_dirty = dirty; }
+	uint32_t GetOrAddHandle(const Uuid& id);
 	void Arrange(std::vector<Uuid> used_textures);
-	void Ensure();
+	void Ensure(const DeviceContext& context);
+	void Destroy(const DeviceContext& context);
 private:
 	struct TextureData {
 		bool is_loaded;
-		vk::Image image;
-		vk::ImageView image_view;
-		vk::Sampler sampler;
-		vk::ImageLayout layout;
+		Image image;
+		uint32_t index;
 	};
-	std::vector<TextureData> texture_array;
-	std::unordered_map<Uuid, uint32_t> texture_map;
+	
+	std::vector<vk::DescriptorImageInfo> texture_array;
+	std::unordered_map<Uuid, TextureData> texture_map;
+	bool is_dirty;
 };

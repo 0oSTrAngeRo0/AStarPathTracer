@@ -6,8 +6,8 @@
 #include "Core/Mesh.h"
 #include "acceleration-structure.h"
 #include <tuple>
-#include "Engine/HostShaderManager.h"
 #include "Engine/ShaderHostBuffer.h"
+#include "Engine/Resources/ResourcesManager.h"
 #include "Core/Image.h"
 #include "Application/Renderer/CommandUtilities.h"
 
@@ -50,14 +50,31 @@ void RenderContext::UploadMaterials(
 	entt::registry& registry,
 	const std::unordered_map<Uuid, uint32_t>& shader_indices
 ) {
-	const auto& host_shaders = registry.ctx().get<const HostShaderManager&>();
+	texture_pool.SetDirty(false);
+
+	auto& host_shaders = registry.ctx().get<HostShaderManager&>();
+	const auto& resource_manager = registry.ctx().get<const ResourcesManager&>();
+
+	// update materials
 	auto view = registry.view<const LocalTransform, const MeshComponent, const MaterialComponent>();
-
-	std::vector<Uuid> used_materials;
+	MaterialVisiableContext material_context(texture_pool, host_shaders);
+	std::unordered_set<Uuid> used_materials;
 	view.each([&used_materials](const LocalTransform& transform, const MeshComponent& mesh, const MaterialComponent& material) {
-		used_materials.insert(used_materials.end(), material.resource_ids.begin(), material.resource_ids.end());
+		used_materials.insert(material.resource_ids.begin(), material.resource_ids.end());
 	});
+	for (const auto& material : used_materials) {
+		const auto& resource = resource_manager.GetResource(material);
+		const auto result = UpdateMaterialDataRegistry::Get(resource.GetResourceType());
+		if (!result.has_value()) {
+			throw std::runtime_error("Invalid mateiral");
+		}
+		result.value()(resource, material_context);
+	}
+	
+	// update textures
+	texture_pool.Ensure(context);
 
+	// update shaders
 	std::vector<std::tuple<const Uuid, const std::vector<std::byte>, const bool, const size_t>> data;
 	for (const auto& shader_wrapper : host_shaders.GetAllShaders()) {
 		const auto& shader = shader_wrapper.get();
@@ -159,6 +176,7 @@ void RenderContext::Destory(const DeviceContext& context) {
 	tlas_instance_buffer.Destroy(context);
 
 	mesh_pool.Destroy(context);
+	texture_pool.Destroy(context);
 	material_pool.Destroy(context);
 	instances_buffer.Destroy(context);
 	constants_buffer.Destroy(context);

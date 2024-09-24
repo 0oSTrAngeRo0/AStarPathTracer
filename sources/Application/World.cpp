@@ -235,7 +235,7 @@ void World::CreateDefault(entt::registry& registry) {
 #pragma endregion
 
 void World::Update(entt::registry& registry, float delta_time) {
-	UpdateMaterialsRegistry(registry);
+	//UpdateMaterialsRegistry(registry);
 	UpdateOrbitCamera(registry);
 	UpdateLinearVelocity(registry, delta_time);
 	UpdateLocalTransform(registry);

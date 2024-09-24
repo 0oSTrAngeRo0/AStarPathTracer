@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Engine/Guid.h"
 #include <unordered_map>
 #include "Utilities/Singleton.h"

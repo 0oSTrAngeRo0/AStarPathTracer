@@ -41,9 +41,10 @@ void Renderer::CreateDescriptorPool(const DeviceContext& context) {
 		vk::DescriptorPoolSize(vk::DescriptorType::eAccelerationStructureKHR, 1),
 		vk::DescriptorPoolSize(vk::DescriptorType::eStorageImage, 2),
 		vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 5),
-		vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 1)
+		vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 1),
+		vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, UINT32_MAX)
 	};
-	descriptor_pool = context.GetDevice().createDescriptorPool(vk::DescriptorPoolCreateInfo({}, 1, pool_sizes));
+	descriptor_pool = context.GetDevice().createDescriptorPool(vk::DescriptorPoolCreateInfo(vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind, 1, pool_sizes));
 }
 
 void Renderer::WaitForNextFrame(const DeviceContext& context) {

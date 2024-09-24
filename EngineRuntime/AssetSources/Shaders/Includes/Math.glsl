@@ -3,6 +3,8 @@
 
 #define PI 3.14159265359
 
+#define UINT_MAX 0xffffffff
+
 #define INTERPOLATE_BARYCENTRIC(a, b, c, bary, func) (func(a) * bary.x + func(b) * bary.y + func(c) * bary.z)
 
 // Generate a random unsigned int from two unsigned int values, using 16 pairs

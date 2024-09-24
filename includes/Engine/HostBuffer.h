@@ -8,7 +8,12 @@
 
 class MemoryBlock {
 public:
-	template <typename T> inline T Get(size_t index) const {
+	template <typename T> inline const T Get(size_t index) const {
+		auto& vector = Reinterpret<T>();
+		ASTAR_ASSERT(vector.size() >= index);
+		return vector[index];
+	}
+	template <typename T> inline T Get(size_t index) {
 		auto& vector = Reinterpret<T>();
 		ASTAR_ASSERT(vector.size() >= index);
 		return vector[index];
@@ -30,7 +35,7 @@ public:
 	}
 protected:
 	std::vector<std::byte> data;
-	template <typename T> inline const std::vector<T>& Reinterpret() const {
+	template <typename T> inline const std::vector<std::decay_t<T>>& Reinterpret() const {
 		using TData = std::decay_t<T>;
 		if constexpr (std::is_same_v<TData, std::byte>) {
 			return data;
@@ -40,7 +45,7 @@ protected:
 			return reinterpret_cast<const std::vector<TData>&>(data);
 		}
 	}
-	template <typename T> inline std::vector<T>& Reinterpret() {
+	template <typename T> inline std::vector<std::decay_t<T>>& Reinterpret() {
 		using TData = std::decay_t<T>;
 		if constexpr (std::is_same_v<TData, std::byte>) {
 			return data;

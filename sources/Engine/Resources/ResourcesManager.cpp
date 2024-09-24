@@ -41,6 +41,14 @@ ResourceBase& ResourcesManager::GetResource(const Uuid& id) {
 	return *resources.at(id).data;
 }
 
+const ResourceBase& ResourcesManager::GetResource(const Uuid& id) const {
+	if (!resources.contains(id)) {
+		throw std::runtime_error("Failed to find resources");
+	}
+	return *resources.at(id).data;
+}
+
+
 void ResourcesManager::SaveResource(const Uuid& uuid) {
 	if (!resources.contains(uuid)) {
 		throw std::runtime_error(std::format("Invalid uuid:{0}", uuid.str()));

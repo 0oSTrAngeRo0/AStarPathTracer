@@ -12,6 +12,7 @@ public:
 	inline Uuid GetId() const { return id; }
 	inline std::vector<std::byte> GetData() const { return memory.GetData<std::byte>(); }
 	inline bool IsDirty() const { return is_dirty; }
+	inline bool IsIdValid(const Uuid& id) const { return handlers.contains(id); }
 
 	template <typename T> inline const T GetValue(const Uuid& handle) const {
 		AssertStride<T>();

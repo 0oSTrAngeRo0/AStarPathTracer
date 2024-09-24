@@ -12,6 +12,7 @@
 
 #include "Engine/Resources/Resources.h"
 #include "Engine/HostBuffer.h"
+#include "Engine/HostShaderManager.h"
 #include "Application/Renderer/MeshPool.h"
 #include "Application/Renderer/MaterialPool.h"
 #include "Application/Renderer/TexturePool.h"
@@ -23,31 +24,43 @@
 class DeviceContext;
 class Mesh;
 
-class MaterialVisiableContext {
+struct MaterialVisiableContext {
 public:
-	const TexturePool& textures;
+	TexturePool& textures;
+	HostShaderManager& shader_manager;
+	MaterialVisiableContext(TexturePool& textures, HostShaderManager& shader_manager) : 
+		textures(textures), shader_manager(shader_manager) {}
 };
 
-using GetMaterialRawDataFunction = std::function<std::vector<std::byte>(const ResourceBase&, const MaterialVisiableContext&)>;
-class GetMaterialRawDataRegistry : public StaticRegistry<ResourceType, GetMaterialRawDataFunction> {
+using UpdateMaterialDataFunction = std::function<void(const ResourceBase&, const MaterialVisiableContext&)>;
+class UpdateMaterialDataRegistry : public StaticRegistry<ResourceType, UpdateMaterialDataFunction> {
 public:
-	template <typename TResource>
-	static std::vector<std::byte> GetMaterialRawData(const Resource<TResource>& resource, const MaterialVisiableContext& context);
+	template <typename TResource, typename TRuntimeData>
+	static TRuntimeData UpdateMaterialData(const Resource<TResource>& resource, const MaterialVisiableContext& context);
 };
 
-#define REGISTER_GET_MATERIAL_RAW_DATA(type) \
+#define REGISTER_UPDATE_MATERIAL_DATA(type, runtime_type) \
 static bool ASTAR_UNIQUE_VARIABLE_NAME(get_material_raw_data_register_) = (  \
-GetMaterialRawDataRegistry::Register(Resource<type>::GetResourceTypeStatic(), \
+UpdateMaterialDataRegistry::Register(Resource<type>::GetResourceTypeStatic(), \
 	[](const ResourceBase& resource, const MaterialVisiableContext& context) { \
-		auto resource_impl = static_cast<const Resource<type>&>(resource); \
-		return GetMaterialRawDataRegistry::GetMaterialRawData<type>(resource_impl, context); \
-	})\
+		auto& resource_impl = static_cast<const Resource<type>&>(resource); \
+		auto& shader = context.shader_manager.GetShader(resource_impl.resource_data.shader_id); \
+		runtime_type runtime_data = UpdateMaterialDataRegistry::UpdateMaterialData<type, runtime_type>(resource_impl, context); \
+		if (shader.IsIdValid(resource_impl.uuid)) \
+			shader.SetValue(resource_impl.uuid, runtime_data); \
+		else \
+			shader.EmplaceValue(resource_impl.uuid, runtime_data); \
+	}) \
 , true);
 
 class RenderContext {
 public:
 	RenderContext(const DeviceContext& context);
-	void Update(const DeviceContext& context, entt::registry& registry, const std::unordered_map<Uuid, uint32_t>& shader_indices);
+	void Update(
+		const DeviceContext& context, 
+		entt::registry& registry, 
+		const std::unordered_map<Uuid, uint32_t>& shader_indices // sbt data
+	);
 	void Destory(const DeviceContext& context);
 	void RecreateOutputImage(const DeviceContext& context, const vk::Extent2D extent, vk::Format format);
 
@@ -63,6 +76,7 @@ public:
 	inline const Image& GetAccumulateImage() const { return output_image->accumulate_image; }
 	inline const vk::Extent2D GetOutputImageExtent() const { return output_image->extent; }
 	inline const vk::AccelerationStructureKHR GetTlas() const { return tlas; }
+	inline const bool IsTexturesDirty() const { return texture_pool.IsDirty(); }
 	inline const std::vector<vk::DescriptorImageInfo> GetTextures() const { return texture_pool.GetDescriptorData(); }
 private:
 	MaterialPool material_pool;
