@@ -27,7 +27,7 @@ void main() {
 	vec3 normal;
 	float ior;
 	float eta_t;
-	if(cos_theta_i > 0 { // enter model
+	if(cos_theta_i > 0) { // enter model
 		ior = material.eta / payload.eta;
 		normal = vertex.normal;
 		eta_t = material.eta;
