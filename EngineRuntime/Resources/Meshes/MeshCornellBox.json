@@ -1,7 +1,7 @@
 {
   "references": [],
   "resource_data": {
-    "path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/cornell-box.obj"
+    "path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Models/cornell-box.obj"
   },
   "resource_type": "Obj",
   "uuid": "71182908-0fd0-448e-8cf8-357119beede8"
