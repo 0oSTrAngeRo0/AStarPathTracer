@@ -30,9 +30,9 @@ std::unique_ptr<GlfwWindow> CreateWindow(std::shared_ptr<InputState> input) {
 void EditorMain() {
 	std::shared_ptr<InputState> input = std::make_shared<InputState>();
 	std::unique_ptr<VulkanWindow> window = CreateWindow(input);
-	RendererApplication renderer(std::move(window));
 	entt::registry registry = CreateWorld(*input);
 	EditorApplication editor;
+	RendererApplication renderer(std::move(window));
 
 	while (renderer.IsActive() && editor.IsActive()) {
 		input->ClearFrameData();
