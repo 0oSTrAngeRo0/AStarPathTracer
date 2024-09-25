@@ -7,16 +7,17 @@
 #include <print>
 
 ResourcesPanel::ResourcesPanel() {
-	browser = std::make_unique<FileBrowser>(RESOURCES_DIR);
+	root = TreeView::CreateDirectryNodeTreeFromPath(RESOURCES_DIR);
 }
+
 
 void ResourcesPanel::DrawCraetePopupNode(const ResourceCreateMenuRegistry::Node& node) {
 	std::visit([&](auto&& arg) {
 		using T = std::decay_t<decltype(arg)>;
 		if constexpr (std::is_same_v<T, ResourceCreateMenuRegistry::Leaf>) {
 			if (ImGui::MenuItem(node.key.c_str())) {
-				arg(browser->GetCurrentState().full_path);
-				browser->Refresh();
+				arg(current_state.full_path);
+				root = TreeView::CreateDirectryNodeTreeFromPath(RESOURCES_DIR);
 			}
 		} else if constexpr (std::is_same_v<T, ResourceCreateMenuRegistry::Branch>) {
 			if (ImGui::BeginMenu(node.key.c_str())) {
@@ -30,8 +31,8 @@ void ResourcesPanel::DrawCraetePopupNode(const ResourceCreateMenuRegistry::Node&
 }
 
 void ResourcesPanel::DrawCreatePopup() {
-	auto& state = browser->GetCurrentState();
-	if (state.is_changed && state.is_directory && state.mouse_button == ImGuiMouseButton_Right) {
+	auto& state = current_state;
+	if (state.is_changed && state.is_not_leaf && state.mouse_button == ImGuiMouseButton_Right) {
 		ImGui::OpenPopup("Create Resource");
 	}
 	if (ImGui::BeginPopup("Create Resource")) {
@@ -50,7 +51,7 @@ void ResourcesPanel::DrawUi() {
 		config.countSelectionMax = 1;
 		ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose Resource File", ".*", config);
 	}
-	browser->OnDrawUi();
+	TreeView::DrawUi(root, current_state);
 	DrawCreatePopup();
 	ImGui::End();
 

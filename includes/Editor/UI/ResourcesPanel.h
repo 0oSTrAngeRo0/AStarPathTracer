@@ -4,21 +4,22 @@
 #include <variant>
 #include <functional>
 
-#include "Editor/UI/FileBrowser.h"
+#include "Editor/UI/TreeViewUtilities.h"
 #include "Editor/UI/Inspectors/ResourceEditorRegistry.h"
 
 
 class ResourcesPanel {
 private:
-	std::unique_ptr<FileBrowser> browser;
+	TreeView::State current_state;
+	TreeView::Node root;
+	void Refresh(std::string root_path);
 	void DrawCreatePopup();
 	void DrawCraetePopupNode(const ResourceCreateMenuRegistry::Node& node);
 public:
 	ResourcesPanel();
 	void DrawUi();
 	inline const std::tuple<const bool, const std::string> GetCurrentSelection() const { 
-		auto& current = browser->GetCurrentState();
-		return std::tie(current.is_directory, current.full_path);
+		return std::tie(current_state.is_not_leaf, current_state.full_path);
 	}
-	inline const bool IsSelectionChanged() const { return browser->GetCurrentState().is_changed; }
+	inline const bool IsSelectionChanged() const { return current_state.is_changed; }
 };

@@ -12,14 +12,14 @@ EditorUIDrawer::EditorUIDrawer() {
 void EditorUIDrawer::DrawUI(entt::registry& registry) {
     ImGui::DockSpaceOverViewport();
 
-    ImGui::ShowDemoWindow();
+    //ImGui::ShowDemoWindow();
 
     resources_panel->DrawUi();
 
     ImGui::Begin("Inspector");
     if (resources_panel->IsSelectionChanged()) {
-        auto [is_directory, path] = resources_panel->GetCurrentSelection();
-        if (!is_directory) {
+        auto [is_not_leaf, path] = resources_panel->GetCurrentSelection();
+        if (!is_not_leaf) {
             selection->SelectResource(path);
         }
         printf("Selection Changed: [%s]\n", path.c_str());

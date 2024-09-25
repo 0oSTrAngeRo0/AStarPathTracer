@@ -72,7 +72,7 @@ add_executable(${PROJECT_NAME}
     sources/Editor/UI/Inspectors/ResourceInspector.cpp
     sources/Editor/UI/ImGuiFileDialog.cpp
     sources/Editor/UI/ResourcesPanel.cpp
-    sources/Editor/UI/FileBrowser.cpp
+    sources/Editor/UI/TreeViewUtilities.cpp
     
     sources/Engine/Resources/Resource.cpp
     sources/Engine/Resources/ResourcesManager.cpp
