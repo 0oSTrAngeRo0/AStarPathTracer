@@ -2,6 +2,7 @@
 
 #include "Core/DeviceContext.h"
 #include "Core/Swapchain.h"
+#include "Core/Surface.h"
 #include "Core/VulkanUtils.h"
 #include "Editor/EditorUI.h"
 
@@ -83,26 +84,34 @@ vk::DescriptorPool EditorRenderContext::CreateDescriptorPool(const DeviceContext
 	return context.GetDevice().createDescriptorPool(create_info);
 }
 
-EditorRenderContext::EditorRenderContext(const DeviceContext& context) {
+EditorRenderContext::EditorRenderContext(const DeviceContext& context, vk::SurfaceKHR surface, vk::Extent2D swapchain_extent) {
 	current_frame = 0;
-	surface = std::make_unique<Surface>(context, surface);
-	swapchain = std::make_unique<Swapchain>(context, *surface, context.GetActuralExtent());
-	render_pass = CreateRenderPass(context, swapchain->GetFormat());
+	this->surface = std::make_unique<Surface>(context, surface);
 	descriptor_pool = CreateDescriptorPool(context);
 	cmd_pool = context.GetDevice().createCommandPool(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, context.GetGrpahicsQueueIndex()));
+	swapchain = std::make_unique<Swapchain>(context, *this->surface, swapchain_extent);
+	render_pass = CreateRenderPass(context, swapchain->GetFormat());
 	frames = EditorFrameContext::CreateFrameContext(context, cmd_pool, *swapchain, render_pass);
 }
 
-std::tuple<EditorFrameContext&, const uint32_t> EditorRenderContext::BeginFrame(const DeviceContext& context) {
+EditorRenderContext::~EditorRenderContext() {}
+
+std::optional<std::tuple<EditorFrameContext&, uint32_t>> EditorRenderContext::WaitForNextFrame(const DeviceContext& context) {
 	EditorFrameContext& frame = frames[current_frame];
 	VK_CHECK(context.GetDevice().waitForFences({ frame.in_flight_fence }, vk::True, UINT64_MAX));
 	context.GetDevice().resetFences({ frame.in_flight_fence });
-	uint32_t image_index = context.GetDevice().acquireNextImageKHR(*swapchain, UINT64_MAX, frame.image_available_semaphore).value;
+	auto next_result = context.GetDevice().acquireNextImageKHR(*swapchain, UINT64_MAX, frame.image_available_semaphore);
+	if (next_result.result == vk::Result::eErrorOutOfDateKHR) {
+		return std::nullopt;
+	}
+	//std::printf("Current:%u, Next:%u\n", current_frame, next_result.value);
+	return std::tie(frame, next_result.value);
+}
 
+void EditorRenderContext::BeginFrame(const DeviceContext& context, const EditorFrameContext& frame) {
 	vk::CommandBuffer cmd = frame.command_buffer;
 	cmd.reset();
 	cmd.begin(vk::CommandBufferBeginInfo(vk::CommandBufferUsageFlagBits::eOneTimeSubmit));
-	return std::tie(frame, image_index);
 }
 
 void EditorRenderContext::SubmitFrame(const DeviceContext& context, const EditorFrameContext& frame) {
@@ -118,10 +127,15 @@ void EditorRenderContext::SubmitFrame(const DeviceContext& context, const Editor
 	context.GetGraphicsQueue().submit(submit_info, frame.in_flight_fence);
 }
 
-void EditorRenderContext::PresentFrame(const DeviceContext& context, const EditorFrameContext& frame, const uint32_t image_index) {
+bool EditorRenderContext::PresentFrame(const DeviceContext& context, const EditorFrameContext& frame, const uint32_t image_index) {
 	std::vector<vk::SwapchainKHR> swapchains = { *swapchain };
 	vk::PresentInfoKHR present_info(frame.render_finished_semaphore, swapchains, image_index);
-	VK_CHECK(context.GetPresentQueue().presentKHR(present_info));
+	vk::Result present_result = context.GetPresentQueue().presentKHR(&present_info);
+	if (present_result == vk::Result::eErrorOutOfDateKHR || present_result == vk::Result::eSuboptimalKHR) {
+		return true;
+	}
+	VK_CHECK(present_result);
+	return false;
 }
 
 void EditorRenderContext::EndFrame() {
@@ -136,6 +150,20 @@ void EditorRenderContext::CmdDrawUI(const EditorFrameContext& frame, EditorUI& u
 		vk::SubpassContents::eInline);
 	ui.CmdDraw(frame.command_buffer);
 	frame.command_buffer.endRenderPass();
+}
+
+void EditorRenderContext::ResizeSwapchain(const DeviceContext& context, vk::Extent2D extent) {
+	for (auto& frame : frames) {
+		frame.Destroy(context);
+	}
+	if (swapchain) {
+		swapchain->Destroy(context);
+	}
+
+	surface->ReacquireProperties(context);
+	swapchain = std::make_unique<Swapchain>(context, *surface, extent);
+	frames = EditorFrameContext::CreateFrameContext(context, cmd_pool, *swapchain, render_pass);
+	current_frame = 0;
 }
 
 void EditorRenderContext::Destroy(const DeviceContext& context) {

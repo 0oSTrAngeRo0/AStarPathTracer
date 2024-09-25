@@ -43,16 +43,20 @@ private:
 	static vk::RenderPass CreateRenderPass(const DeviceContext& context, const vk::Format format);
 	static vk::DescriptorPool CreateDescriptorPool(const DeviceContext& context);
 public:
-	EditorRenderContext(const DeviceContext& context);
+	EditorRenderContext(const DeviceContext& context, vk::SurfaceKHR surface, vk::Extent2D swapchain_extent);
+	~EditorRenderContext();
 	inline const Swapchain& GetSwapchain() const { return *swapchain; }
 	inline const vk::RenderPass GetRenderPass() const { return render_pass; }
 	inline const vk::DescriptorPool GetDescriptorPool() const { return descriptor_pool; }
 
-	std::tuple<EditorFrameContext&, const uint32_t> BeginFrame(const DeviceContext& context);
+	std::optional<std::tuple<EditorFrameContext&, uint32_t>> WaitForNextFrame(const DeviceContext& context);
+	void BeginFrame(const DeviceContext& context, const EditorFrameContext& frame);
 	void SubmitFrame(const DeviceContext& context, const EditorFrameContext& frame);
-	void PresentFrame(const DeviceContext& context, const EditorFrameContext& frame, const uint32_t image_index);
+	bool PresentFrame(const DeviceContext& context, const EditorFrameContext& frame, const uint32_t image_index);
 	void EndFrame();
 	void CmdDrawUI(const EditorFrameContext& frame, EditorUI& ui);
+
+	void ResizeSwapchain(const DeviceContext& context, vk::Extent2D extent);
 
 	void Destroy(const DeviceContext& context);
 };
