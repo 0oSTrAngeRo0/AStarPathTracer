@@ -11,7 +11,6 @@
 #include <entt/entt.hpp>
 
 #include "Engine/Resources/Resources.h"
-#include "Engine/HostBuffer.h"
 #include "Engine/HostShaderManager.h"
 #include "Application/Renderer/MeshPool.h"
 #include "Application/Renderer/MaterialPool.h"

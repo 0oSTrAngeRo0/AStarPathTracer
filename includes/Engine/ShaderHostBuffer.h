@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine/HostBuffer.h"
+#include "Engine/MemoryBlock.h"
 
 class HostShader {
 public:
