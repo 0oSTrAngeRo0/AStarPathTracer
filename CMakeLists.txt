@@ -73,6 +73,7 @@ add_executable(${PROJECT_NAME}
     sources/Editor/UI/ImGuiFileDialog.cpp
     sources/Editor/UI/ResourcesPanel.cpp
     sources/Editor/UI/TreeViewUtilities.cpp
+    sources/Editor/UI/HierarchiesPanel.cpp
     
     sources/Engine/Resources/Resource.cpp
     sources/Engine/Resources/ResourcesManager.cpp
@@ -83,7 +84,7 @@ add_executable(${PROJECT_NAME}
     sources/Engine/Resources/MeshLoader/MeshResourceUtilities.cpp
     sources/Engine/ShaderHostBuffer.cpp
     sources/Engine/Resources/TextureLoader/StbImageUtilities.cpp
-)
+ )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PRIVATE plugins/tiny-obj-loader-1.0.6)

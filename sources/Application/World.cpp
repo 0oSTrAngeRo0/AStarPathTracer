@@ -3,6 +3,7 @@
 #include "Engine/Components/Transform.h"
 #include "Engine/Components/Camera.h"
 #include "Engine/Components/Render.h"
+#include "Engine/Components/Name.h"
 #include "Application/Renderer/RenderContext.h"
 #include "Engine/Resources/ResourcesManager.h"
 #include "Engine/ShaderHostBuffer.h"
@@ -164,6 +165,7 @@ entt::entity World::AttachOrbitCamera(entt::registry& registry, entt::entity cam
 
 void World::CreateCornellBox(entt::registry& registry) {
 	entt::entity cornell_box = registry.create();
+	registry.emplace<Name>(cornell_box, "CornellBox");
 	registry.emplace<LocalPosition>(cornell_box, glm::vec3(0, 0, 0));
 	registry.emplace<LocalRotation>(cornell_box, glm::quat(1, 0, 0, 0));
 	registry.emplace<LocalScale>(cornell_box, glm::vec3(0.01));
@@ -186,6 +188,7 @@ void World::CreateCornellBox(entt::registry& registry) {
 	//float fov_y = 2 * glm::atan(0.025 / (2 * 0.035));
 	float fov_y = 45;
 	entt::entity camera = registry.create();
+	registry.emplace<Name>(camera, "MainCamera");
 	registry.emplace<LocalPosition>(camera, glm::vec3(-2.78, 2.73, 8));
 	registry.emplace<LocalRotation>(camera, glm::quatLookAt(glm::vec3(0, 0, -1), glm::vec3(0, 1, 0)));
 	registry.emplace<LocalScale>(camera, glm::vec3(1, 1, 1));

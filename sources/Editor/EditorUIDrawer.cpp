@@ -2,11 +2,15 @@
 #include "Editor/UI/Inspectors/EditorInspector.h"
 #include "imgui.h"
 #include "Editor/UI/ImGuiFileDialog.h"
+#include "Editor/UI/ResourcesPanel.h"
+#include "Editor/UI/HierarchiesPanel.h"
+#include "Editor/EditorSelection.h"
 
 
 EditorUIDrawer::EditorUIDrawer() {
     resources_panel = std::make_unique<ResourcesPanel>();
     selection = std::make_unique<EditorSelection>();
+    hierachies_panel = std::make_unique<HierachiesPanel>();
 }
 
 void EditorUIDrawer::DrawUI(entt::registry& registry) {
@@ -15,11 +19,12 @@ void EditorUIDrawer::DrawUI(entt::registry& registry) {
     //ImGui::ShowDemoWindow();
 
     resources_panel->DrawUi();
+    hierachies_panel->DrawUi(registry);
 
     ImGui::Begin("Inspector");
     if (resources_panel->IsSelectionChanged()) {
-        auto [is_not_leaf, path] = resources_panel->GetCurrentSelection();
-        if (!is_not_leaf) {
+        auto [is_leaf, path] = resources_panel->GetCurrentSelection();
+        if (is_leaf) {
             selection->SelectResource(path);
         }
         printf("Selection Changed: [%s]\n", path.c_str());
@@ -48,3 +53,5 @@ void EditorUIDrawer::DrawUI(entt::registry& registry) {
         ImGui::EndMainMenuBar();
     }
 }
+
+EditorUIDrawer::~EditorUIDrawer() {}

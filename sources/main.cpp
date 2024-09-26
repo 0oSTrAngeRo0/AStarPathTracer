@@ -47,6 +47,19 @@ void EditorMain() {
 	}
 }
 
+void EditorOnlyMain() {
+	std::shared_ptr<InputState> input = std::make_shared<InputState>();
+	entt::registry registry = CreateWorld(*input);
+	EditorApplication editor;
+
+	while (editor.IsActive()) {
+		input->ClearFrameData();
+		GlfwWindow::PollEvents();
+		World::Update(registry, 0.01);
+		editor.Update(registry);
+	}
+}
+
 void ApplicationMain() {
 	std::shared_ptr<InputState> input = std::make_shared<InputState>();
 	std::unique_ptr<VulkanWindow> window = CreateWindow(input);
@@ -64,7 +77,8 @@ void ApplicationMain() {
 int main() {
 	try {
 		//ApplicationMain();
-		EditorMain();
+		//EditorMain();
+		EditorOnlyMain();
 	}
 	catch (const std::exception& e) {
 		printf("%s\n", e.what());

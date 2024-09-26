@@ -16,7 +16,7 @@ void ResourcesPanel::DrawCraetePopupNode(const ResourceCreateMenuRegistry::Node&
 		using T = std::decay_t<decltype(arg)>;
 		if constexpr (std::is_same_v<T, ResourceCreateMenuRegistry::Leaf>) {
 			if (ImGui::MenuItem(node.key.c_str())) {
-				arg(current_state.full_path);
+				arg(current_state.id);
 				root = TreeView::CreateDirectryNodeTreeFromPath(RESOURCES_DIR);
 			}
 		} else if constexpr (std::is_same_v<T, ResourceCreateMenuRegistry::Branch>) {
@@ -32,7 +32,7 @@ void ResourcesPanel::DrawCraetePopupNode(const ResourceCreateMenuRegistry::Node&
 
 void ResourcesPanel::DrawCreatePopup() {
 	auto& state = current_state;
-	if (state.is_changed && state.is_not_leaf && state.mouse_button == ImGuiMouseButton_Right) {
+	if (state.is_changed && !state.is_leaf && state.mouse_button == ImGuiMouseButton_Right) {
 		ImGui::OpenPopup("Create Resource");
 	}
 	if (ImGui::BeginPopup("Create Resource")) {
