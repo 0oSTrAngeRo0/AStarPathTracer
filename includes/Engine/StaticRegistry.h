@@ -16,10 +16,9 @@ public:
 	}
 	static std::optional<TValue> Get(const TKey& key) {
 		auto& map = GetMap();
-		if (!map.contains(key)) {
-			throw std::runtime_error("Value not found");
-		}
-		return map.at(key);
+		auto it = map.find(key);
+		if (it == map.end()) return std::nullopt;
+		return (*it).second;
 	}
 private:
 	static std::unordered_map<TKey, TValue>& GetMap() {
