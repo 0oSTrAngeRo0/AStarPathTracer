@@ -5,7 +5,7 @@
 #include "Editor/UI/ResourcesPanel.h"
 #include "Editor/UI/HierarchiesPanel.h"
 #include "Editor/EditorSelection.h"
-
+#include "Utilities/EnumX.h"
 
 EditorUIDrawer::EditorUIDrawer() {
     resources_panel = std::make_unique<ResourcesPanel>();
@@ -28,6 +28,14 @@ void EditorUIDrawer::DrawUI(entt::registry& registry) {
             selection->SelectResource(path);
         }
         printf("Selection Changed: [%s]\n", path.c_str());
+    }
+    if (hierachies_panel->IsSelectionChanged()) {
+        auto [is_leaf, entity_str] = hierachies_panel->GetCurrentSelection();
+        if (is_leaf) {
+            entt::entity entity = static_cast<entt::entity>(std::stoul(entity_str));
+            selection->SelectEntity(entity, registry);
+        }
+        printf("Selection Changed: [%s]\n", entity_str.c_str());
     }
     selection->GetSelectedInspector().DrawInspector();
     ImGui::End();

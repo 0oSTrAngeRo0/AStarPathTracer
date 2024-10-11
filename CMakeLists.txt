@@ -34,6 +34,7 @@ set(IMGUI_SOURCE
     ${IMGUI_DIR}/imgui_demo.cpp 
     ${IMGUI_DIR}/imgui_tables.cpp 
     ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/misc/cpp/imgui_stdlib.cpp
 )
 
 add_executable(${PROJECT_NAME}
@@ -74,6 +75,7 @@ add_executable(${PROJECT_NAME}
     sources/Editor/UI/ResourcesPanel.cpp
     sources/Editor/UI/TreeViewUtilities.cpp
     sources/Editor/UI/HierarchiesPanel.cpp
+    sources/Editor/UI/Inspectors/ComponentInspector.cpp
     
     sources/Engine/Resources/Resource.cpp
     sources/Engine/Resources/ResourcesManager.cpp
@@ -84,7 +86,8 @@ add_executable(${PROJECT_NAME}
     sources/Engine/Resources/MeshLoader/MeshResourceUtilities.cpp
     sources/Engine/ShaderHostBuffer.cpp
     sources/Engine/Resources/TextureLoader/StbImageUtilities.cpp
- )
+    sources/Engine/Components/ComponentInspectors.cpp
+)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PRIVATE plugins/tiny-obj-loader-1.0.6)

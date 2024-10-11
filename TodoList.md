@@ -16,5 +16,6 @@
  - Merge BLAS, by changing SBT when merge
  - ReSTIR
  - ~~Texture support~~
+ - Skinned Mesh
 
 ## Code Arrange
