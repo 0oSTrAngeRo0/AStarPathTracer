@@ -175,4 +175,5 @@ void EditorRenderContext::Destroy(const DeviceContext& context) {
 	device.destroyDescriptorPool(descriptor_pool);
 	device.destroyCommandPool(cmd_pool);
 	swapchain->Destroy(context);
+	surface->Destroy(context);
 }
