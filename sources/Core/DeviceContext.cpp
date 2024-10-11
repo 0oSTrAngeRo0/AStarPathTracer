@@ -11,29 +11,28 @@
 #include "Utilities/Algorithm.h"
 #include <unordered_set>
 
-#pragma region Instance
-
 vk::Instance DeviceContext::CreateInstance(const DeviceContextCreateConfig& config) {
 	vk::ApplicationInfo app_info = vk::ApplicationInfo(APP_NAME, vk::makeVersion(1, 0, 0), ENGINE_NAME, vk::makeVersion(1, 3, 0), vk::ApiVersion13);
 
 	auto str_extensions = config.GetInstanceExtensions();
+	#if defined(ENABLE_DEBUG)
+	str_extensions.emplace_back(std::string(VK_EXT_DEBUG_UTILS_EXTENSION_NAME));
+	#endif
 	std::vector<const char*> extensions(str_extensions.size());
 	std::transform(str_extensions.begin(), str_extensions.end(), extensions.begin(), [](auto& extension) { return extension.c_str(); });
 
 	auto str_layers = config.GetInstanceLayers();
+	#if defined(ENABLE_DEBUG)
+	str_layers.emplace_back(std::string("VK_LAYER_KHRONOS_validation"));
+	#endif
 	std::vector<const char*> layers(str_layers.size());
 	std::transform(str_layers.begin(), str_layers.end(), layers.begin(), [](auto& layer) { return layer.c_str(); });
 
-	PrintInstanceExtensions();
 	vk::InstanceCreateInfo create_info = vk::InstanceCreateInfo(vk::InstanceCreateFlagBits::eEnumeratePortabilityKHR, &app_info, layers, extensions);
 	return vk::createInstance(create_info);
 }
 
-#pragma endregion
-
-#pragma region GPU
-
-std::optional<DeviceContext::QueueIndices> DeviceContext::GetSuitableQueueFamilies(vk::PhysicalDevice device, vk::SurfaceKHR surface) {
+std::optional<DeviceContext::QueueIndices> DeviceContext::GetSuitableQueueFamilies(vk::PhysicalDevice device) {
 	auto properties = device.getQueueFamilyProperties();
 	bool contains_graphics = false;
 	bool contains_present = false;
@@ -43,10 +42,7 @@ std::optional<DeviceContext::QueueIndices> DeviceContext::GetSuitableQueueFamili
 		if (property.queueFlags & vk::QueueFlagBits::eGraphics) {
 			indices.graphics = i;
 			contains_graphics = true;
-		}
 
-		auto is_present_supported = device.getSurfaceSupportKHR(i, surface);
-		if (is_present_supported) {
 			indices.present = i;
 			contains_present = true;
 		}
@@ -60,8 +56,7 @@ std::optional<vk::PhysicalDevice> DeviceContext::PickPhysicalDevice(vk::Instance
 	const auto extensions = config.GetGpuExtensions();
 	std::remove_if(gpus.begin(), gpus.end(), [&extensions = extensions](auto gpu) { return !IsGpuExtensionsValid(gpu, extensions); });
 
-	const auto surface = config.GetSurface();
-	std::remove_if(gpus.begin(), gpus.end(), [&surface = surface.value()](auto gpu) { return !GetSuitableQueueFamilies(gpu, surface); });
+	std::remove_if(gpus.begin(), gpus.end(), [](auto gpu) { return !GetSuitableQueueFamilies(gpu); });
 
 	std::remove_if(gpus.begin(), gpus.end(), [&config = config](auto gpu) { return config.OtherGpuCheck(gpu); });
 
@@ -81,16 +76,14 @@ bool DeviceContext::IsGpuExtensionsValid(vk::PhysicalDevice gpu, std::vector<std
 	return true;
 }
 
-#pragma endregion
-
-#pragma region Device
-
 vk::Device DeviceContext::CreateDevice(const vk::PhysicalDevice gpu, const DeviceContextCreateConfig& config, const QueueIndices& queue_indices) {
 	std::vector<float> queue_priorities = { 1.0f };
 	std::vector<vk::DeviceQueueCreateInfo> queue_create_infos = {
 		vk::DeviceQueueCreateInfo({}, queue_indices.graphics, queue_priorities, {}),
 		vk::DeviceQueueCreateInfo({}, queue_indices.present, queue_priorities, {})
 	};
+	std::sort(queue_create_infos.begin(), queue_create_infos.end());
+	queue_create_infos.erase(std::unique(queue_create_infos.begin(), queue_create_infos.end()), queue_create_infos.end());
 
 	auto str_extensions = config.GetGpuExtensions();
 	std::vector<const char*> extensions(str_extensions.size());
@@ -125,10 +118,6 @@ vk::Device DeviceContext::CreateDevice(const vk::PhysicalDevice gpu, const Devic
 	return gpu.createDevice(device_create_info_chain.get());
 }
 
-#pragma endregion
-
-#pragma region Vma
-
 vma::Allocator DeviceContext::CreateVmaAllocator(const vk::Instance instance, const vk::PhysicalDevice gpu, const vk::Device device) {
 	vma::VulkanFunctions functions = vma::functionsFromDispatcher(VULKAN_HPP_DEFAULT_DISPATCHER);
 	return vma::createAllocator(vma::AllocatorCreateInfo(
@@ -145,21 +134,6 @@ vma::Allocator DeviceContext::CreateVmaAllocator(const vk::Instance instance, co
 	));
 }
 
-#pragma endregion
-
-
-void DeviceContext::PrintInstanceExtensions() {
-	auto extensions = vk::enumerateInstanceExtensionProperties();
-	std::printf("----------------------------------\n");
-	std::printf("InstanceExtensions:\n");
-	std::printf("|Version\t|Name\n");
-	std::printf("----------------------------------\n");
-	for (auto& extension : extensions) {
-		std::printf("|%u\t\t|%s\n", extension.specVersion, extension.extensionName.data());
-	}
-	std::printf("----------------------------------\n");
-}
-
 DeviceContext::DeviceContext(DeviceContextCreateConfig& config) {
 	VULKAN_HPP_DEFAULT_DISPATCHER.init();
 	instance = CreateInstance(config);
@@ -169,13 +143,11 @@ DeviceContext::DeviceContext(DeviceContextCreateConfig& config) {
 	debugger.reset(new EngineDebugger(instance));
 #endif // ENABLE_DEBUG
 
-	vk::SurfaceKHR surface = config.CreateSurface(instance);
 	auto gpu_result = PickPhysicalDevice(instance, config);
-	if (!gpu_result) {
+	if (!gpu_result)
 		throw std::runtime_error("Failed to find a valid physical device");
-	}
 	gpu = gpu_result.value();
-	auto queue_indices = GetSuitableQueueFamilies(gpu, surface).value();
+	auto&& queue_indices = GetSuitableQueueFamilies(gpu).value();
 
 	graphics_queue_index = queue_indices.graphics;
 	present_queue_index = queue_indices.present;

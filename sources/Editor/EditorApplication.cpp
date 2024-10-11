@@ -17,7 +17,7 @@ EditorApplication::EditorApplication() {
 	EditorDeviceContextCreateConfig device_context_create_config(*window);
 	context = std::make_unique<DeviceContext>(device_context_create_config);
 
-	vk::SurfaceKHR surface = device_context_create_config.GetSurface().value();
+	vk::SurfaceKHR surface = window->CreateWindowSurface(context->GetInstance(), nullptr).value();
 	render_context = std::make_unique<EditorRenderContext>(*context, surface, window->GetActualExtent());
 	ui = std::make_unique<EditorUI>(*context, *render_context, *window);
 	ui_drawer = std::make_unique<EditorUIDrawer>();

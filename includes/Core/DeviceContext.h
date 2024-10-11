@@ -18,9 +18,7 @@ public:
 	virtual std::vector<std::string> GetInstanceExtensions() const = 0;
 	virtual std::vector<std::string> GetInstanceLayers() const = 0;
 	virtual std::vector<std::string> GetGpuExtensions() const = 0;
-	virtual std::optional<vk::SurfaceKHR> GetSurface() const = 0;
 	virtual bool OtherGpuCheck(vk::PhysicalDevice gpu) const = 0;
-	virtual vk::SurfaceKHR CreateSurface(vk::Instance instance) = 0;
 	virtual vk::PhysicalDeviceFeatures2 GetGpuFeatures() const = 0;
 };
 
@@ -80,10 +78,9 @@ private:
 	vma::Allocator allocator;
 
 	static vk::Instance CreateInstance(const DeviceContextCreateConfig& config);
-	static std::optional<QueueIndices> GetSuitableQueueFamilies(vk::PhysicalDevice gpu, vk::SurfaceKHR surface);
+	static std::optional<QueueIndices> GetSuitableQueueFamilies(vk::PhysicalDevice gpu);
 	static std::optional<vk::PhysicalDevice> PickPhysicalDevice(vk::Instance instance, const DeviceContextCreateConfig& config);
 	static bool IsGpuExtensionsValid(vk::PhysicalDevice gpu, std::vector<std::string> extensions);
 	static vk::Device CreateDevice(const vk::PhysicalDevice gpu, const DeviceContextCreateConfig& config, const QueueIndices& queue_indices);
 	static vma::Allocator CreateVmaAllocator(const vk::Instance instance, const vk::PhysicalDevice gpu, const vk::Device device);
-	static void PrintInstanceExtensions();
 };
