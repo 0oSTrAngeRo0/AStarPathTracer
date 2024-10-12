@@ -41,11 +41,31 @@ protected:
 
 class EntityInspector : public EditorInspectorBase {
 public:
-	EntityInspector(entt::entity entity, entt::registry& registry);
+	EntityInspector(entt::entity entity, entt::registry& registry) : entity(entity), registry(registry) { Refresh(); }
 	void DrawInspector() override;
 	~EntityInspector();
-private:
-	std::vector<std::unique_ptr<ComponentInspectorBase>> components;
+protected:
+	struct ComponentData {
+	public:
+		entt::id_type type;
+		std::unique_ptr<ComponentInspectorBase> inspector;
+		ComponentData(entt::id_type type, std::unique_ptr<ComponentInspectorBase> inspector) :
+			type(type), inspector(std::move(inspector)) {}
+	};
+
+	struct OtherComponentData {
+	public:
+		std::string name;
+		entt::id_type type;
+		OtherComponentData(entt::id_type type, std::string&& name) :
+			type(type), name(name) {}
+	};
+	std::vector<ComponentData> components;
+	std::vector<OtherComponentData> other_components;
+	entt::entity entity;
+	entt::registry& registry;
+
+	void Refresh();
 };
 
 
