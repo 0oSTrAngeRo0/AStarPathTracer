@@ -98,9 +98,17 @@ namespace reflection {
 		entt::registry& registry, 
 		entt::entity entity
 	) {
-		auto constructor = entt::resolve(type_info.hash()).func(entt::hashed_string("CreateComponentInspector"));
-		if (!constructor) return std::nullopt;
-		auto any = constructor.invoke({}, entt::forward_as_meta(type_info), entt::forward_as_meta(registry), entt::forward_as_meta(entity));
-		return any.cast<std::unique_ptr<ComponentInspectorBase>&&>();
+		return CallFunc<
+			std::unique_ptr<ComponentInspectorBase>&&,
+			const entt::type_info&,
+			entt::registry&,
+			entt::entity
+		>(
+			type_info.hash(), 
+			entt::hashed_string("CreateComponentInspector"),
+			type_info,
+			registry,
+			entity
+		);
 	}
 }

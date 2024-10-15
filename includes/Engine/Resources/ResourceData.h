@@ -7,7 +7,7 @@
 #include "Engine/ShaderHostBuffer.h"
 #include "Engine/StaticRegistry.h"
 #include "Engine/Resources/Resources.h"
-#include "Engine/Resources/JsonSerializer.h"
+#include "Utilities/JsonX.h"
 
 struct ObjResourceData {
 public:

@@ -1,6 +1,5 @@
 #include "Engine/Resources/Resources.h"
-#include "Engine/Resources/JsonSerializer.h"
-#include "Engine/ShaderHostBuffer.h"
+#include "Engine/Json/Resource.h"
 #include "Engine/ShaderHostBuffer.h"
 
 std::string ResourceBase::Serialize(const ResourceBase& data) {

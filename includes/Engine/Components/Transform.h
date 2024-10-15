@@ -6,12 +6,15 @@
 
 struct LocalLinearVelocity {
 	glm::vec3 velocity;
+
+	LocalLinearVelocity() = default;
 	LocalLinearVelocity(glm::vec3 velocity) : velocity(velocity) {}
 };
 
 struct LocalPosition {
 	glm::vec3 position;
 
+	LocalPosition() = default;
 	LocalPosition(glm::vec3 position) :position(position) {}
 	operator const glm::vec3& () const { return position; }
 };

@@ -11,4 +11,4 @@
 #define ASTAR_ASSERT(expression) assert(expression)
 #define ASTAR_DO_NOTHING(...)
 #define ASTAR_PRINT(fmt, ...) std::printf(fmt, __VA_ARGS__)
-#define ASTAR_BEFORE_MAIN(code) bool ASTAR_UNIQUE_VARIABLE_NAME(astar_before_main_) = (code, true)
+#define ASTAR_BEFORE_MAIN(code) static bool ASTAR_UNIQUE_VARIABLE_NAME(astar_before_main_) = (code, true)

@@ -87,6 +87,8 @@ add_executable(${PROJECT_NAME}
     sources/Engine/ShaderHostBuffer.cpp
     sources/Engine/Resources/TextureLoader/StbImageUtilities.cpp
     sources/Engine/Components/ComponentInspectors.cpp
+    sources/Engine/Json/Components.cpp
+    
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})

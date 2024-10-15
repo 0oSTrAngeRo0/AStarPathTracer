@@ -3,7 +3,11 @@
 #include "Engine/Resources/Resources.h"
 #include "Engine/Resources/ResourcesManager.h"
 #include "Engine/Resources/ResourceData.h"
-#include "Engine/Resources/JsonSerializer.h"
+#include "Engine/Resources/ResourceRegistry.h"
+#include "Utilities/JsonX.h"
+#include "Engine/Json/Glm.h"
+#include "Engine/Json/Guid.h"
+#include "Engine/Json/Resource.h"
 #include "Application/Renderer/RenderContext.h"
 
 #include "Editor/UI/Inspectors/ResourceInspector.h"

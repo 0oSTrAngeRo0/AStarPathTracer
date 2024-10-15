@@ -9,6 +9,7 @@ struct ProjectionCamera {
 	float aspect;
 	float fov_y_degree;
 
+	ProjectionCamera() = default;
 	ProjectionCamera(float fov_y_degree, float aspect, float near_z, float far_z) :
 		fov_y_degree(fov_y_degree), aspect(aspect), near_z(near_z), far_z(far_z) {}
 };
@@ -24,6 +25,7 @@ struct OrbitCamera {
 	float theta;
 	float phi;
 
+	OrbitCamera() = default;
 	OrbitCamera(entt::entity look_at, float distance, float theta, float phi) :
 		look_at(look_at), distance(distance), theta(theta), phi(phi) {}
 };

@@ -1,7 +1,7 @@
 #include "Engine/Resources/ResourceData.h"
 #include "Engine/Resources/Resources.h"
 #include "Engine/Resources/ResourceRegistry.h"
-#include "Engine/Resources/JsonSerializer.h"
+#include "Engine/Json/Resource.h"
 #include "Engine/ShaderHostBuffer.h"
 #include "Engine/HostShaderManager.h"
 #include "Utilities/MacroUtilities.h"
