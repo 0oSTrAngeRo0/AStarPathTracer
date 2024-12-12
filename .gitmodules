@@ -12,7 +12,7 @@
 	branch = master
 [submodule "plugins/VulkanMemoryAllocator-Hpp"]
 	path = plugins/VulkanMemoryAllocator-Hpp
-	url = https://github.com/0oSTrAngeRo0/VulkanMemoryAllocator-Hpp.git
+	url = https://github.com/YaaZ/VulkanMemoryAllocator-Hpp.git
 	branch = master
 [submodule "plugins/imgui"]
 	path = plugins/imgui
