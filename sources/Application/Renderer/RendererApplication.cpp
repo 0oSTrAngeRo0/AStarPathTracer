@@ -15,7 +15,7 @@ RendererApplication::RendererApplication(std::unique_ptr<VulkanWindow> window) :
 
 	context = std::make_unique<DeviceContext>(context_create_info);
 	render_context = std::make_unique<RenderContext>(*context);
-	renderer = std::make_unique<Renderer>(*context, window->CreateWindowSurface(context->GetInstance(), nullptr).value());
+	renderer = std::make_unique<Renderer>(*context, this->window->CreateWindowSurface(context->GetInstance(), nullptr).value());
 	ResizeWindow();
 	pipeline = std::make_unique<RendererPipeline>(*context, *render_context, renderer->GetDescriptorPool());
 }

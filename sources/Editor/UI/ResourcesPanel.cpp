@@ -4,7 +4,6 @@
 #include "Engine/Resources/Resources.h"
 #include "Engine/Resources/ResourcesManager.h"
 #include "Engine/Resources/ResourceData.h"
-#include <print>
 
 ResourcesPanel::ResourcesPanel() {
 	root = TreeView::CreateDirectryNodeTreeFromPath(RESOURCES_DIR);
