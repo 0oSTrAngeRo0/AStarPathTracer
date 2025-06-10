@@ -12,7 +12,7 @@ void HierachiesPanel::DrawUi(const entt::registry& registry) {
 	view.each([&root](const entt::entity entity, const Name& name) {
 		TreeView::Node leaf;
 		leaf.id = std::to_string(GetEnumUnderlying(entity));
-		leaf.name = name;
+		leaf.name = name.name;
 		leaf.is_leaf = true;
 		root.children.emplace_back(leaf);
 	});

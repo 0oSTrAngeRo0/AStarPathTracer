@@ -17,7 +17,7 @@
 
 #define GET_MATERIAL_TYPE(type) ASTAR_CONCAT(type, MaterialData)
 #define GET_MATERIAL_RESOURCE_NAME(type) ASTAR_GET_STRING(ASTAR_CONCAT(Material, type))
-#define GET_MATERIAL_RESOURCE_TYPE(type) ASTAR_CONCAT(ASTAR_CONCAT(MaterialResourceData<, type), MaterialData>)
+#define GET_MATERIAL_RESOURCE_TYPE(type) MaterialResourceData<type##MaterialData>
 #define GET_MATERIAL_RUNTIME_TYPE(type) ASTAR_CONCAT(type, MaterialRuntimeData)
 
 #define REGISTER_RESOURCE_TYPE(type, name) \

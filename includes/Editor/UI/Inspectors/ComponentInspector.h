@@ -90,7 +90,7 @@ namespace reflection {
 
 	template <typename TComponent, ConceptComponentInspector TInspector>
 	inline void RegisterComponentInspector() {
-		entt::meta<TComponent>().func<&ConstructComponentInspector<TInspector>>(entt::hashed_string("CreateComponentInspector"));
+		entt::meta_factory<TComponent>{}.template func<&ConstructComponentInspector<TInspector>>(entt::hashed_string("CreateComponentInspector"));
 	}
 
 	inline std::optional<std::unique_ptr<ComponentInspectorBase>> CreateComponentInspector(

@@ -19,7 +19,7 @@ namespace reflection {
 
 	template <typename T, bool EnableTypeName = false>
 	inline void RegisterJsonSerialize() {
-		entt::meta<T>().func<&JsonSerialize<T, EnableTypeName>>(entt::hashed_string("JsonSerialize"));
+		entt::meta_factory<T>{}.template func<&JsonSerialize<T, EnableTypeName>>(entt::hashed_string("JsonSerialize"));
 	}
 
 	inline std::optional<nlohmann::json> JsonSerialize(entt::id_type id, const entt::registry& registry, entt::entity entity) {
@@ -35,7 +35,7 @@ namespace reflection {
 
 	template <typename T>
 	inline void RegisterJsonDeserialize() {
-		entt::meta<T>().func<&JsonDeserialize<T>>(entt::hashed_string("JsonDeserialize"));
+		entt::meta_factory<T>{}.template func<&JsonDeserialize<T>>(entt::hashed_string("JsonDeserialize"));
 	}
 
 	inline void JsonDeserialize(const nlohmann::json& json, entt::registry& registry, entt::entity entity) {

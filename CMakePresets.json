@@ -1,12 +1,15 @@
 ﻿{
-    "version": 3,
+    "version": 10,
     "configurePresets": [
         {
             "name": "windows-base",
             "hidden": true,
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/out/build/${presetName}",
-            "installDir": "${sourceDir}/out/install/${presetName}",
+            "binaryDir": "${sourceDir}/build",
+            "installDir": "${sourceDir}/install",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "YES"
+            },
             "condition": {
                 "type": "equals",
                 "lhs": "${hostSystemName}",
@@ -14,7 +17,8 @@
             }
         },
         {
-            "name": "x64-debug",
+            "name": "windows-x64-debug",
+            "hidden": true,
             "displayName": "x64 Debug",
             "inherits": "windows-base",
             "architecture": {
@@ -26,42 +30,34 @@
             }
         },
         {
-            "name": "x64-release",
-            "displayName": "x64 Release",
-            "inherits": "x64-debug",
+            "name": "windows-x64-debug-msvc",
+            "displayName": "Windows x64 Debug (MSVC)",
+            "inherits": "windows-x64-debug",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
+                "CMAKE_CXX_COMPILER": "cl"
             }
         },
         {
-            "name": "x86-debug",
-            "displayName": "x86 Debug",
-            "inherits": "windows-base",
-            "architecture": {
-                "value": "x86",
-                "strategy": "external"
-            },
+            "name": "windows-x64-debug-clang",
+            "displayName": "Windows x64 Debug (Clang)",
+            "inherits": "windows-x64-debug",
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Debug"
-            }
-        },
-        {
-            "name": "x86-release",
-            "displayName": "x86 Release",
-            "inherits": "x86-debug",
-            "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release"
+                "CMAKE_CXX_COMPILER": "clang++"
             }
         }
     ],
     "buildPresets": [
         {
-            "name": "build-x64-debug",
-            "jobs": 8,
-            "configurePreset": "x64-debug",
-            "targets": [
-                "all"
-            ]
+            "name": "build-windows-x64-debug-msvc",
+            "displayName": "Windows x64 Debug (MSVC)",
+            "configurePreset": "windows-x64-debug-msvc",
+            "configuration": "Debug"
+        },
+        {
+            "name": "build-windows-x64-debug-clang",
+            "displayName": "Windows x64 Debug (Clang)",
+            "configurePreset": "windows-x64-debug-clang",
+            "configuration": "Debug"
         }
     ]
 }

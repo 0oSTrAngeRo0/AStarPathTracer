@@ -16,7 +16,7 @@ set(GLFW_BUILD_TESTS OFF)
 
 add_subdirectory(plugins/glfw)
 add_subdirectory(plugins/glm)
-add_subdirectory(plugins/VulkanMemoryAllocator-Hpp/Vulkan-Headers)
+# add_subdirectory(plugins/VulkanMemoryAllocator-Hpp/Vulkan-Headers)
 add_subdirectory(plugins/VulkanMemoryAllocator-Hpp/VulkanMemoryAllocator)
 add_subdirectory(plugins/VulkanMemoryAllocator-Hpp)
 add_subdirectory(plugins/entt)
@@ -92,6 +92,7 @@ add_executable(${PROJECT_NAME}
     sources/Engine/Json/Components.cpp
     
 )
+
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PRIVATE plugins/tiny-obj-loader-1.0.6)

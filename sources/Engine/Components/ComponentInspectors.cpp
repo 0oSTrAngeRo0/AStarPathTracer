@@ -8,6 +8,7 @@
 #include "Utilities/MacroUtilities.h"
 #include "Utilities/ReflectionX.h"
 #include "Utilities/EnumX.h"
+#include "entt/meta/factory.hpp"
 #include <misc/cpp/imgui_stdlib.h>
 
 template <typename TComponent>

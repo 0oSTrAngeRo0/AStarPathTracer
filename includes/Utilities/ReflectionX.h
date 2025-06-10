@@ -2,6 +2,7 @@
 
 #include <entt/entt.hpp>
 #include <optional>
+#include <string>
 
 namespace reflection {
 	template <typename TReturn, typename... Args>
@@ -37,12 +38,13 @@ namespace reflection {
 
 	template <typename T>
 	inline void RegisterTypeName(const std::string name) {
-		entt::meta<T>().prop(entt::hashed_string("TypeName"), name);
+		const static std::string type_name = name;
+		entt::meta_factory<T>{}.template data<&type_name>(entt::hashed_string("TypeName"));
 	}
 
 	inline std::optional<std::string> GetTypeName(entt::id_type id) {
-		auto&& prop = entt::resolve(id).prop(entt::hashed_string("TypeName"));
-		if (prop) return prop.value().cast<std::string>();
+		auto&& prop = entt::resolve(id).data(entt::hashed_string("TypeName"));
+		if (prop) return prop.get({}).cast<std::string>();
 		else return std::nullopt;
 	}
 }

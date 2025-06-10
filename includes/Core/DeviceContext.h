@@ -38,7 +38,7 @@ public:
 	inline void ReleaseTempCmd(const vk::CommandBuffer buffer) const { temp_cmd_pool->Release(buffer, device, graphics_queue); }
 	template <typename TFeature> inline const TFeature GetGpuFeature() const { 
 		if constexpr (std::is_same_v<TFeature, vk::PhysicalDeviceFeatures2>) {
-			return gpu.getFeatures2<vk::PhysicalDeviceFeatures2>();
+			return gpu.getFeatures2();
 		}
 		else {
 			return gpu.getFeatures2<vk::PhysicalDeviceFeatures2, TFeature>().get<TFeature>();
@@ -46,7 +46,7 @@ public:
 	}
 	template <typename TProperty> inline const TProperty GetGpuProperty() const { 
 		if constexpr (std::is_same_v<TProperty, vk::PhysicalDeviceProperties2>) {
-			return gpu.getProperties2<vk::PhysicalDeviceProperties2>();
+			return gpu.getProperties2();
 		}
 		else {
 			return gpu.getProperties2<vk::PhysicalDeviceProperties2, TProperty>().get<TProperty>();
