@@ -1,9 +1,9 @@
-#include "Core/DeviceContext.h"
+import Core:DeviceContext;
+import Core:Buffer;
 #include "Application/Renderer/TexturePool.h"
 #include "Application/Renderer/CommandUtilities.h"
 #include "Engine/Resources/TextureLoader/TextureResourceUtilities.h"
 #include "Engine/Resources/ResourcesManager.h"
-#include "Core/Buffer.h"
 
 uint32_t TexturePool::GetOrAddHandle(const Uuid& id) {
 	if (!id.isValid()) return InvalidHandle;

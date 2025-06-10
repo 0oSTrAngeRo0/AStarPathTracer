@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Buffer.h"
+import Core:Buffer;
 
 class DeviceContext;
 template <typename TData> class DataHandler;

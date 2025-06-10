@@ -1,4 +1,4 @@
-#include "Core/DeviceContext.h"
+import Core:DeviceContext;
 #include "Application/Renderer/Renderer.h"
 #include "Application/Renderer/RenderContext.h"
 #include <stdexcept>

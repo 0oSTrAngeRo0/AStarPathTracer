@@ -1,13 +1,13 @@
 #pragma once
 
+import Core:DeviceContext;
+import Core:Buffer;
+
 #include <unordered_map>
 #include <vector>
 
 #include "Engine/Guid.h"
 #include "Core/Mesh.h"
-#include "Core/Buffer.h"
-
-class DeviceContext;
 
 class MeshPool {
 public:

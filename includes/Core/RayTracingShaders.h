@@ -2,8 +2,10 @@
 
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
 
+import Core:Buffer;
+
 #include <vulkan/vulkan.hpp>
-#include "Core/Buffer.h"
+
 
 class DeviceContext;
 

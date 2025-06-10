@@ -1,8 +1,8 @@
 #pragma once
+import Core:DeviceContext;
 
 #include "Core/VulkanUsages.h"
 
-class DeviceContext;
 
 class Image {
 private:

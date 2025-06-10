@@ -1,9 +1,8 @@
 #pragma once
 
 #define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
-
+import Core:Buffer;
 #include "Core/VulkanUsages.h"
-#include "Core/Buffer.h"
 #include <glm/glm.hpp>
 
 class DeviceContext;

@@ -1,4 +1,4 @@
-#include "Core/DeviceContext.h"
+import Core:DeviceContext;
 #include "Core/Image.h"
 
 Image::Image(

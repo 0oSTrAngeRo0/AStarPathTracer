@@ -1,6 +1,6 @@
+import Core:DeviceContext;
 #include "Editor/EditorApplication.h"
 #include "glm/glm.hpp"
-#include "Core/DeviceContext.h"
 #include "Core/Swapchain.h"
 #include "Application/GlfwWindow.h"
 #include "config.h"

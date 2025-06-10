@@ -1,9 +1,8 @@
 #pragma once
-
+import Core:Buffer;
 #include <memory>
 
 #include "Core/VulkanUsages.h"
-#include "Core/Buffer.h"
 #include "Core/Shader.h"
 #include "Core/Instance.h"
 

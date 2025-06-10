@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Buffer.h"
+import Core:Buffer;
 #include "Engine/Guid.h"
 #include <map>
 #include <cstddef>

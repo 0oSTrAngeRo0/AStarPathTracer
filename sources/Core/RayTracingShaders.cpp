@@ -1,6 +1,6 @@
+import Core:DeviceContext;
+import Core:Buffer;
 #include "Core/RayTracingShaders.h"
-#include "Core/DeviceContext.h"
-#include "Core/Buffer.h"
 #include <fstream>
 
 std::vector<std::byte> RayTracingShaders::LoadBinaryFile(const std::string filename) {

@@ -1,10 +1,11 @@
-#pragma once
+export module Core:Buffer;
 
-#include "Core/VulkanUsages.h"
+import vulkan_hpp;
+import Core:DeviceContext;
 
-class DeviceContext;
+#include "vk_mem_alloc.hpp"
 
-class Buffer {
+export class Buffer {
 private:
 	vk::Buffer buffer;
 	vma::Allocation allocation;

@@ -1,5 +1,7 @@
-#include "Core/DeviceContext.h"
+module Core.DeviceContext;
 
+import vulkan_hpp;
+#include <vk_mem_alloc.hpp>
 #define APP_NAME "AStarPathTracer"
 #define ENGINE_NAME "AStarPathTracerEngine"
 

@@ -1,5 +1,8 @@
-#include "Core/Buffer.h"
-#include "Core/DeviceContext.h"
+module Core:Buffer;
+
+import vulkan_hpp;
+import Core:DeviceContext;
+#include "vk_mem_alloc.hpp"
 
 Buffer::Buffer(const DeviceContext& context, const vk::BufferCreateInfo& create_info, const vma::AllocationCreateInfo& allocation_info) {
 	auto allocator = context.GetAllocator();

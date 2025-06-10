@@ -1,5 +1,6 @@
+import Core:DeviceContext;
+
 #include "Core/Mesh.h"
-#include "Core/DeviceContext.h"
 
 Mesh::Mesh(
 	const DeviceContext& context,

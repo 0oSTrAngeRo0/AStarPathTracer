@@ -1,8 +1,9 @@
 #pragma once
 
+import Core:DeviceContext;
+
 #include <vulkan/vulkan.hpp>
 
-class DeviceContext;
 class Surface;
 
 class Swapchain {

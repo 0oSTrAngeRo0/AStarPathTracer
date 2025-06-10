@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/DeviceContext.h"
+import Core:DeviceContext;
 
 class RendererDeviceContextCreateInfo : public DeviceContextCreateConfig {
 public:

@@ -1,5 +1,6 @@
+import Core:Buffer;
+
 #include "Application/Renderer/RenderContext.h"
-#include "Core/DeviceContext.h"
 #include "Engine/Components/Render.h"
 #include "Engine/Components/Transform.h"
 #include "Engine/Components/Camera.h"

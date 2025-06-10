@@ -1,5 +1,6 @@
+import Core:DeviceContext;
+
 #include "Core/Surface.h"
-#include "Core/DeviceContext.h"
 
 void Surface::ReacquireProperties(const DeviceContext& context) {
 	auto gpu = context.GetGpu();

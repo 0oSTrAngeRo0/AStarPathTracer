@@ -1,4 +1,4 @@
-#include "Core/DeviceContext.h"
+import Core:DeviceContext;
 #include "Core/Swapchain.h"
 #include "math-utils.h"
 #include "Core/Surface.h"
