@@ -1,5 +1,5 @@
-import Core:DeviceContext;
-import Core:Buffer;
+import Core;
+import Core;
 #include "Application/Renderer/TexturePool.h"
 #include "Application/Renderer/CommandUtilities.h"
 #include "Engine/Resources/TextureLoader/TextureResourceUtilities.h"

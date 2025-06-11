@@ -1,6 +1,6 @@
-#include "Editor/EditorRenderContext.h"
+import Core;
 
-#include "Core/DeviceContext.h"
+#include "Editor/EditorRenderContext.h"
 #include "Core/Swapchain.h"
 #include "Core/Surface.h"
 #include "Core/VulkanUtils.h"

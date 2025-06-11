@@ -1,7 +1,7 @@
 #pragma once
 
-import Core:DeviceContext;
-import Core:Buffer;
+import Core;
+import Core;
 
 #include <unordered_map>
 #include <vector>

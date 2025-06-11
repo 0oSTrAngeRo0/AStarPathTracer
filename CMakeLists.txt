@@ -24,29 +24,33 @@ target_sources(VulkanHppModule PUBLIC
     BASE_DIRS ${Vulkan_INCLUDE_DIR}
     FILES ${Vulkan_INCLUDE_DIR}/vulkan/vulkan.cppm
 )
-target_compile_features(VulkanHppModule PRIVATE cxx_std_23)
+target_compile_features(VulkanHppModule PUBLIC cxx_std_23)
 set_target_properties(VulkanHppModule PROPERTIES CXX_MODULE_STD ON) 
-target_compile_definitions(VulkanHppModule PRIVATE
+target_compile_definitions(VulkanHppModule PUBLIC
     VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1
     # VULKAN_HPP_NO_EXCEPTIONS
     # VULKAN_HPP_NO_SMART_HANDLE
     # VULKAN_HPP_NO_CONSTRUCTORS
 )
-target_link_libraries(VulkanHppModule PRIVATE Vulkan::Vulkan)
+target_link_libraries(VulkanHppModule PUBLIC Vulkan::Vulkan)
 
 # Vulkan Memory Allocator Hpp
 add_subdirectory(plugins/VulkanMemoryAllocator-Hpp/VulkanMemoryAllocator)
 add_subdirectory(plugins/VulkanMemoryAllocator-Hpp)
-# add_library(VulkanMemoryAllocatorHppModule)
-# target_sources(VulkanMemoryAllocatorHppModule PUBLIC
-#     FILE_SET CXX_MODULES
-#     BASE_DIRS ${PROJECT_SOURCE_DIR}/plugins/VulkanMemoryAllocator-Hpp/src
-#     FILES ${PROJECT_SOURCE_DIR}/plugins/VulkanMemoryAllocator-Hpp/src/vk_mem_alloc.cppm
-# )
-# target_compile_features(VulkanMemoryAllocatorHppModule PUBLIC cxx_std_23)
-# set_target_properties(VulkanMemoryAllocatorHppModule PROPERTIES CXX_MODULE_STD ON)
-# target_link_libraries(VulkanMemoryAllocatorHppModule PRIVATE VulkanHppModule GPUOpen::VulkanMemoryAllocator VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp)
-# target_compile_definitions(VulkanMemoryAllocatorHppModule PRIVATE VMA_ENABLE_VULKAN_HPP_MODULE)
+add_library(VulkanMemoryAllocatorHppModule)
+target_sources(VulkanMemoryAllocatorHppModule PUBLIC
+    FILE_SET CXX_MODULES
+    BASE_DIRS ${PROJECT_SOURCE_DIR}/plugins/VulkanMemoryAllocator-Hpp/src
+    FILES ${PROJECT_SOURCE_DIR}/plugins/VulkanMemoryAllocator-Hpp/src/vk_mem_alloc.cppm
+)
+target_include_directories(VulkanMemoryAllocatorHppModule PRIVATE ${Vulkan_INCLUDE_DIRS})
+target_compile_features(VulkanMemoryAllocatorHppModule PUBLIC cxx_std_23)
+target_compile_definitions(VulkanMemoryAllocatorHppModule PRIVATE VMA_ENABLE_VULKAN_HPP_MODULE)
+# target_compile_definitions(VulkanMemoryAllocatorHppModule PRIVATE VMA_ENABLE_STD_MODULE=0)
+target_compile_definitions(VulkanMemoryAllocatorHppModule PRIVATE VULKAN_HPP_STD_MODULE=std)
+set_target_properties(VulkanMemoryAllocatorHppModule PROPERTIES CXX_MODULE_STD ON)
+target_link_libraries(VulkanMemoryAllocatorHppModule PRIVATE VulkanHppModule GPUOpen::VulkanMemoryAllocator VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp)
+
 
 
 set(GLFW_BUILD_EXAMPLES OFF)
@@ -74,19 +78,6 @@ set(IMGUI_SOURCE
     ${IMGUI_DIR}/misc/cpp/imgui_stdlib.cpp
 )
 
-add_library(Core)
-target_sources(Core PRIVATE
-    FILE_SET CXX_MODULES
-    BASE_DIRS sources/Core
-    FILES sources/Core/Core.cppm sources/Core/Buffer.cppm sources/Core/DeviceContext.cppm
-)
-target_include_directories(Core PRIVATE includes)
-target_include_directories(Core PRIVATE ${Vulkan_INCLUDE_DIRS})
-target_link_libraries(Core PRIVATE VulkanHppModule)
-target_link_libraries(Core PRIVATE GPUOpen::VulkanMemoryAllocator VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp)
-target_compile_features(Core PUBLIC cxx_std_23)
-set_target_properties(Core PROPERTIES CXX_MODULE_STD ON) 
-
 add_executable(${PROJECT_NAME}
     ${IMGUI_SOURCE}
     
@@ -105,11 +96,9 @@ add_executable(${PROJECT_NAME}
     sources/Application/Renderer/TexturePool.cpp
 
     sources/Core/RayTracingShaders.cpp
-    sources/Core/EngineDebugger.cpp
-    sources/Core/TemporaryCommandBufferPool.cpp
     sources/Core/Image.cpp
     sources/Core/Mesh.cpp
-    sources/Core/VulkanUsages.cpp
+    # sources/Core/VulkanUsages.cpp
     sources/Core/Swapchain.cpp
     sources/Core/Surface.cpp
 
@@ -136,11 +125,30 @@ add_executable(${PROJECT_NAME}
     sources/Engine/Resources/TextureLoader/StbImageUtilities.cpp
     sources/Engine/Components/ComponentInspectors.cpp
     sources/Engine/Json/Components.cpp
-    
 )
+add_library(Core)
+target_sources(Core
+    PRIVATE
+        sources/Core/DeviceContext.cpp
+        sources/Core/Buffer.cpp 
+        sources/Core/TemporaryCommandBufferPool.cpp
+        sources/Core/EngineDebugger.cpp
+    PUBLIC FILE_SET CXX_MODULES BASE_DIRS sources/Core FILES 
+        sources/Core/Core.cppm 
+        sources/Core/Buffer.cppm
+        sources/Core/DeviceContext.cppm
+        sources/Core/TemporaryCommandBufferPool.cppm
+        sources/Core/Window.cppm
+        sources/Core/EngineDebugger.cppm
+        sources/Core/VulkanUsages.cppm
+)
+target_compile_features(Core PRIVATE cxx_std_23)
+# target_include_directories(Core PRIVATE ${Vulkan_INCLUDE_DIRS})
+set_target_properties(Core PROPERTIES CXX_MODULE_STD ON) 
+target_link_libraries(Core PRIVATE VulkanHppModule)
+target_link_libraries(Core PRIVATE VulkanMemoryAllocatorHppModule)
 
-
-# target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PRIVATE plugins/tiny-obj-loader-1.0.6)
 target_include_directories(${PROJECT_NAME} PRIVATE includes)
 target_include_directories(${PROJECT_NAME} PRIVATE sources)
@@ -150,8 +158,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Core)
 target_link_libraries(${PROJECT_NAME} PRIVATE EnTT::EnTT)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw ${GLFW_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE VulkanHppModule)
-target_link_libraries(${PROJECT_NAME} PRIVATE GPUOpen::VulkanMemoryAllocator VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp)
+target_link_libraries(${PROJECT_NAME} PRIVATE VulkanMemoryAllocatorHppModule)
 target_link_libraries(${PROJECT_NAME} PRIVATE glm ${GLM_LIBRARIES})
 target_link_libraries(${PROJECT_NAME} PRIVATE crossguid)
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
 target_link_libraries(${PROJECT_NAME} PRIVATE NsightAftermath)
+
+

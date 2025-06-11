@@ -1,4 +1,4 @@
-import Core:DeviceContext;
+import Core;
 
 #include "Core/Surface.h"
 

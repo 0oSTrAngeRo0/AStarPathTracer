@@ -1,5 +1,4 @@
-#include "Core/VulkanUsages.h"
-
+import vulkan_hpp;
 #include "Application/GlfwWindow.h"
 #include "config.h"
 #include <vector>

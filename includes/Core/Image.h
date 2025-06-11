@@ -1,8 +1,7 @@
 #pragma once
-import Core:DeviceContext;
-
-#include "Core/VulkanUsages.h"
-
+import vulkan_hpp;
+import Core;
+import vk_mem_alloc_hpp;
 
 class Image {
 private:

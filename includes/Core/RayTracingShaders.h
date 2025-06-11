@@ -1,11 +1,7 @@
 #pragma once
 
-#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
-
-import Core:Buffer;
-
-#include <vulkan/vulkan.hpp>
-
+import vulkan_hpp;
+import Core;
 
 class DeviceContext;
 

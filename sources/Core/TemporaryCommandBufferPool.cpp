@@ -1,4 +1,4 @@
-#include "Core/TemporaryCommandBufferPool.h"
+module Core;
 
 TemporaryCommandBufferPool::TemporaryCommandBufferPool(const vk::Device device, const uint32_t queue_family_index) {
 	vk::CommandPoolCreateInfo create_info(vk::CommandPoolCreateFlagBits::eTransient, queue_family_index);

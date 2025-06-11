@@ -1,9 +1,9 @@
-#pragma once
+export module Core:Window;
 
-#include <vulkan/vulkan.hpp>
-#include <expected>
+import vulkan_hpp;
+import std;
 
-class VulkanWindow {
+export class VulkanWindow {
 public:
 	virtual std::vector<std::string> GetVulkanExtensions() const = 0;
 	virtual std::expected<vk::SurfaceKHR, vk::Result> CreateWindowSurface(const vk::Instance instance, const vk::AllocationCallbacks* allocator) const = 0;

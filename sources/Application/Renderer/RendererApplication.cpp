@@ -1,6 +1,5 @@
-import Core:DeviceContext;
+import Core;
 #include "config.h"
-#include "Core/Window.h"
 #include "Application/Renderer/RenderContext.h"
 #include "Application/Renderer/Renderer.h"
 #include "Application/Renderer/RendererPipeline.h"

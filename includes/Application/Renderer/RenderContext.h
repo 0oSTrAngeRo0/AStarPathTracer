@@ -1,12 +1,10 @@
 #pragma once
-import Core:Buffer;
+import vulkan_hpp;
+import Core;
 #include <memory>
-
-#include "Core/VulkanUsages.h"
 #include "Core/Shader.h"
 #include "Core/Instance.h"
 
-#include <vulkan/vulkan.hpp>
 #include <entt/entt.hpp>
 
 #include "Engine/Resources/Resources.h"

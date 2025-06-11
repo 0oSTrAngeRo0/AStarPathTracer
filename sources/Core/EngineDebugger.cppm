@@ -1,10 +1,8 @@
-#pragma once
+export module Core:Debugger;
 
-#define VULKAN_HPP_DISPATCH_LOADER_DYNAMIC 1
+import vulkan_hpp;
 
-#include <vulkan/vulkan.hpp>
-
-class EngineDebugger {
+export class EngineDebugger {
 private:
 	vk::DebugUtilsMessengerEXT debugger;
 public:

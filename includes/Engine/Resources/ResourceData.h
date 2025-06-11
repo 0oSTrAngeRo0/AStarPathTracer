@@ -1,9 +1,10 @@
 #pragma once
 
+import vulkan_hpp;
+
 #include <string>
 #include <glm/glm.hpp>
 #include "Engine/Guid.h"
-#include <vulkan/vulkan.hpp>
 #include "Engine/ShaderHostBuffer.h"
 #include "Engine/StaticRegistry.h"
 #include "Engine/Resources/Resources.h"

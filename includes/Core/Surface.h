@@ -1,9 +1,7 @@
 #pragma once
 
-import Core:DeviceContext;
-
-#include <vulkan/vulkan.hpp>
-
+import vulkan_hpp;
+import Core;
 
 class Surface {
 public:

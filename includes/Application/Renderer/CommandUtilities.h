@@ -1,6 +1,6 @@
 #pragma
 
-#include <vulkan/vulkan.hpp>
+import vulkan_hpp;
 
 class CommandUtilities {
 public:

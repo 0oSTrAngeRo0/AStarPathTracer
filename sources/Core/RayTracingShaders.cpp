@@ -1,5 +1,5 @@
-import Core:DeviceContext;
-import Core:Buffer;
+import Core;
+import Core;
 #include "Core/RayTracingShaders.h"
 #include <fstream>
 

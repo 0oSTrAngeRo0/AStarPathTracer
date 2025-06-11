@@ -1,6 +1,6 @@
 #pragma once
 
-import Core:DeviceContext;
+import Core;
 
 class RendererDeviceContextCreateInfo : public DeviceContextCreateConfig {
 public:

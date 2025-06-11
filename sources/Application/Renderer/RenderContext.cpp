@@ -1,4 +1,4 @@
-import Core:Buffer;
+import Core;
 
 #include "Application/Renderer/RenderContext.h"
 #include "Engine/Components/Render.h"

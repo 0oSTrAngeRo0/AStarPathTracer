@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
+import vulkan_hpp;
 
 class DeviceContext;
 class Swapchain;

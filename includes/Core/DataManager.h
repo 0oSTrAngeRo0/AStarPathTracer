@@ -1,6 +1,6 @@
 #pragma once
 
-import Core:Buffer;
+import Core;
 
 class DeviceContext;
 template <typename TData> class DataHandler;

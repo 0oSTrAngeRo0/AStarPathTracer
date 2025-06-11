@@ -1,8 +1,10 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
-#include <vector>
-#include "Core/Window.h"
+import vulkan_hpp;
+import Core;
+#include <optional>
+#include <memory>
+#include <exception>
 #include "Engine/InputSystem.h"
 
 class GLFWwindow;

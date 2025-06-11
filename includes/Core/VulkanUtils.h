@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
+import vulkan_hpp;
 #include "sstream"
 
 #define DO_WHILE_WRAPPER(inner) do { \

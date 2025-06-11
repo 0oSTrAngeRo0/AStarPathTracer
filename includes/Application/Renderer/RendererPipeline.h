@@ -1,6 +1,7 @@
 #pragma once
 
-#include <vulkan/vulkan.hpp>
+import vulkan_hpp;
+
 #include "Core/RayTracingShaders.h"
 #include "Engine/Guid.h"
 

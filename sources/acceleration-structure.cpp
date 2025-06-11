@@ -1,8 +1,8 @@
+import Core;
+import Core;
 #include "acceleration-structure.h"
 #include "Core/Mesh.h"
 #include "algorithm-util.h"
-#include "Core/DeviceContext.h"
-#include "Core/Buffer.h"
 
 struct BlasInput
 {

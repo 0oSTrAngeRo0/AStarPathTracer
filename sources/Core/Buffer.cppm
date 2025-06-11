@@ -1,76 +1,109 @@
-module Core:Buffer;
+export module Core:Buffer;
 
 import vulkan_hpp;
-import Core:DeviceContext;
-#include "vk_mem_alloc.hpp"
+import :DeviceContext;
+import vk_mem_alloc_hpp;
 
-Buffer::Buffer(const DeviceContext& context, const vk::BufferCreateInfo& create_info, const vma::AllocationCreateInfo& allocation_info) {
-	auto allocator = context.GetAllocator();
+export class Buffer {
+private:
+	vk::Buffer buffer;
+	vma::Allocation allocation;
+	vk::DeviceAddress address;
+	vk::DeviceSize size;
+public:
+	Buffer() : buffer(nullptr), allocation(nullptr), address(0), size(0) {}
 
-	auto pair = allocator.createBuffer(create_info, allocation_info);
-	buffer = pair.first;
-	allocation = pair.second;
+	Buffer(
+		const DeviceContext& context,
+		const vk::BufferCreateInfo& create_info,
+		const vma::AllocationCreateInfo& allocation_info = vma::AllocationCreateInfo({}, vma::MemoryUsage::eAuto)
+	);
 
-	size = create_info.size;
-	if (create_info.usage & vk::BufferUsageFlagBits::eShaderDeviceAddress) {
-		address = context.GetDevice().getBufferAddress(buffer);
+	template <typename TElement>
+	inline void SetData(const DeviceContext& context, vk::ArrayProxyNoTemporaries<TElement> data) {
+		SetData(context, data.data(), data.size() * sizeof(TElement));
 	}
-}
 
-void Buffer::Destroy(const DeviceContext& context) {
-	if (!buffer) return;
-	context.GetAllocator().destroyBuffer(buffer, allocation);
-	buffer = nullptr;
-	allocation = nullptr;
-	size = 0;
-	address = 0;
-}
+	void Destroy(const DeviceContext& context);
+	inline const vk::DeviceAddress GetDeviceAddress() const { return address; }
+	inline operator vk::Buffer() const { return buffer; }
+	inline vk::DeviceSize GetSize() const { return size; }
+	void SetName(const DeviceContext& context, const std::string& name);
+	const std::string GetName(const DeviceContext& context) const;
 
-void Buffer::SetName(const DeviceContext& context, const std::string& name) {
-	if (!buffer) return;
-	context.GetDevice().setDebugUtilsObjectNameEXT(vk::DebugUtilsObjectNameInfoEXT(vk::ObjectType::eBuffer, (uint64_t)(VkBuffer)buffer, name.c_str()));
-	context.GetAllocator().setAllocationName(allocation, name.c_str());
-}
+private:
+	void SetData(const DeviceContext& context, void* data, vk::DeviceSize size);
 
-const std::string Buffer::GetName(const DeviceContext& context) const {
-	const char* chars = context.GetAllocator().getAllocationInfo(allocation).pName;
-	return std::string(chars);
-}
+private:
+	static Buffer CreateWithData(
+		const DeviceContext& context,
+		const vk::BufferCreateInfo& create_info,
+		vma::AllocationCreateInfo& allocation_info,
+		const void* data
+	);
 
-void Buffer::SetData(const DeviceContext& context, void* data, vk::DeviceSize size){
-	context.GetAllocator().copyMemoryToAllocation(data, allocation, 0, size);
-}
+	// Would add vk::BufferUsageFlagBits::eTransferDst to create_info.usages
+	static Buffer CreateWithStaging(
+		const DeviceContext& context,
+		vk::BufferCreateInfo& create_info,
+		const vma::AllocationCreateInfo& allocation_info,
+		const void* data
+	);
 
-Buffer Buffer::CreateWithData(
-	const DeviceContext& context,
-	const vk::BufferCreateInfo& create_info,
-	vma::AllocationCreateInfo& allocation_info,
-	const void* data
-) {
-	allocation_info.flags |= vma::AllocationCreateFlagBits::eHostAccessSequentialWrite;
-	Buffer buffer(context, create_info, allocation_info);
-	context.GetAllocator().copyMemoryToAllocation(data, buffer.allocation, 0, create_info.size);
-	return buffer;
-}
+public:
+	template <typename TElement>
+	static Buffer CreateWithData(
+		const DeviceContext& context,
+		vk::BufferCreateInfo& create_info,
+		vma::AllocationCreateInfo& allocation_info,
+		const vk::ArrayProxyNoTemporaries<const TElement>& data
+	) {
+		create_info.size = data.size() * sizeof(TElement);
+		return Buffer::CreateWithData(context, create_info, allocation_info, data.data());
+	}
 
-Buffer Buffer::CreateWithStaging(
-	const DeviceContext& context,
-	vk::BufferCreateInfo& create_info,
-	const vma::AllocationCreateInfo& allocation_info,
-	const void* data
-) {
-	vk::BufferCreateInfo staging_ci({}, create_info.size, vk::BufferUsageFlagBits::eTransferSrc);
-	vma::AllocationCreateInfo staging_allocation(vma::AllocationCreateFlagBits::eHostAccessSequentialWrite, vma::MemoryUsage::eAuto);
-	Buffer staging_buffer(context, staging_ci, staging_allocation);
-	context.GetAllocator().copyMemoryToAllocation(data, staging_buffer.allocation, 0, create_info.size);
+	template <typename TElement>
+	inline static Buffer CreateWithData(
+		const DeviceContext& context,
+		vk::BufferCreateInfo& create_info,
+		const vk::ArrayProxyNoTemporaries<const TElement>& data
+	) {
+		vma::AllocationCreateInfo allocation_info = vma::AllocationCreateInfo({}, vma::MemoryUsage::eAuto);
+		return Buffer::CreateWithData<TElement>(context, create_info, allocation_info, data);
+	}
 
-	create_info.usage |= vk::BufferUsageFlagBits::eTransferDst;
-	Buffer buffer(context, create_info, allocation_info);
+	template <typename TElement>
+	static Buffer CreateWithStaging(
+		const DeviceContext& context,
+		vk::BufferCreateInfo& create_info,
+		const vk::ArrayProxyNoTemporaries<TElement>& data, 
+		const vma::AllocationCreateInfo& allocation_info = vma::AllocationCreateInfo({}, vma::MemoryUsage::eAuto)
+	) {
+		create_info.size = data.size() * sizeof(TElement);
+		return Buffer::CreateWithStaging(context, create_info, allocation_info, data.data());
+	}
 
-	vk::CommandBuffer cmd = context.GetTempCmd();
-	cmd.copyBuffer(staging_buffer.buffer, buffer.buffer, vk::BufferCopy(0, 0, create_info.size));
-	context.ReleaseTempCmd(cmd);
-
-	staging_buffer.Destroy(context);
-	return buffer;
-}
+	template <typename TElement>
+	static bool SetDataWithResize(
+		const DeviceContext& context,
+		Buffer& buffer,
+		const vk::ArrayProxyNoTemporaries<TElement> data,
+		const uint32_t batch_size,
+		vk::BufferCreateInfo& create_info,
+		vma::AllocationCreateInfo& allocation_info
+	) {
+		uint32_t count = data.size();
+		assert(count != 0);
+		bool shouldResize = buffer.GetSize() < count * sizeof(TElement);
+		if (shouldResize) {
+			buffer.Destroy(context);
+			uint32_t batch_count = (count + batch_size - 1) / batch_size; // batch_size*(batch_count-1) < size() <= batch_size*batch_count
+			uint32_t max_count = batch_size * batch_count;
+			allocation_info.flags |= vma::AllocationCreateFlagBits::eHostAccessSequentialWrite;
+			create_info.size = max_count * sizeof(TElement);
+			buffer = Buffer(context, create_info, allocation_info);
+		}
+		buffer.SetData(context, data);
+		return shouldResize;
+	}
+};

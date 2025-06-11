@@ -1,4 +1,4 @@
-#include "Core/DeviceContext.h"
+import Core;
 #include "Core/RayTracingShaders.h"
 #include "Application/Renderer/RendererPipeline.h"
 #include "Application/Renderer/RenderContext.h"

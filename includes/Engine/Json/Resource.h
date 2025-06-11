@@ -1,12 +1,12 @@
 #pragma once
 
+import vulkan_hpp;
 #include <nlohmann/json.hpp>
 #include <glm/glm.hpp>
 #include "Engine/Resources/Resources.h"
 #include "Engine/Resources/ResourceRegistry.h"
 #include "Utilities/JsonX.h"
 #include "Engine/Json/Guid.h"
-#include <vulkan/vulkan.hpp>
 
 namespace nlohmann {
 	template <typename TData> struct adl_serializer<Resource<TData>> {
