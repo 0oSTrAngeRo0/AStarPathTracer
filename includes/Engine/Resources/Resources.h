@@ -3,9 +3,6 @@
 #include <Engine/Guid.h>
 #include <vector>
 
-#define ASSET_SOURCES_DIR "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources"
-#define RESOURCES_DIR "D:/C++/Projects/PathTracer/EngineRuntime/Resources"
-
 using ResourceType = std::string;
 
 /// <summary>

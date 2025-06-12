@@ -1,8 +1,8 @@
 {
   "references": [],
   "resource_data": {
-    "source_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Shaders/Sources/SkyBox.rmiss",
-    "compiled_code_path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Shaders/Binarys/SkyBox.rmiss.spv",
+    "source_code_path": "AssetSources/Shaders/Sources/SkyBox.rmiss",
+    "compiled_code_path": "AssetSources/Shaders/Binarys/SkyBox.rmiss.spv",
     "shader_stage": "MissKHR",
     "instance_stride": 0,
     "entry_function": "main"

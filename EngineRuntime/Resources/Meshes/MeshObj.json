@@ -1,7 +1,7 @@
 {
   "references": [],
   "resource_data": {
-    "path": "D:/C++/Projects/PathTracer/EngineRuntime/AssetSources/Models/cube.obj"
+    "path": "AssetSources/Models/cube.obj"
   },
   "resource_type": "Obj",
   "uuid": "c98fb2af-8be5-437b-b096-bc44d71b656d"

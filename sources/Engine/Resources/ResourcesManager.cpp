@@ -4,10 +4,13 @@
 #include <cassert>
 
 ResourcesManager::ResourcesManager() {
-	assert(std::filesystem::exists(RESOURCES_DIR) && std::filesystem::is_directory(RESOURCES_DIR));
+	ChangeBaseDirectory("D:/C++/Projects/PathTracer/EngineRuntime/");
+
+	const std::filesystem::path& directory = GetResourcesDirectory();
+	assert(std::filesystem::exists(directory) && std::filesystem::is_directory(directory));
 
 	// 遍历目录中的所有项
-	for (const auto& entry : std::filesystem::recursive_directory_iterator(RESOURCES_DIR)) {
+	for (const auto& entry : std::filesystem::recursive_directory_iterator(directory)) {
 		if (std::filesystem::is_regular_file(entry)) {
 			const std::string& path = entry.path().string();
 			std::printf("Loading resource: [%s]\n", path.c_str());
@@ -17,7 +20,10 @@ ResourcesManager::ResourcesManager() {
 }
 
 ResourceBase& ResourcesManager::LoadResource(const std::string& path) {
-	std::ifstream file(path);
+	std::ifstream file;
+	if (!path.starts_with(base_directory.string()))
+		file = std::ifstream(std::string(base_directory.string()) + path);
+	else file = std::ifstream(path);
 
 	if (!file.is_open()) {
 		throw std::runtime_error("Failed to open file.");
