@@ -9,26 +9,54 @@ set(CMAKE_CXX_STANDARD 23)
 #     COMMENT "[Shader Compiler] Compiling Shaders..."
 # )
 
+# Vulkan
+set(VULKAN_LIB_NAME Vulkan::Vulkan)
 find_package(Vulkan REQUIRED)
 
-set(GLFW_BUILD_EXAMPLES OFF)
-set(GLFW_BUILD_TESTS OFF)
-
-add_subdirectory(plugins/glfw)
-add_subdirectory(plugins/glm)
+# Vma Hpp
+set(VMAHPP_LIB_NAME GPUOpen::VulkanMemoryAllocator VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp)
 # add_subdirectory(plugins/VulkanMemoryAllocator-Hpp/Vulkan-Headers)
 add_subdirectory(plugins/VulkanMemoryAllocator-Hpp/VulkanMemoryAllocator)
 add_subdirectory(plugins/VulkanMemoryAllocator-Hpp)
-add_subdirectory(plugins/entt)
-add_subdirectory(plugins/crossguid)
-add_subdirectory(plugins/nsight-aftermath)
 
+# GLFW
+set(GLFW_LIB_NAME glfw)
+set(GLFW_INCLUDE_DIR ${GLFW_SOURCE_DIR}/include)
+set(GLFW_BUILD_EXAMPLES OFF)
+set(GLFW_BUILD_TESTS OFF)
+set(GLFW_INSTALL OFF)
+add_subdirectory(plugins/glfw)
+
+# GLM
+set(GLM_LIB_NAME glm)
+add_subdirectory(plugins/glm)
+
+# EnTT
+set(ENTT_LIB_NAME EnTT::EnTT)
+add_subdirectory(plugins/entt)
+
+# Cross Guid
+set(CROSSGUID_LIB_NAME crossguid)
+set(CROSSGUID_TESTS OFF)
+add_subdirectory(plugins/crossguid)
+
+# Nlohmann Json
+set(NOLHMANJSON_LIB_NAME nlohmann_json::nlohmann_json)
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 set(JSON_ImplicitConversions  OFF)
 add_subdirectory(plugins/nlohmann-json)
 
+# ImGui
+set(IMGUI_LIB_NAME ImGui)
 set(IMGUI_DIR plugins/imgui)
-set(IMGUI_SOURCE 
+set(IMGUI_INCLUDE_DIRS ${IMGUI_DIR} ${IMGUI_DIR}/backends)
+add_library(${IMGUI_LIB_NAME})
+target_include_directories(${IMGUI_LIB_NAME} PRIVATE
+    ${IMGUI_INCLUDE_DIRS}
+    ${Vulkan_INCLUDE_DIRS}
+    ${GLFW_INCLUDE_DIR}
+)
+target_sources(${IMGUI_LIB_NAME} PRIVATE 
     ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
     ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp 
     ${IMGUI_DIR}/imgui.cpp 
@@ -39,9 +67,13 @@ set(IMGUI_SOURCE
     ${IMGUI_DIR}/misc/cpp/imgui_stdlib.cpp
 )
 
-add_executable(${PROJECT_NAME}
-    ${IMGUI_SOURCE}
-    
+# Nsight-Aftermath
+set(NSIGHTAFTERMATH_LIB_NAME ${NSIGHT_AFTERMATH_PROJECT_NAME})
+add_subdirectory(plugins/nsight-aftermath)
+
+set(MAIN_EXE_NAME ${PROJECT_NAME})
+add_executable(${MAIN_EXE_NAME})
+target_sources(${MAIN_EXE_NAME} PRIVATE 
     sources/main.cpp
     sources/acceleration-structure.cpp
 
@@ -90,21 +122,22 @@ add_executable(${PROJECT_NAME}
     sources/Engine/Resources/TextureLoader/StbImageUtilities.cpp
     sources/Engine/Components/ComponentInspectors.cpp
     sources/Engine/Json/Components.cpp
-    
 )
-
-
-target_include_directories(${PROJECT_NAME} PRIVATE ${Vulkan_INCLUDE_DIRS})
-target_include_directories(${PROJECT_NAME} PRIVATE plugins/tiny-obj-loader-1.0.6)
-target_include_directories(${PROJECT_NAME} PRIVATE includes)
-target_include_directories(${PROJECT_NAME} PRIVATE sources)
-target_include_directories(${PROJECT_NAME} PRIVATE ${IMGUI_DIR} ${IMGUI_DIR}/backends ..)
-
-target_link_libraries(${PROJECT_NAME} PRIVATE EnTT::EnTT)
-target_link_libraries(${PROJECT_NAME} PRIVATE glfw ${GLFW_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Vulkan)
-target_link_libraries(${PROJECT_NAME} PRIVATE glm ${GLM_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} PRIVATE GPUOpen::VulkanMemoryAllocator VulkanMemoryAllocator-Hpp::VulkanMemoryAllocator-Hpp)
-target_link_libraries(${PROJECT_NAME} PRIVATE crossguid)
-target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
-target_link_libraries(${PROJECT_NAME} PRIVATE NsightAftermath)
+target_include_directories(${MAIN_EXE_NAME} PRIVATE
+    ${IMGUI_INCLUDE_DIRS}
+    ${Vulkan_INCLUDE_DIRS}
+    plugins/tiny-obj-loader-1.0.6
+    includes
+    sources
+)
+target_link_libraries(${MAIN_EXE_NAME} PRIVATE 
+    ${IMGUI_LIB_NAME}
+    ${ENTT_LIB_NAME}
+    ${GLFW_LIB_NAME}
+    ${VULKAN_LIB_NAME}
+    ${GLM_LIB_NAME}
+    ${VMAHPP_LIB_NAME}
+    ${CROSSGUID_LIB_NAME}
+    ${NOLHMANJSON_LIB_NAME}
+    ${NSIGHTAFTERMATH_LIB_NAME}
+)
