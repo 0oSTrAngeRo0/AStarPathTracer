@@ -3,17 +3,19 @@
 
 #include "Engine/Resources/ResourceData.h"
 #include "Engine/Resources/Resources.h"
+#include "Engine/Resources/ResourcesManager.h"
 #include "Engine/Resources/MeshLoader/MikkTSpaceTangentGenerator.h"
 #include "Engine/Resources/MeshLoader/MeshResourceUtilities.h"
 
 template <>
 std::vector<MeshData> MeshResourceUtilities::Load<ObjResourceData>(const Resource<ObjResourceData>& resource) {
-    printf("Start Loading Obj File: [%s]\n", resource.resource_data.path.c_str());
+    auto path = ResourcesManager::GetInstance().GetPath(resource.resource_data.path).string();
+    printf("Start Loading Obj File: [%s]\n", path.c_str());
     tinyobj::ObjReader reader;
     tinyobj::ObjReaderConfig reader_config;
     reader_config.vertex_color = false;
     reader_config.triangulate = true;
-    if (!reader.ParseFromFile(resource.resource_data.path, reader_config)) {
+    if (!reader.ParseFromFile(path, reader_config)) {
         throw std::runtime_error("Failed to parse, error: [" + reader.Error() + "]");
     }
     if (!reader.Warning().empty()) {

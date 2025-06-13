@@ -19,6 +19,7 @@ class ResourcesManager : public Singleton<ResourcesManager> {
 			callback(pair.second.path, *pair.second.data);
 		}
 	}
+	std::vector<std::byte> LoadBinaryFile(const std::string& path);
 	template <typename TData>
 	ResourceBase& CreateNewResource(const std::string& path) {
 		std::unique_ptr<ResourceBase> resource = std::make_unique<Resource<TData>>();
@@ -27,10 +28,12 @@ class ResourcesManager : public Singleton<ResourcesManager> {
 		SaveResource(uuid);
 		return *resources.at(uuid).data;
 	}
+	inline std::filesystem::path GetPath(const std::filesystem::path& path) const { return base_directory / path; }
 	inline const std::filesystem::path& GetAssetSourcesDirectory() const { return asset_sources_directory; }
 	inline const std::filesystem::path& GetResourcesDirectory() const { return resources_directory; }
 	inline void ChangeBaseDirectory(std::string path) {
 		if(!path.ends_with('/') && path.ends_with("\\\\"))
+			path.append("/");
 		base_directory = path;
 		asset_sources_directory = path + "AssetSources/";
 		resources_directory = path + "Resources/";

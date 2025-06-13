@@ -3,19 +3,6 @@
 #include "Core/Buffer.h"
 #include <fstream>
 
-std::vector<std::byte> RayTracingShaders::LoadBinaryFile(const std::string filename) {
-	std::ifstream file(filename, std::ios::ate | std::ios::binary);
-	if (!file.is_open()) {
-		throw std::runtime_error("Failed to load file!");
-	}
-	size_t file_size = file.tellg();
-	std::vector<char> buffer(file_size);
-	file.seekg(0);
-	file.read(buffer.data(), file_size);
-	file.close();
-	return reinterpret_cast<std::vector<std::byte>&>(buffer);
-}
-
 RayTracingShaders::BindingTable::BindingTable(
 	const DeviceContext& context, 
 	const vk::Pipeline pipeline, 
@@ -94,8 +81,8 @@ RayTracingShaders::PipelineData::PipelineData(
 		IncreaseCount(shader.stage);
 
 		// emplace module
-		std::vector<std::byte> binary_code = LoadBinaryFile(shader.spv_path.c_str());
-		std::vector<uint32_t> compiled_code = reinterpret_cast<std::vector<uint32_t>&>(binary_code);
+		// std::vector<std::byte> binary_code = LoadBinaryFile(shader.spv_path.c_str());
+		std::vector<uint32_t> compiled_code = reinterpret_cast<const std::vector<uint32_t>&>(shader.binary_code);
 		vk::ShaderModule module = context.GetDevice().createShaderModule(vk::ShaderModuleCreateInfo({}, compiled_code));
 		modules.emplace_back(module);
 

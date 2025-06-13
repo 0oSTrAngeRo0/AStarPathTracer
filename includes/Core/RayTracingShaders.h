@@ -13,7 +13,6 @@ private:
 		return (size + (alignment - 1)) & (~(alignment - 1));
 	}
 
-	static std::vector<std::byte> LoadBinaryFile(const std::string filename);
 public:
 
 	template <typename T>
@@ -49,13 +48,13 @@ public:
 
 	class ShaderData {
 	public:
-		std::string spv_path;
+		std::vector<std::byte> binary_code;
 		vk::ShaderStageFlagBits stage;
 		std::string entry_function;
 		ShaderData() {}
-		ShaderData(const ShaderData& other) : ShaderData(other.spv_path, other.entry_function, other.stage) {}
-		ShaderData(const std::string& spv_path, const std::string& entry, const vk::ShaderStageFlagBits stage) :
-			spv_path(spv_path), entry_function(entry), stage(stage) {}
+		ShaderData(const ShaderData& other) : ShaderData(other.binary_code, other.entry_function, other.stage) {}
+		ShaderData(const std::vector<std::byte> binary_code, const std::string& entry, const vk::ShaderStageFlagBits stage) :
+			binary_code(binary_code), entry_function(entry), stage(stage) {}
 	};
 
 	class PipelineData {

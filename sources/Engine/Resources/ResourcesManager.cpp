@@ -3,6 +3,25 @@
 #include <filesystem>
 #include <cassert>
 
+std::vector<std::byte> ResourcesManager::LoadBinaryFile(const std::string& path) {
+	std::ifstream file;
+	if (!path.starts_with(base_directory.string())) {
+		std::string full_path = base_directory.string() + path;
+		file = std::ifstream(full_path, std::ios::ate | std::ios::binary);
+	}
+	else file = std::ifstream(path, std::ios::ate | std::ios::binary);
+
+	if (!file.is_open()) {
+		throw std::runtime_error("Failed to load file!");
+	}
+	size_t file_size = file.tellg();
+	std::vector<char> buffer(file_size);
+	file.seekg(0);
+	file.read(buffer.data(), file_size);
+	file.close();
+	return reinterpret_cast<std::vector<std::byte>&>(buffer);
+}
+
 ResourcesManager::ResourcesManager() {
 	ChangeBaseDirectory("D:/C++/Projects/PathTracer/EngineRuntime/");
 
@@ -21,8 +40,10 @@ ResourcesManager::ResourcesManager() {
 
 ResourceBase& ResourcesManager::LoadResource(const std::string& path) {
 	std::ifstream file;
-	if (!path.starts_with(base_directory.string()))
-		file = std::ifstream(std::string(base_directory.string()) + path);
+	if (!path.starts_with(base_directory.string())) {
+		std::string full_path = base_directory.string() + path;
+		file = std::ifstream(full_path);
+	}
 	else file = std::ifstream(path);
 
 	if (!file.is_open()) {
