@@ -1,9 +1,11 @@
-#include <string>
 #include "Engine/Resources/Resources.h"
+#include <string>
 
 struct ObjResourceData {
-public:
-    static constexpr ResourceTypeDisplay type_display = "Obj";
 	std::string path; // relative path
 	// other import settings
 };
+
+template<> constexpr ResourceTypeDisplay Resource<ObjResourceData>::type_display = "Obj";
+
+

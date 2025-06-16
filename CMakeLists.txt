@@ -118,7 +118,7 @@ target_sources(${MAIN_EXE_NAME} PRIVATE
     sources/Engine/Resources/MeshLoader/MikkTSpace/mikktspace.c
     sources/Engine/Resources/MeshLoader/MikkTSpace/MikkTSpaceTangentGenerator.cpp
     sources/Engine/ShaderHostBuffer.cpp
-    sources/Engine/Resources/TextureLoader/StbImageUtilities.cpp
+    sources/Engine/Resources/TextureResourceData.cpp
     sources/Engine/Components/ComponentInspectors.cpp
     sources/Engine/Json/Components.cpp
 )

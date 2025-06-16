@@ -31,26 +31,25 @@ public:
 		textures(textures), shader_manager(shader_manager) {}
 };
 
-using UpdateMaterialDataFunction = std::function<void(const ResourceBase&, const MaterialVisiableContext&)>;
-class UpdateMaterialDataRegistry : public StaticRegistry<ResourceType, UpdateMaterialDataFunction> {
+class UpdateMaterialDataRegistry : public StaticFunctionRegistry<ResourceTypeId, void(const ResourceBase&, const MaterialVisiableContext&)> {
 public:
+	using Base = StaticFunctionRegistry<ResourceTypeId, void(const ResourceBase&, const MaterialVisiableContext&)>;
 	template <typename TResource, typename TRuntimeData>
 	static TRuntimeData UpdateMaterialData(const Resource<TResource>& resource, const MaterialVisiableContext& context);
+	
+	template <typename TResource, typename TRuntimeData> static void Register() {
+		Base::Register(Resource<TResource>::type_id, 
+		[](const ResourceBase& resource, const MaterialVisiableContext& context) { 
+			auto& resource_impl = static_cast<const Resource<TResource>&>(resource); 
+			auto& shader = context.shader_manager.GetShader(resource_impl.resource_data.shader_id); 
+			TRuntimeData runtime_data = UpdateMaterialDataRegistry::UpdateMaterialData<TResource, TRuntimeData>(resource_impl, context); 
+			if (shader.IsIdValid(resource_impl.uuid)) 
+				shader.SetValue(resource_impl.uuid, runtime_data); 
+			else 
+				shader.EmplaceValue(resource_impl.uuid, runtime_data); 
+		});
+	}
 };
-
-#define REGISTER_UPDATE_MATERIAL_DATA(type, runtime_type) \
-static bool ASTAR_UNIQUE_VARIABLE_NAME(get_material_raw_data_register_) = (  \
-UpdateMaterialDataRegistry::Register(Resource<type>::GetResourceTypeStatic(), \
-	[](const ResourceBase& resource, const MaterialVisiableContext& context) { \
-		auto& resource_impl = static_cast<const Resource<type>&>(resource); \
-		auto& shader = context.shader_manager.GetShader(resource_impl.resource_data.shader_id); \
-		runtime_type runtime_data = UpdateMaterialDataRegistry::UpdateMaterialData<type, runtime_type>(resource_impl, context); \
-		if (shader.IsIdValid(resource_impl.uuid)) \
-			shader.SetValue(resource_impl.uuid, runtime_data); \
-		else \
-			shader.EmplaceValue(resource_impl.uuid, runtime_data); \
-	}) \
-, true);
 
 class RenderContext {
 public:

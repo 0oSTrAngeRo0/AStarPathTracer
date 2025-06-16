@@ -1,7 +1,7 @@
 #include "Core/DeviceContext.h"
 #include "Application/Renderer/TexturePool.h"
 #include "Application/Renderer/CommandUtilities.h"
-#include "Engine/Resources/TextureLoader/TextureResourceUtilities.h"
+#include "Engine/Resources/TextureResourceData.h"
 #include "Engine/Resources/ResourcesManager.h"
 #include "Core/Buffer.h"
 
@@ -36,7 +36,7 @@ void TexturePool::Ensure(const DeviceContext& context) {
 		auto& texture = texture_map[uuid];
 		if (texture.is_loaded) continue;
 		const auto& resource = ResourcesManager::GetInstance().GetResource(uuid);
-		auto texture_data = LoadTextureResourceRegistry::Get(resource.GetResourceType()).value()(resource);
+		auto texture_data = LoadTextureResourceRegistry::Get(resource.GetResourceTypeId()).value()(resource);
 		vk::BufferCreateInfo staging_buffer_ci({}, {}, vk::BufferUsageFlagBits::eTransferSrc);
 		Buffer staging_buffer = Buffer::CreateWithData<std::byte>(context, staging_buffer_ci, texture_data.data);
 		staging_buffers.emplace_back(staging_buffer);

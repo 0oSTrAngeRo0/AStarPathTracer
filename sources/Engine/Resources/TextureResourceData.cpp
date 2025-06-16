@@ -3,10 +3,10 @@
 #define STBI_ASSERT(x) ASTAR_ASSERT(x)
 #define STB_IMAGE_IMPLEMENTATION
 #include "Engine/Resources/TextureLoader/stb_image.h"
-
-#include "Engine/Resources/TextureLoader/StbImageUtilities.h"
-#include "Engine/Resources/TextureLoader/TextureResourceUtilities.h"
+#include "Engine/Resources/TextureResourceData.h"
 #include "Engine/Resources/ResourceData.h"
+#include "Engine/Resources/ResourceRegistry.h"
+#include "Engine/Json/Resource.h"
 
 TextureData StbImageUtilities::Load(const std::string& path) {
 	// load data
@@ -32,8 +32,16 @@ TextureData StbImageUtilities::Load(const std::string& path) {
 	return texture;
 }
 
-template <>
-TextureData LoadTextureResourceRegistry::LoadTexture(const Resource<TextureResourceData>& resource) {
+template <> TextureData LoadTextureResourceRegistry::LoadTexture(const Resource<TextureResourceData>& resource) {
 	return StbImageUtilities::Load(resource.resource_data.path);
 }
-REGISTER_LOAD_TEXTURE_RESOURCE(TextureResourceData)
+
+JSON_SERIALIZER(TextureResourceData, <>, path);
+
+static void Register() {
+	ResourceSerializeRegistry::Register<TextureResourceData>();
+	ResourceDeserializerRegistry::Register<TextureResourceData>();
+	LoadTextureResourceRegistry::Register<TextureResourceData>();
+}
+
+ASTAR_BEFORE_MAIN(Register());

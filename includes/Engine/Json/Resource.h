@@ -14,7 +14,7 @@ namespace nlohmann {
 			nlohmann_json_j["uuid"] = nlohmann_json_t.uuid;
 			nlohmann_json_j["references"] = nlohmann_json_t.references;
 			nlohmann_json_j["resource_data"] = nlohmann_json_t.resource_data;
-			nlohmann_json_j["resource_type"] = Resource<TData>::GetResourceTypeStatic();
+			nlohmann_json_j["resource_type"] = Resource<TData>::type_display;
 		}
 		static inline void from_json(const json& nlohmann_json_j, Resource<TData>& nlohmann_json_t) {
 			nlohmann_json_j.at("uuid").get_to(nlohmann_json_t.uuid);
@@ -31,7 +31,7 @@ namespace nlohmann {
 			if (!obj.uuid.isValid()) {
 				throw std::runtime_error("Invalid uuid when serialize resource");
 			}
-			auto function = ResourceSerializeRegistry::Get(obj.GetResourceType());
+			auto function = ResourceSerializeRegistry::Get(std::string(obj.GetResourceTypeDisplay()));
 			if (!function.has_value()) {
 				throw std::runtime_error("Invalid resource type when serialize resource");
 			}

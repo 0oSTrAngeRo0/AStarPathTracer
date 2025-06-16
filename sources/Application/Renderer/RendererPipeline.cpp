@@ -155,7 +155,7 @@ void RendererPipeline::CreatePipelineAndBindingTable(const DeviceContext& contex
 	std::vector<std::tuple<Uuid, RayTracingShaders::ShaderData>> shaders;
 	const auto& shader_resources = HostShaderManager::GetInstance().GetAllShaders();
 	ResourcesManager::GetInstance().IterateResources([&shaders](const std::string& path, const ResourceBase& resource) {
-		if (resource.GetResourceType() != Resource<ShaderResourceData>::GetResourceTypeStatic()) return;
+		if (resource.GetResourceTypeId() != Resource<ShaderResourceData>::type_id) return;
 		const ShaderResourceData& shader = static_cast<const Resource<ShaderResourceData>&>(resource).resource_data;
 		auto binary_code = ResourcesManager::GetInstance().LoadBinaryFile(shader.compiled_code_path);
 		RayTracingShaders::ShaderData data(std::move(binary_code), shader.entry_function, shader.shader_stage);

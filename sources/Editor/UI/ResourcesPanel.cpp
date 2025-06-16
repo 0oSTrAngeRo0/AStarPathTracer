@@ -14,12 +14,12 @@ void ResourcesPanel::DrawCraetePopupNode(const ResourceCreateMenuRegistry::Node&
 	std::visit([&](auto&& arg) {
 		using T = std::decay_t<decltype(arg)>;
 		if constexpr (std::is_same_v<T, ResourceCreateMenuRegistry::Leaf>) {
-			if (ImGui::MenuItem(node.key.c_str())) {
+			if (ImGui::MenuItem(std::string(node.key).c_str())) {
 				arg(current_state.id);
 				root = TreeView::CreateDirectryNodeTreeFromPath(ResourcesManager::GetInstance().GetResourcesDirectory());
 			}
 		} else if constexpr (std::is_same_v<T, ResourceCreateMenuRegistry::Branch>) {
-			if (ImGui::BeginMenu(node.key.c_str())) {
+			if (ImGui::BeginMenu(std::string(node.key).c_str())) {
 				for (const ResourceCreateMenuRegistry::Node& child : arg) {
 					DrawCraetePopupNode(child);
 				}

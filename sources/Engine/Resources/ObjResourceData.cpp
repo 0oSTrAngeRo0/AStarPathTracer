@@ -5,6 +5,10 @@
 #include "Engine/Resources/ResourcesManager.h"
 #include "Engine/Resources/MeshLoader/MikkTSpaceTangentGenerator.h"
 #include "Engine/Resources/MeshLoader/MeshResourceUtilities.h"
+#include "Engine/Json/Resource.h"
+#include "Editor/UI/Inspectors/ResourceInspector.h"
+#include "Editor/UI/Inspectors/ResourceEditorRegistry.h"
+#include <imgui.h>
 
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "Engine/Resources/MeshLoader/tiny_obj_loader.h"
@@ -88,11 +92,17 @@ std::vector<MeshData> MeshResourceUtilities::Load<ObjResourceData>(const Resourc
     return submeshes;
 }
 
-void Register() {
-    MeshResourceUtilities::Register<ObjResourceData>();
+template <> void ResourceInspector<ObjResourceData>::Draw() {
+	ImGui::LabelText("Source File Path", "%s", data.resource_data.path.c_str());
 }
 
 JSON_SERIALIZER(ObjResourceData, <>, path);
-REGISTER_RESOURCE_SERIALIZER(ObjResourceData)
-REGISTER_RESOURCE_DESERIALIZER(ObjResourceData)
-static bool ASTAR_UNIQUE_VARIABLE_NAME(obj_resource_register_) = (Register(), true);
+
+static void Register() {
+    MeshResourceUtilities::Register<ObjResourceData>();
+    ResourceSerializeRegistry::Register<ObjResourceData>();
+    ResourceDeserializerRegistry::Register<ObjResourceData>();
+    ResourceInspectorCreateRegistry::Register<ObjResourceData>();
+}
+
+ASTAR_BEFORE_MAIN(Register());

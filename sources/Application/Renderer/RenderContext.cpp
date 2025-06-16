@@ -64,7 +64,7 @@ void RenderContext::UploadMaterials(
 	});
 	for (const auto& material : used_materials) {
 		const auto& resource = resource_manager.GetResource(material);
-		const auto result = UpdateMaterialDataRegistry::Get(resource.GetResourceType());
+		const auto result = UpdateMaterialDataRegistry::Get(resource.GetResourceTypeId());
 		if (!result.has_value()) {
 			throw std::runtime_error("Invalid mateiral");
 		}

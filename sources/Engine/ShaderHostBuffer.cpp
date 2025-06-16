@@ -5,7 +5,7 @@
 
 std::tuple<const Uuid, const size_t> HostShaderManager::RegisterMaterial(const Uuid& resource_id) {
 	const ResourceBase& resource = ResourcesManager::GetInstance().GetResource(resource_id);
-	const auto result = GetMaterialBaseFunctionRegistry::Get(resource.GetResourceType());
+	const auto result = GetMaterialBaseFunctionRegistry::Get(resource.GetResourceTypeId());
 	if (!result.has_value()) {
 		throw std::runtime_error("Invalie resource type");
 	}
@@ -17,7 +17,7 @@ std::tuple<const Uuid, const size_t> HostShaderManager::RegisterMaterial(const U
 
 std::tuple<const Uuid, const size_t> HostShaderManager::GetMaterialRuntimeData(const Uuid& resource_id) const {
 	const ResourceBase& resource = ResourcesManager::GetInstance().GetResource(resource_id);
-	const auto result = GetMaterialBaseFunctionRegistry::Get(resource.GetResourceType());
+	const auto result = GetMaterialBaseFunctionRegistry::Get(resource.GetResourceTypeId());
 	if (!result.has_value()) {
 		throw std::runtime_error("Invalie resource type");
 	}

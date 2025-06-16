@@ -5,35 +5,39 @@
 #include <functional>
 #include <nlohmann/json.hpp>
 #include "Utilities/MacroUtilities.h"
+#include "Engine/Resources/Resources.h"
 
-class ResourceBase;
+class ResourceSerializeRegistry : public StaticFunctionRegistry<std::string, void(nlohmann::json&, const ResourceBase&)> {
+public:
+	using Base = StaticFunctionRegistry<std::string, void(nlohmann::json&, const ResourceBase&)>;
+	template <typename T>
+	static void Register() {
+		Base::Register(std::string(Resource<T>::type_display), [](nlohmann::json& j, const ResourceBase& obj) {
+			j = static_cast<const Resource<T>&>(obj);
+		});
+	}
+};
 
-class ResourceSerializeRegistry : public StaticRegistry<std::string, std::function<void(nlohmann::json&, const ResourceBase&)>> {};
-class ResourceDeserializerRegistry : public StaticRegistry<std::string, std::function<std::optional<std::unique_ptr<ResourceBase>>(const nlohmann::json&)>> {};
+class ResourceDeserializerRegistry : public StaticFunctionRegistry<std::string, std::optional<std::unique_ptr<ResourceBase>>(const nlohmann::json&)> {
+public:
+	using TReturn = std::optional<std::unique_ptr<ResourceBase>>;
+	using Base = StaticFunctionRegistry<std::string, TReturn(const nlohmann::json&)>;
+	template <typename T>
+	static void Register() {
+		Base::Register(std::string(Resource<T>::type_display), 
+		[](const nlohmann::json& j) -> TReturn { 
+			auto ptr = std::make_unique<Resource<T>>(j.template get<Resource<T>>()); 
+			return ptr; 
+		});
+	}
 
-#define REGISTER_RESOURCE_SERIALIZER(type) \
-namespace nlohmann { \
-	static bool ASTAR_UNIQUE_VARIABLE_NAME(resource_serialize_register_) = (ResourceSerializeRegistry::Register(Resource<type>::type_display, \
-		[](json& j, const ResourceBase& obj) { \
-			j = static_cast<const Resource<type>&>(obj); \
-		}), true); \
-}
-
-#define REGISTER_RESOURCE_DESERIALIZER(type) \
-namespace nlohmann { \
-	static bool ASTAR_UNIQUE_VARIABLE_NAME(resource_deserialize_register_) = (ResourceDeserializerRegistry::Register(Resource<type>::type_display, \
-		[](const nlohmann::json& j) { \
-			auto ptr = std::make_unique<Resource<type>>(j.template get<Resource<type>>()); \
-			return ptr; \
-		}), true); \
-} 
-
-#define REGISTER_RESOURCE_DESERIALIZER_WITHAFTER(type, after_deserialize) \
-namespace nlohmann { \
-	static bool ASTAR_UNIQUE_VARIABLE_NAME(resource_deserialize_register_) = (ResourceDeserializerRegistry::Register(Resource<type>::GetResourceTypeStatic(), \
-		[](const nlohmann::json& j) { \
-			auto ptr = std::make_unique<Resource<type>>(j.template get<Resource<type>>()); \
-			after_deserialize((*ptr)); \
-			return ptr; \
-		}), true); \
-} 
+	template <typename T>
+	static void RegisterWithAfter(std::function<void(const Resource<T>&)> callback) {
+		Base::Register(std::string(Resource<T>::type_display), 
+		[callback](const nlohmann::json& j) -> TReturn {
+			auto ptr = std::make_unique<Resource<T>>(j.template get<Resource<T>>()); 
+			callback((*ptr)); 
+			return ptr; 
+		});
+	}
+};

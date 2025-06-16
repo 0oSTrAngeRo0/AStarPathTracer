@@ -8,7 +8,7 @@ using ResourceTypeId = std::uint32_t;
 using ResourceTypeDisplay = std::string_view;
 
 /// <summary>
-/// 不允许实例化，只能实例化其子类
+/// “Cannot be instantiated directly; only subclasses may be instantiated.”
 /// </summary>
 class ResourceBase {
   public:

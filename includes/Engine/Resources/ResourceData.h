@@ -16,6 +16,7 @@ struct ShaderResourceData {
 	uint32_t instance_stride;
 	std::string entry_function;
 };
+template<> constexpr std::string_view Resource<ShaderResourceData>::type_display = "Shader" ;
 
 struct MaterialResourceDataBase {
 public:
@@ -24,14 +25,17 @@ public:
 	virtual size_t RegisterToShader(const Uuid& self_id, HostShader& shader) const = 0;
 };
 
-class GetMaterialBaseFunctionRegistry : public StaticRegistry<std::string, std::function<const MaterialResourceDataBase& (const ResourceBase&)>> {};
-
-#define REGISTER_GET_BASE_MATERIAL_DATA(type) \
-static bool ASTAR_UNIQUE_VARIABLE_NAME(get_base_material_register_) = (GetMaterialBaseFunctionRegistry::Register(Resource<type>::GetResourceTypeStatic(), \
-	[](const ResourceBase& resource) -> const MaterialResourceDataBase& { \
-		return static_cast<const MaterialResourceDataBase&>(static_cast<const Resource<type>&>(resource).resource_data); \
-	}), true); \
-
+class GetMaterialBaseFunctionRegistry : public StaticFunctionRegistry<ResourceTypeId, const MaterialResourceDataBase& (const ResourceBase&)> {
+public:
+	using Base = StaticFunctionRegistry<ResourceTypeId, const MaterialResourceDataBase& (const ResourceBase&)>;
+	template <typename T>
+	static void Register() {
+		Base::Register(Resource<T>::type_id, 
+		[](const ResourceBase& resource) -> const MaterialResourceDataBase& { 
+			return static_cast<const MaterialResourceDataBase&>(static_cast<const Resource<T>&>(resource).resource_data); 
+		});
+	}
+};
 
 template <typename T>
 struct MaterialResourceData : MaterialResourceDataBase {
@@ -45,8 +49,5 @@ public:
 JSON_SERIALIZER(MaterialResourceData<TMatData>, <typename TMatData>, material_data, shader_id);
 
 
-struct TextureResourceData {
-public:
-	std::string path;
-};
+
 
