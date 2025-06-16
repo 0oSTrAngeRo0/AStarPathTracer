@@ -1,11 +1,13 @@
-#define TINYOBJLOADER_IMPLEMENTATION
-#include "Engine/Resources/MeshLoader/tiny_obj_loader.h"
-
+#include "Engine/Resources/ObjResourceData.h"
+#include "Engine/Resources/ResourceRegistry.h"
 #include "Engine/Resources/ResourceData.h"
 #include "Engine/Resources/Resources.h"
 #include "Engine/Resources/ResourcesManager.h"
 #include "Engine/Resources/MeshLoader/MikkTSpaceTangentGenerator.h"
 #include "Engine/Resources/MeshLoader/MeshResourceUtilities.h"
+
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "Engine/Resources/MeshLoader/tiny_obj_loader.h"
 
 template <>
 std::vector<MeshData> MeshResourceUtilities::Load<ObjResourceData>(const Resource<ObjResourceData>& resource) {
@@ -86,4 +88,11 @@ std::vector<MeshData> MeshResourceUtilities::Load<ObjResourceData>(const Resourc
     return submeshes;
 }
 
-REGISTER_RESOURCE_MESH_LOADER(ObjResourceData);
+void Register() {
+    MeshResourceUtilities::Register<ObjResourceData>();
+}
+
+JSON_SERIALIZER(ObjResourceData, <>, path);
+REGISTER_RESOURCE_SERIALIZER(ObjResourceData)
+REGISTER_RESOURCE_DESERIALIZER(ObjResourceData)
+static bool ASTAR_UNIQUE_VARIABLE_NAME(obj_resource_register_) = (Register(), true);

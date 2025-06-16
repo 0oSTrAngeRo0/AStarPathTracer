@@ -6,13 +6,7 @@
 #include "Engine/HostShaderManager.h"
 #include "Utilities/MacroUtilities.h"
 
-template <> const std::string& Resource<ObjResourceData>::GetResourceTypeStatic() {
-	static std::string type = "Obj";
-	return type;
-}
-JSON_SERIALIZER(ObjResourceData, <>, path);
-REGISTER_RESOURCE_SERIALIZER(ObjResourceData);
-REGISTER_RESOURCE_DESERIALIZER(ObjResourceData);
+
 
 #define SHADER_RESOURCE_AFTER_DESERIALIZE(resource) \
 do { \

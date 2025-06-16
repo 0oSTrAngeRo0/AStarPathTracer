@@ -27,6 +27,26 @@ private:
 	}
 };
 
+#include <functional>
+
+template <typename TKey, typename TFunction>
+class StaticFunctionRegistry;
+
+template <typename TKey, typename TResult, typename ... TArguments>
+class StaticFunctionRegistry<TKey, TResult(TArguments...)> : public StaticRegistry<TKey, std::function<TResult(TArguments...)>> {
+public:
+	using Base = StaticRegistry<TKey, std::function<TResult(TArguments...)>>;
+
+	template <typename... TCallArguments>
+    static TResult Call(const TKey& key, TCallArguments&&... args) {
+        auto opt = Base::Get(key);
+        if (!opt.has_value()) {
+            throw std::runtime_error("Function not found for given key");
+        }
+        return (*opt)(std::forward<TCallArguments>(args)...);
+    }
+};
+
 
 #include <vector>
 #include <variant>

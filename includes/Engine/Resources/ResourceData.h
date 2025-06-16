@@ -9,12 +9,6 @@
 #include "Engine/Resources/Resources.h"
 #include "Utilities/JsonX.h"
 
-struct ObjResourceData {
-public:
-	std::string path; // relative path
-	// other import settings
-};
-
 struct ShaderResourceData {
 	std::string source_code_path;
 	std::string compiled_code_path;

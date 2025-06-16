@@ -1,5 +1,4 @@
 #include "Engine/Resources/MeshLoader/mikktspace.h"
-
 #include "Engine/Resources/MeshLoader/MikkTSpaceTangentGenerator.h"
 #include "Engine/Resources/MeshLoader/MeshResourceUtilities.h"
 

@@ -13,7 +13,7 @@ class ResourceDeserializerRegistry : public StaticRegistry<std::string, std::fun
 
 #define REGISTER_RESOURCE_SERIALIZER(type) \
 namespace nlohmann { \
-	static bool ASTAR_UNIQUE_VARIABLE_NAME(resource_serialize_register_) = (ResourceSerializeRegistry::Register(Resource<type>::GetResourceTypeStatic(), \
+	static bool ASTAR_UNIQUE_VARIABLE_NAME(resource_serialize_register_) = (ResourceSerializeRegistry::Register(Resource<type>::type_display, \
 		[](json& j, const ResourceBase& obj) { \
 			j = static_cast<const Resource<type>&>(obj); \
 		}), true); \
@@ -21,7 +21,7 @@ namespace nlohmann { \
 
 #define REGISTER_RESOURCE_DESERIALIZER(type) \
 namespace nlohmann { \
-	static bool ASTAR_UNIQUE_VARIABLE_NAME(resource_deserialize_register_) = (ResourceDeserializerRegistry::Register(Resource<type>::GetResourceTypeStatic(), \
+	static bool ASTAR_UNIQUE_VARIABLE_NAME(resource_deserialize_register_) = (ResourceDeserializerRegistry::Register(Resource<type>::type_display, \
 		[](const nlohmann::json& j) { \
 			auto ptr = std::make_unique<Resource<type>>(j.template get<Resource<type>>()); \
 			return ptr; \

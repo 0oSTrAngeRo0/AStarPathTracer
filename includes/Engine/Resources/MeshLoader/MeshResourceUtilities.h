@@ -1,13 +1,11 @@
 #pragma once
 
 #include <glm/glm.hpp>
-
 #include "Engine/StaticRegistry.h"
 #include "Engine/Guid.h"
 #include "Utilities/MacroUtilities.h"
-
-class ResourceBase;
-template <typename T> class Resource;
+#include "Engine/Resources/Resources.h"
+#include "Engine/Resources/ResourcesManager.h"
 
 class MeshData {
 public:
@@ -18,14 +16,18 @@ public:
 	std::vector<glm::uvec3> indices; // triangles
 };
 
-class MeshResourceUtilities : public StaticRegistry<std::string, std::function<std::vector<MeshData>(const ResourceBase&)>> {
+class MeshResourceUtilities : public StaticFunctionRegistry<ResourceTypeId, std::vector<MeshData>(const ResourceBase&)> {
 public:
-	static std::vector<MeshData> Load(Uuid id);
+	using Base = StaticFunctionRegistry<ResourceTypeId, std::vector<MeshData>(const ResourceBase&)>;
+	static std::vector<MeshData> Load(Uuid id) {
+		auto& resource = ResourcesManager::GetInstance().GetResource(id);
+		auto type_id = resource.GetResourceTypeId();
+		return Call(type_id, resource);
+	}
 	template <typename T> static std::vector<MeshData> Load(const Resource<T>& resource);
+	template <typename T> static void Register() {
+		Base::Register(Resource<T>::type_id, [](const ResourceBase& resource) {
+			return Load(static_cast<const Resource<T>&>(resource));
+		});
+	}
 };
-
-#define REGISTER_RESOURCE_MESH_LOADER(type) \
-	static bool ASTAR_UNIQUE_VARIABLE_NAME(register_resource_mesh_loader_) = (MeshResourceUtilities::Register(Resource<type>::GetResourceTypeStatic(), \
-		[](const ResourceBase& resource) { \
-			return MeshResourceUtilities::Load(static_cast<const Resource<type>&>(resource)); \
-		}), true) \
