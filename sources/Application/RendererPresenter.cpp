@@ -20,7 +20,6 @@
 #include "Core/Surface.h"
 
 RendererPresenter::RendererPresenter(const DeviceContext& context, vk::SurfaceKHR surface) {
-	CreateDescriptorPool(context);
 	command_pool = context.GetDevice().createCommandPool(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, context.GetGrpahicsQueueIndex()));
 	CreateSyncObjects(context);
 	this->surface = std::make_unique<Surface>(context, surface);
@@ -91,7 +90,6 @@ void RendererPresenter::Destroy(const DeviceContext& context) {
 	device.destroySemaphore(render_finished_semaphore);
 	device.destroyFence(in_flight_fence);
 	device.destroyCommandPool(command_pool);
-	device.destroyDescriptorPool(descriptor_pool);
 	swapchain->Destroy(context);
 	surface->Destroy(context);
 }

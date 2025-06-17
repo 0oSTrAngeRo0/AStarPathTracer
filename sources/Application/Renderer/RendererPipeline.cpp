@@ -16,7 +16,7 @@ RendererPipeline::RendererPipeline(const DeviceContext& context, const RenderCon
 	descriptor_set_layout = CreateDescriptorSetLayout(context.GetDevice());
 	std::vector<vk::DescriptorSet> sets = AllocateDescriptorSet(context.GetDevice(), descriptor_pool, descriptor_set_layout);
 	descriptor_set = sets[0];
-	UpdateDescriptorSet(context, render, descriptor_set);
+	// UpdateDescriptorSet(context, render, descriptor_set);
 	CreateRayTracingPipelineLayout(context);
 	CreatePipelineAndBindingTable(context);
 }
@@ -113,10 +113,10 @@ void RendererPipeline::CmdCopyOutputTo(const vk::CommandBuffer cmd, const Render
 		vk::ImageLayout::eGeneral, vk::ImageLayout::eTransferSrcOptimal,
 		{}, {}, render.GetOutputImage(), subresource));
 	cmd.copyImage(render.GetOutputImage(), vk::ImageLayout::eTransferSrcOptimal, target, vk::ImageLayout::eTransferDstOptimal, copy_region);
-	CommandUtilities::CmdInsertImageBarrier(cmd, vk::ImageMemoryBarrier(
-		vk::AccessFlagBits::eNone, vk::AccessFlagBits::eShaderWrite,
-		vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::ePresentSrcKHR,
-		{}, {}, target, subresource));
+	// CommandUtilities::CmdInsertImageBarrier(cmd, vk::ImageMemoryBarrier(
+	// 	vk::AccessFlagBits::eNone, vk::AccessFlagBits::eShaderWrite,
+	// 	vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::ePresentSrcKHR,
+	// 	{}, {}, target, subresource));
 }
 
 vk::DescriptorSetLayout RendererPipeline::CreateDescriptorSetLayout(const vk::Device device) {
@@ -202,4 +202,5 @@ void RendererPipeline::Destroy(const DeviceContext& context) {
 	shader_binding_table->Destroy(context);
 	device.destroyPipeline(pipeline);
 	device.destroyPipelineLayout(pipeline_layout);
+	device.destroyDescriptorPool(descriptor_pool);
 }

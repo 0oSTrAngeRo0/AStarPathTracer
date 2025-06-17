@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <entt/entt.hpp>
+#include "Editor/UI/ViewportPanel.h"
 
 class GlfwWindow;
 class DeviceContext;
@@ -19,6 +20,7 @@ public:
 private:
 	std::unique_ptr<GlfwWindow> window;
 	std::unique_ptr<DeviceContext> context;
+	ViewportPanel viewport;
 	std::unique_ptr<EditorRenderContext> render_context;
 	std::unique_ptr<EditorUI> ui;
 	std::unique_ptr<EditorUIDrawer> ui_drawer;

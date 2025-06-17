@@ -12,7 +12,6 @@ EditorUIDrawer::EditorUIDrawer() {
     resources_panel = std::make_unique<ResourcesPanel>();
     selection = std::make_unique<EditorSelection>();
     hierachies_panel = std::make_unique<HierachiesPanel>();
-    viewport_panel = std::make_unique<ViewportPanel>();
 }
 
 void EditorUIDrawer::DrawUI(entt::registry& registry) {
@@ -23,7 +22,7 @@ void EditorUIDrawer::DrawUI(entt::registry& registry) {
     resources_panel->DrawUi();
     hierachies_panel->DrawUi(registry);
     DrawInspetor(registry);
-    viewport_panel->DrawUi();
+    // viewport_panel->DrawUi();
 
     if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
         if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK

@@ -17,7 +17,7 @@ RendererApplication::RendererApplication(std::unique_ptr<VulkanWindow> window) :
 	context = std::make_unique<DeviceContext>(context_create_info);
 	presenter = std::make_unique<RendererPresenter>(*context, this->window->CreateWindowSurface(context->GetInstance(), nullptr).value());
 	presenter->RefreshSurfaceData(*context);
-	vk::Extent2D extent = window->GetActualExtent();
+	vk::Extent2D extent = this->window->GetActualExtent();
 	presenter->ResizeSwapchain(*context, extent);
 	std::printf("Window resized to [%dx%d]\n", extent.width, extent.height);
 	renderer = std::make_unique<Renderer>(*context);

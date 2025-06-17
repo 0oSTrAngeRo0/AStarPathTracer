@@ -13,7 +13,8 @@
 
 void EditorUI::CheckVkResult(VkResult err) {
 	if (err == 0) return;
-	fprintf(stderr, "[vulkan] Error: VkResult = %d\n", err);
+	fprintf(stderr, "[ImGui:Vulkan] Error: VkResult = [%s]\n", vk::to_string(vk::Result(err)).c_str());
+	// throw std::runtime_error("[ImGui:Vulkan] Error");
 }
 
 EditorUI::EditorUI(const DeviceContext& context, const EditorRenderContext& render_context, const GlfwWindow& window) {

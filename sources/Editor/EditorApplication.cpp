@@ -7,22 +7,27 @@
 #include "Editor/EditorRenderContext.h"
 #include "Editor/EditorUI.h"
 #include "Editor/EditorUIDrawer.h"
-#include "Editor/EditorDeviceContextCreateConfig.h"
+#include "Application/RendererDeviceContextCreateConfig.h"
 
-EditorApplication::EditorApplication() {
+EditorApplication::EditorApplication() : 
+window([]() {
 	AppConfig config = AppConfig::CreateDefault();
 	config.window_title = "PathTracer Editor";
-	window = std::make_unique<GlfwWindow>(config);
-
-	EditorDeviceContextCreateConfig device_context_create_config(*window);
-	context = std::make_unique<DeviceContext>(device_context_create_config);
-
-	vk::SurfaceKHR surface = window->CreateWindowSurface(context->GetInstance(), nullptr).value();
-	render_context = std::make_unique<EditorRenderContext>(*context, surface, window->GetActualExtent());
-	ui = std::make_unique<EditorUI>(*context, *render_context, *window);
-	ui_drawer = std::make_unique<EditorUIDrawer>();
-	is_active = true;
-}
+	return std::make_unique<GlfwWindow>(config);
+} ()),
+context([this]() {
+	RendererDeviceContextCreateInfo config(*this->window); 
+	return std::make_unique<DeviceContext>(config);
+} ()),
+viewport(*context),
+render_context(std::make_unique<EditorRenderContext>(
+	*context, 
+	window->CreateWindowSurface(context->GetInstance(), nullptr).value(), 
+	window->GetActualExtent()
+)),
+ui(std::make_unique<EditorUI>(*context, *render_context, *window)),
+ui_drawer(std::make_unique<EditorUIDrawer>()),
+is_active(true){}
 
 void EditorApplication::Update(entt::registry& registry) {
 	if (!is_active) return;
@@ -35,9 +40,10 @@ void EditorApplication::Update(entt::registry& registry) {
 		if (!wait_result.has_value()) break;
 		auto& [frame, image_index] = wait_result.value();
 		ui->UpdateBeginFrame();
-		ui_drawer->DrawUI(registry);
-		ui->UpdateRenderData();
 		render_context->BeginFrame(*context, frame);
+		ui_drawer->DrawUI(registry);
+		viewport.DrawUi(*context, frame.command_buffer, registry);
+		ui->UpdateRenderData();
 		render_context->CmdDrawUI(frame, *ui);
 		render_context->SubmitFrame(*context, frame);
 		ui->UpdateEndFrame();

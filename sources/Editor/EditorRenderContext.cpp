@@ -79,8 +79,9 @@ vk::RenderPass EditorRenderContext::CreateRenderPass(const DeviceContext& contex
 
 vk::DescriptorPool EditorRenderContext::CreateDescriptorPool(const DeviceContext& context) {
 	std::vector<vk::DescriptorPoolSize> sizes = {
+		vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 16),
 	};
-	vk::DescriptorPoolCreateInfo create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 1, sizes);
+	vk::DescriptorPoolCreateInfo create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 4, sizes);
 	return context.GetDevice().createDescriptorPool(create_info);
 }
 

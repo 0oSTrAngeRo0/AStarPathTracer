@@ -28,6 +28,8 @@ public:
 			VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME,
 			VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
 			VK_EXT_SCALAR_BLOCK_LAYOUT_EXTENSION_NAME, 
+			
+			VK_EXT_DEVICE_ADDRESS_BINDING_REPORT_EXTENSION_NAME,
 		};
 	}
 	std::vector<std::string> GetInstanceExtensions() const override { return instance_extensions; }
@@ -50,7 +52,8 @@ private:
 		vk::PhysicalDeviceRayTracingPipelineFeaturesKHR,
 		vk::PhysicalDeviceRobustness2FeaturesEXT,
 		vk::PhysicalDevice16BitStorageFeaturesKHR,
-		vk::PhysicalDeviceScalarBlockLayoutFeatures
+		vk::PhysicalDeviceScalarBlockLayoutFeatures,
+		vk::PhysicalDeviceAddressBindingReportFeaturesEXT
 	> gpu_features;
 	vk::SurfaceKHR surface;
 	VulkanWindow& window;

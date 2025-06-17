@@ -28,8 +28,8 @@ EngineDebugger::EngineDebugger(const vk::Instance instance)
     vk::DebugUtilsMessageTypeFlagsEXT type =
         vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
         vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
-        vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
-        vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding;
+        vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+        // vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding;
 
     vk::DebugUtilsMessengerCreateInfoEXT create_info({}, severity, type, DebugCallback);
     debugger = instance.createDebugUtilsMessengerEXT(create_info);
