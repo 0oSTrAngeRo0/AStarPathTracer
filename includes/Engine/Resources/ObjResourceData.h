@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Engine/Resources/Resources.h"
 #include <string>
 

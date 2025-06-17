@@ -1,3 +1,5 @@
+#pragma once
+
 #include <string>
 #include <cstddef>
 #include "Utilities/MacroUtilities.h"
