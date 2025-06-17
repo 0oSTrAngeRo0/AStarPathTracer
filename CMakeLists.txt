@@ -79,9 +79,9 @@ target_sources(${MAIN_EXE_NAME} PRIVATE
 
     sources/Application/GlfwWindow.cpp
     sources/Application/World.cpp
-    sources/Application/Renderer/Renderer.cpp
+    sources/Application/RendererPresenter.cpp
     sources/Application/Renderer/RenderContext.cpp
-    sources/Application/Renderer/RendererApplication.cpp
+    sources/Application/RendererApplication.cpp
     sources/Application/Renderer/MeshPool.cpp
     sources/Application/Renderer/MaterialPool.cpp
     sources/Application/Renderer/RendererPipeline.cpp
@@ -110,6 +110,7 @@ target_sources(${MAIN_EXE_NAME} PRIVATE
     sources/Editor/UI/TreeViewUtilities.cpp
     sources/Editor/UI/HierarchiesPanel.cpp
     sources/Editor/UI/Inspectors/ComponentInspector.cpp
+    sources/Editor/UI/ViewportPanel.cpp
     
     sources/Engine/Resources/Resource.cpp
     sources/Engine/Resources/ResourcesManager.cpp

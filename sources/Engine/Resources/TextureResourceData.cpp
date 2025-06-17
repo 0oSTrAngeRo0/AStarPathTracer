@@ -7,11 +7,16 @@
 #include "Engine/Resources/ResourceData.h"
 #include "Engine/Resources/ResourceRegistry.h"
 #include "Engine/Json/Resource.h"
+#include "Engine/Resources/ResourcesManager.h"
 
 TextureData StbImageUtilities::Load(const std::string& path) {
 	// load data
 	int width; int height; int channels;
 	stbi_uc* pixels = stbi_load(path.c_str(), &width, &height, &channels, STBI_rgb_alpha);
+	if (!pixels) {
+		ASTAR_PRINT("Failed to load image: [%s], reason: [%s]!\n", path.c_str(), stbi_failure_reason());
+		throw std::runtime_error("Failed to load image");
+	}
 
 	// copy to vector
 	static_assert(sizeof(stbi_uc) % sizeof(std::byte) == 0);
@@ -33,7 +38,7 @@ TextureData StbImageUtilities::Load(const std::string& path) {
 }
 
 template <> TextureData LoadTextureResourceRegistry::LoadTexture(const Resource<TextureResourceData>& resource) {
-	return StbImageUtilities::Load(resource.resource_data.path);
+	return StbImageUtilities::Load(ResourcesManager::GetInstance().GetPath(resource.resource_data.path).string());
 }
 
 JSON_SERIALIZER(TextureResourceData, <>, path);

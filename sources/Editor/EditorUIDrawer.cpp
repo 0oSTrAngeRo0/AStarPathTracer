@@ -4,6 +4,7 @@
 #include "Editor/UI/ImGuiFileDialog.h"
 #include "Editor/UI/ResourcesPanel.h"
 #include "Editor/UI/HierarchiesPanel.h"
+#include "Editor/UI/ViewportPanel.h"
 #include "Editor/EditorSelection.h"
 #include "Utilities/EnumX.h"
 
@@ -11,6 +12,7 @@ EditorUIDrawer::EditorUIDrawer() {
     resources_panel = std::make_unique<ResourcesPanel>();
     selection = std::make_unique<EditorSelection>();
     hierachies_panel = std::make_unique<HierachiesPanel>();
+    viewport_panel = std::make_unique<ViewportPanel>();
 }
 
 void EditorUIDrawer::DrawUI(entt::registry& registry) {
@@ -20,25 +22,8 @@ void EditorUIDrawer::DrawUI(entt::registry& registry) {
 
     resources_panel->DrawUi();
     hierachies_panel->DrawUi(registry);
-
-    ImGui::Begin("Inspector");
-    if (resources_panel->IsSelectionChanged()) {
-        auto [is_leaf, path] = resources_panel->GetCurrentSelection();
-        if (is_leaf) {
-            selection->SelectResource(path);
-        }
-        printf("Selection Changed: [%s]\n", path.c_str());
-    }
-    if (hierachies_panel->IsSelectionChanged()) {
-        auto [is_leaf, entity_str] = hierachies_panel->GetCurrentSelection();
-        if (is_leaf) {
-            entt::entity entity = static_cast<entt::entity>(std::stoul(entity_str));
-            selection->SelectEntity(entity, registry);
-        }
-        printf("Selection Changed: [%s]\n", entity_str.c_str());
-    }
-    selection->GetSelectedInspector().DrawInspector();
-    ImGui::End();
+    DrawInspetor(registry);
+    viewport_panel->DrawUi();
 
     if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
         if (ImGuiFileDialog::Instance()->IsOk()) { // action if OK
@@ -63,3 +48,24 @@ void EditorUIDrawer::DrawUI(entt::registry& registry) {
 }
 
 EditorUIDrawer::~EditorUIDrawer() {}
+
+void EditorUIDrawer::DrawInspetor(entt::registry& registry) {
+    ImGui::Begin("Inspector");
+    if (resources_panel->IsSelectionChanged()) {
+        auto [is_leaf, path] = resources_panel->GetCurrentSelection();
+        if (is_leaf) {
+            selection->SelectResource(path);
+        }
+        printf("Selection Changed: [%s]\n", path.c_str());
+    }
+    if (hierachies_panel->IsSelectionChanged()) {
+        auto [is_leaf, entity_str] = hierachies_panel->GetCurrentSelection();
+        if (is_leaf) {
+            entt::entity entity = static_cast<entt::entity>(std::stoul(entity_str));
+            selection->SelectEntity(entity, registry);
+        }
+        printf("Selection Changed: [%s]\n", entity_str.c_str());
+    }
+    selection->GetSelectedInspector().DrawInspector();
+    ImGui::End();
+}

@@ -10,7 +10,7 @@ class Image;
 
 class RendererPipeline {
 public:
-	RendererPipeline(const DeviceContext& context, const RenderContext& render, const vk::DescriptorPool descriptor_pool);
+	RendererPipeline(const DeviceContext& context, const RenderContext& render);
 	void Destroy(const DeviceContext& context);
 	void CmdDraw(const vk::CommandBuffer cmd, const RenderContext& render);
 	void CmdCopyOutputTo(const vk::CommandBuffer cmd, const RenderContext& render, const vk::Image target);
@@ -33,6 +33,7 @@ private:
 	};*/
 	static constexpr uint32_t MaxTextureCount = 1024;
 
+	vk::DescriptorPool descriptor_pool;
 	vk::PipelineLayout pipeline_layout;
 	vk::Pipeline pipeline;
 	std::unique_ptr<RayTracingShaders::BindingTable> shader_binding_table;
@@ -42,6 +43,7 @@ private:
 
 	void CreateRayTracingPipelineLayout(const DeviceContext& context);
 	void CreatePipelineAndBindingTable(const DeviceContext& context);
+	vk::DescriptorPool CreateDescriptorPool(const DeviceContext& context);
 
 	static std::vector<vk::DescriptorSet> AllocateDescriptorSet(
 		vk::Device device,

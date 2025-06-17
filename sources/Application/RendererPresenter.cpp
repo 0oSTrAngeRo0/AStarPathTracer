@@ -1,14 +1,12 @@
 #include "Core/DeviceContext.h"
-#include "Application/Renderer/Renderer.h"
 #include "Application/Renderer/RenderContext.h"
 #include <stdexcept>
-#include "Application/Renderer/Renderer.h"
 #include "Core/VulkanUtils.h"
 #include "Engine/Components/Camera.h"
 #include "Engine/Components/Transform.h"
 #include "Engine/Components/Render.h"
 #include "Application/Renderer/RenderContext.h"
-#include "Application/Renderer/Renderer.h"
+#include "Application/RendererPresenter.h"
 #include "file-system.h"
 #include "Core/VulkanUtils.h"
 #include "math-utils.h"
@@ -21,14 +19,14 @@
 #include "Core/Swapchain.h"
 #include "Core/Surface.h"
 
-Renderer::Renderer(const DeviceContext& context, vk::SurfaceKHR surface) {
+RendererPresenter::RendererPresenter(const DeviceContext& context, vk::SurfaceKHR surface) {
 	CreateDescriptorPool(context);
 	command_pool = context.GetDevice().createCommandPool(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, context.GetGrpahicsQueueIndex()));
 	CreateSyncObjects(context);
 	this->surface = std::make_unique<Surface>(context, surface);
 }
 
-void Renderer::CreateSyncObjects(const DeviceContext& context) {
+void RendererPresenter::CreateSyncObjects(const DeviceContext& context) {
 	vk::SemaphoreCreateInfo semaphore_create_info;
 	vk::FenceCreateInfo fence_create_info(vk::FenceCreateFlagBits::eSignaled);
 	image_available_semaphore = context.GetDevice().createSemaphore(semaphore_create_info);
@@ -36,22 +34,11 @@ void Renderer::CreateSyncObjects(const DeviceContext& context) {
 	in_flight_fence = context.GetDevice().createFence(fence_create_info);
 }
 
-void Renderer::CreateDescriptorPool(const DeviceContext& context) {
-	std::vector<vk::DescriptorPoolSize> pool_sizes = {
-		vk::DescriptorPoolSize(vk::DescriptorType::eAccelerationStructureKHR, 1),
-		vk::DescriptorPoolSize(vk::DescriptorType::eStorageImage, 2),
-		vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 5),
-		vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 1),
-		vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, UINT32_MAX)
-	};
-	descriptor_pool = context.GetDevice().createDescriptorPool(vk::DescriptorPoolCreateInfo(vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind, 1, pool_sizes));
-}
-
-void Renderer::WaitForNextFrame(const DeviceContext& context) {
+void RendererPresenter::WaitForNextFrame(const DeviceContext& context) {
 	VK_CHECK(context.GetDevice().waitForFences({ in_flight_fence }, vk::True, UINT64_MAX));
 }
 
-const Renderer::FrameData Renderer::BeginFrame(const DeviceContext& context) {
+const RendererPresenter::FrameData RendererPresenter::BeginFrame(const DeviceContext& context) {
 	auto next_image_result = context.GetDevice().acquireNextImageKHR(*swapchain, UINT64_MAX, image_available_semaphore);
 	VK_CHECK(next_image_result.result);
 	
@@ -62,10 +49,10 @@ const Renderer::FrameData Renderer::BeginFrame(const DeviceContext& context) {
 	vk::CommandBufferAllocateInfo allocate_info(command_pool, vk::CommandBufferLevel::ePrimary, 1);
 	vk::CommandBuffer cmd = context.GetDevice().allocateCommandBuffers(allocate_info)[0];
 	cmd.begin(vk::CommandBufferBeginInfo());
-	return Renderer::FrameData(cmd, image_index, swapchain->GetImage(image_index));
+	return RendererPresenter::FrameData(cmd, image_index, swapchain->GetImage(image_index));
 }
 
-void Renderer::EndFrame(const DeviceContext& context, const Renderer::FrameData& frame_data) {
+void RendererPresenter::EndFrame(const DeviceContext& context, const RendererPresenter::FrameData& frame_data) {
 	frame_data.command_buffer.end();
 
 	vk::PipelineStageFlags stage_mask = vk::PipelineStageFlagBits::eColorAttachmentOutput;
@@ -83,22 +70,22 @@ void Renderer::EndFrame(const DeviceContext& context, const Renderer::FrameData&
 	VK_CHECK(context.GetPresentQueue().presentKHR(present_info));
 }
 
-void Renderer::ResizeSwapchain(const DeviceContext& context, const vk::Extent2D extent) {
+void RendererPresenter::ResizeSwapchain(const DeviceContext& context, const vk::Extent2D extent) {
 	if (swapchain) {
 		swapchain->Destroy(context);
 	}
 	swapchain = std::make_unique<Swapchain>(context, *surface, extent);
 }
 
-void Renderer::RefreshSurfaceData(const DeviceContext& context) {
+void RendererPresenter::RefreshSurfaceData(const DeviceContext& context) {
 	return surface->ReacquireProperties(context);
 }
 
-const vk::Format Renderer::GetSwapchainFormat() const {
+const vk::Format RendererPresenter::GetSwapchainFormat() const {
 	return surface->GetSurfaceFormat().format;
 }
 
-void Renderer::Destroy(const DeviceContext& context) {
+void RendererPresenter::Destroy(const DeviceContext& context) {
 	vk::Device device = context.GetDevice();
 	device.destroySemaphore(image_available_semaphore);
 	device.destroySemaphore(render_finished_semaphore);
@@ -109,4 +96,4 @@ void Renderer::Destroy(const DeviceContext& context) {
 	surface->Destroy(context);
 }
 
-Renderer::~Renderer() = default;
+RendererPresenter::~RendererPresenter() = default;

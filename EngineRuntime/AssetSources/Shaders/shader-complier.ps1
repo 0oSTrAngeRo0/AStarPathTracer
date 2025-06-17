@@ -34,8 +34,8 @@ foreach ($file in $files) {
         }
     }
     $output_file = Join-Path $binarys_folder "$filename.spv"
-    Write-Host "Run glslang command: [$compiler --target-env vulkan1.2 -g $file -o $output_file]"
-    & $compiler --target-env vulkan1.2 -g $file.FullName -o $output_file
+    Write-Host "Run glslang command: [$compiler --target-env vulkan1.3 -g $file -o $output_file]"
+    & $compiler --target-env vulkan1.3 -g $file.FullName -o $output_file
     Write-Host ""
 }
 

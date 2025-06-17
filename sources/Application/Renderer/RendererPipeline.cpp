@@ -11,7 +11,8 @@
 #include "Engine/HostShaderManager.h"
 #include "Utilities/EnumX.h"
 
-RendererPipeline::RendererPipeline(const DeviceContext& context, const RenderContext& render, const vk::DescriptorPool descriptor_pool) {
+RendererPipeline::RendererPipeline(const DeviceContext& context, const RenderContext& render) {
+	descriptor_pool = CreateDescriptorPool(context);
 	descriptor_set_layout = CreateDescriptorSetLayout(context.GetDevice());
 	std::vector<vk::DescriptorSet> sets = AllocateDescriptorSet(context.GetDevice(), descriptor_pool, descriptor_set_layout);
 	descriptor_set = sets[0];
@@ -182,6 +183,17 @@ void RendererPipeline::CreatePipelineAndBindingTable(const DeviceContext& contex
 	shader_binding_table = std::make_unique<RayTracingShaders::BindingTable>(context, pipeline, pipeline_data.GetShaderCount());
 
 	pipeline_data.Destroy(context);
+}
+
+vk::DescriptorPool RendererPipeline::CreateDescriptorPool(const DeviceContext& context) {
+	std::vector<vk::DescriptorPoolSize> pool_sizes = {
+		vk::DescriptorPoolSize(vk::DescriptorType::eAccelerationStructureKHR, 1),
+		vk::DescriptorPoolSize(vk::DescriptorType::eStorageImage, 2),
+		vk::DescriptorPoolSize(vk::DescriptorType::eStorageBuffer, 5),
+		vk::DescriptorPoolSize(vk::DescriptorType::eUniformBuffer, 1),
+		vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, UINT32_MAX)
+	};
+	return context.GetDevice().createDescriptorPool(vk::DescriptorPoolCreateInfo(vk::DescriptorPoolCreateFlagBits::eUpdateAfterBind, 1, pool_sizes));
 }
 
 void RendererPipeline::Destroy(const DeviceContext& context) {

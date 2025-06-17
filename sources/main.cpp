@@ -4,7 +4,7 @@
 #include "config.h"
 #include <vector>
 #include "Application/World.h"
-#include "Application/Renderer/RendererApplication.h"
+#include "Application/RendererApplication.h"
 #include "Engine/InputSystem.h"
 #include "Engine/ShaderHostBuffer.h"
 #include "Engine/HostShaderManager.h"
@@ -76,8 +76,8 @@ void ApplicationMain() {
 
 int main() {
 	try {
-		//ApplicationMain();
-		//EditorMain();
+		// ApplicationMain();
+		// EditorMain();
 		EditorOnlyMain();
 	}
 	catch (const std::exception& e) {
