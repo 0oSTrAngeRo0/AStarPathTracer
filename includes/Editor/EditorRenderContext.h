@@ -41,7 +41,7 @@ private:
 	std::vector<EditorFrameContext> frames;
 
 	static vk::RenderPass CreateRenderPass(const DeviceContext& context, const vk::Format format);
-	static vk::DescriptorPool CreateDescriptorPool(const DeviceContext& context);
+	static vk::DescriptorPool CreateDescriptorPool(const DeviceContext& context, const std::uint32_t max_set_count);
 public:
 	EditorRenderContext(const DeviceContext& context, vk::SurfaceKHR surface, vk::Extent2D swapchain_extent);
 	~EditorRenderContext();

@@ -77,20 +77,20 @@ vk::RenderPass EditorRenderContext::CreateRenderPass(const DeviceContext& contex
 	return context.GetDevice().createRenderPass(create_info);
 }
 
-vk::DescriptorPool EditorRenderContext::CreateDescriptorPool(const DeviceContext& context) {
+vk::DescriptorPool EditorRenderContext::CreateDescriptorPool(const DeviceContext& context, const std::uint32_t max_set_count) {
 	std::vector<vk::DescriptorPoolSize> sizes = {
 		vk::DescriptorPoolSize(vk::DescriptorType::eCombinedImageSampler, 16),
 	};
-	vk::DescriptorPoolCreateInfo create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, 4, sizes);
+	vk::DescriptorPoolCreateInfo create_info(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet, max_set_count, sizes);
 	return context.GetDevice().createDescriptorPool(create_info);
 }
 
 EditorRenderContext::EditorRenderContext(const DeviceContext& context, vk::SurfaceKHR surface, vk::Extent2D swapchain_extent) {
 	current_frame = 0;
 	this->surface = std::make_unique<Surface>(context, surface);
-	descriptor_pool = CreateDescriptorPool(context);
 	cmd_pool = context.GetDevice().createCommandPool(vk::CommandPoolCreateInfo(vk::CommandPoolCreateFlagBits::eResetCommandBuffer, context.GetGrpahicsQueueIndex()));
 	swapchain = std::make_unique<Swapchain>(context, *this->surface, swapchain_extent);
+	descriptor_pool = CreateDescriptorPool(context, swapchain->GetImageCount());
 	render_pass = CreateRenderPass(context, swapchain->GetFormat());
 	frames = EditorFrameContext::CreateFrameContext(context, cmd_pool, *swapchain, render_pass);
 }

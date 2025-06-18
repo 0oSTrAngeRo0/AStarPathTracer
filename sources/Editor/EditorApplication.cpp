@@ -50,6 +50,7 @@ void EditorApplication::Update(entt::registry& registry) {
 		bool is_swapchain_bad = render_context->PresentFrame(*context, frame, image_index);
 		render_context->EndFrame();
 		if (!is_swapchain_bad) need_recreate_swapchain = false;
+		context->GetDevice().waitIdle();
 	} while (false);
 
 	if (need_recreate_swapchain) {
@@ -61,6 +62,7 @@ void EditorApplication::Update(entt::registry& registry) {
 
 EditorApplication::~EditorApplication() {
 	is_active = false;
+	viewport.Destory(*context);
 	context->GetDevice().waitIdle();
 	ui->Destroy();
 	render_context->Destroy(*context);
