@@ -63,31 +63,32 @@ public:
 JSON_SERIALIZER(SceneResourceData::EntityData, <>, entity, components);
 JSON_SERIALIZER(SceneResourceData, <>, entities);
 
-inline std::string SerializeRegistry(const entt::registry& registry) {
-	std::unordered_map<entt::entity, std::vector<nlohmann::json>> scene;
-	for (auto [id, storage] : registry.storage()) {
-		for (auto entity : storage) {
-			auto res_opt = reflection::JsonSerialize(id, registry, entity);
-			if (!res_opt) continue;
-			scene[entity].emplace_back(res_opt.value());
+namespace nlohmann {
+	template <> struct adl_serializer<entt::registry> {
+		static void to_json(json& j, const entt::registry& registry) {
+			std::unordered_map<entt::entity, std::vector<nlohmann::json>> scene;
+			for (auto [id, storage] : registry.storage()) {
+				for (auto entity : storage) {
+					auto res_opt = reflection::JsonSerialize(id, registry, entity);
+					if (!res_opt) continue;
+					scene[entity].emplace_back(res_opt.value());
+				}
+			}
+			SceneResourceData scene_resource;
+			for (auto&& [entity, components] : scene) {
+				SceneResourceData::EntityData entity_data(entity, std::move(components));
+				scene_resource.entities.emplace_back(std::move(entity_data));
+			}
+			j = scene_resource;
 		}
-	}
-	SceneResourceData scene_resource;
-	for (auto&& [entity, components] : scene) {
-		SceneResourceData::EntityData entity_data(entity, std::move(components));
-		scene_resource.entities.emplace_back(std::move(entity_data));
-	}
-	nlohmann::json json = scene_resource;
-	return json.dump(4);
-}
-
-inline void DeserializeRegistry(const std::string& str, entt::registry& registry) {
-	nlohmann::json json = nlohmann::json::parse(str);
-	SceneResourceData scene = json.template get<SceneResourceData>();
-	for (auto& entity_data : scene.entities) {
-		entt::entity entity = registry.create(entity_data.entity);
-		for (auto& component : entity_data.components) {
-			reflection::JsonDeserialize(component, registry, entity);
+		static void  from_json(const json& j, entt::registry& registry) {
+			SceneResourceData scene = j.template get<SceneResourceData>();
+			for (auto& entity_data : scene.entities) {
+				entt::entity entity = registry.create(entity_data.entity);
+				for (auto& component : entity_data.components) {
+					reflection::JsonDeserialize(component, registry, entity);
+				}
+			}
 		}
-	}
+	};
 }

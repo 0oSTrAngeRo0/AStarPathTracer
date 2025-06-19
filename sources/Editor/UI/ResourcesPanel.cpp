@@ -15,7 +15,7 @@ void ResourcesPanel::DrawCraetePopupNode(const ResourceCreateMenuRegistry::Node&
 		using T = std::decay_t<decltype(arg)>;
 		if constexpr (std::is_same_v<T, ResourceCreateMenuRegistry::Leaf>) {
 			if (ImGui::MenuItem(std::string(node.key).c_str())) {
-				arg(current_state.id);
+				arg(last_result.clicked.value().get().id);
 				root = TreeView::CreateDirectryNodeTreeFromPath(ResourcesManager::GetInstance().GetResourcesDirectory());
 			}
 		} else if constexpr (std::is_same_v<T, ResourceCreateMenuRegistry::Branch>) {
@@ -30,16 +30,8 @@ void ResourcesPanel::DrawCraetePopupNode(const ResourceCreateMenuRegistry::Node&
 }
 
 void ResourcesPanel::DrawCreatePopup() {
-	auto& state = current_state;
-	if (state.is_changed && !state.is_leaf && state.mouse_button == ImGuiMouseButton_Right) {
-		ImGui::OpenPopup("Create Resource");
-	}
-	if (ImGui::BeginPopup("Create Resource")) {
-		for (const ResourceCreateMenuRegistry::Node& child : ResourceCreateMenuRegistry::GetRootChildren()) {
-			DrawCraetePopupNode(child);
-		}
-		ImGui::EndPopup();
-	}
+	// auto& state = current_state;
+
 }
 
 void ResourcesPanel::DrawUi() {
@@ -50,7 +42,25 @@ void ResourcesPanel::DrawUi() {
 		config.countSelectionMax = 1;
 		ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose Resource File", ".*", config);
 	}
-	TreeView::DrawUi(root, current_state);
+	TreeView::NodeId id;
+	if (last_result.clicked) {
+		id = last_result.clicked.value().get().id;
+	}
+	auto result = TreeView::DrawUi(root, id);
+	if (result.clicked) {
+		const TreeView::Node& node = result.clicked.value();
+		if (!node.is_leaf && result.mouse_button == ImGuiMouseButton_Right) {
+			ImGui::OpenPopup("Create Resource");
+		}
+		if (ImGui::BeginPopup("Create Resource")) {
+			for (const ResourceCreateMenuRegistry::Node& child : ResourceCreateMenuRegistry::GetRootChildren()) {
+				DrawCraetePopupNode(child);
+			}
+			ImGui::EndPopup();
+		}
+		is_selection_changed = node.id == id;
+	}
+	last_result = result;
 	DrawCreatePopup();
 	ImGui::End();
 

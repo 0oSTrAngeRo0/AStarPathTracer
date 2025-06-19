@@ -14,59 +14,62 @@ void TreeView::RecursivelyAddDirectoryNodes(TreeView::Node& parent, std::filesys
 	std::sort(parent.children.begin(), parent.children.end(), moveDirectoriesToFront);
 }
 
-void TreeView::RecursivelyDisplayDirectoryNode(const TreeView::Node& parent, TreeView::State& current_state) {
+void TreeView::RecursivelyDisplayDirectoryNode(const TreeView::Node& parent, TreeView::Result& result, const TreeView::NodeId& selected) {
 	ImGui::PushID(&parent);
 	if (parent.is_leaf) {
-		auto flags = ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_SpanFullWidth;
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_NoTreePushOnOpen | ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_SpanFullWidth;
 
 		// Todo: Can be optimized, string comparasion is too expensive!
-		if (current_state.id == parent.id) {
+		if (selected == parent.id) {
 			flags |= ImGuiTreeNodeFlags_Selected;
 		}
 
 		ImGui::TreeNodeEx(parent.name.c_str(), flags);
+		if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
+			OnSelected(ImGuiMouseButton_Right, parent, result);
+		}
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-			OnSelected(ImGuiMouseButton_Left, parent, current_state);
+			OnSelected(ImGuiMouseButton_Left, parent, result);
 		}
 	}
 	else {
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_SpanFullWidth;
-		if (current_state.id == parent.id) {
+		if (selected == parent.id) {
 			flags |= ImGuiTreeNodeFlags_Selected;
 		}
 		bool is_open = ImGui::TreeNodeEx(parent.name.c_str(), flags);
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Right)) {
-			OnSelected(ImGuiMouseButton_Right, parent, current_state);
+			OnSelected(ImGuiMouseButton_Right, parent, result);
 		}
 		if (ImGui::IsItemClicked(ImGuiMouseButton_Left)) {
-			OnSelected(ImGuiMouseButton_Left, parent, current_state);
+			OnSelected(ImGuiMouseButton_Left, parent, result);
 		}
 		if (is_open) {
 			for (const Node& child : parent.children)
-				RecursivelyDisplayDirectoryNode(child, current_state);
+				RecursivelyDisplayDirectoryNode(child, result, selected);
 			ImGui::TreePop();
 		}
 	}
 	ImGui::PopID();
 }
 
-void TreeView::OnSelected(uint32_t mouse_button, const TreeView::Node& node, TreeView::State& current_state) {
-	current_state.mouse_button = mouse_button;
-	current_state.id = node.id;
-	current_state.is_changed = true;
-	current_state.is_leaf = node.is_leaf;
+void TreeView::OnSelected(uint32_t mouse_button, const TreeView::Node& node, TreeView::Result& result) {
+	result.clicked = std::cref(node);
+	result.mouse_button = ImGuiMouseButton_Right;
 }
 
-void TreeView::DrawUi(const TreeView::Node& root, TreeView::State& current_state) {
-	current_state.is_changed = false;
-	RecursivelyDisplayDirectoryNode(root, current_state);
+TreeView::Result TreeView::DrawUi(const TreeView::Node& root, const NodeId& selected) {
+	TreeView::Result result;
+	RecursivelyDisplayDirectoryNode(root, result, selected);
+	return result;
 }
 
-void TreeView::DrawUiNoRoot(const Node& root, State& current_state) {
-	current_state.is_changed = false;
+TreeView::Result TreeView::DrawUiNoRoot(const Node& root, const NodeId& selected) {
+	TreeView::Result result;
 	for (const Node& node : root.children) {
-		RecursivelyDisplayDirectoryNode(node, current_state);
+		RecursivelyDisplayDirectoryNode(node, result, selected);
 	}
+	return result;
 }
 
 TreeView::Node TreeView::CreateDirectryNodeTreeFromPath(const std::filesystem::path& path) {

@@ -5,8 +5,9 @@
 
 class TreeView {
 public:
+	using NodeId = std::string;
 	struct Node {
-		std::string id;
+		NodeId id;
 		std::string name;
 		std::vector<Node> children;
 		bool is_leaf;
@@ -14,20 +15,20 @@ public:
 		Node(std::string id, std::string name, std::vector<Node> children, bool is_leaf) :
 			id(id), name(name), children(children), is_leaf(is_leaf) {}
 	};
-	struct State {
-		bool is_changed;
-		uint32_t mouse_button;
-		bool is_leaf;
-		std::string id;
+	struct Result {
+		std::uint32_t mouse_button;
+		std::optional<std::reference_wrapper<const TreeView::Node>> clicked;
+
+		Result() : mouse_button(0), clicked(std::nullopt) {}
 	};
 
 	static Node CreateLeaf(std::string id, std::string name) { return Node(id, name, {}, true); }
 	static Node CreateNonLeaf(std::string id, std::string name, std::vector<Node> children = {}) { return Node(id, name, children, false); }
-	static void DrawUi(const Node& root, State& current_state);
-	static void DrawUiNoRoot(const Node& root, State& current_state);
+	static Result DrawUi(const Node& root, const NodeId& selected);
+	static Result DrawUiNoRoot(const Node& root, const NodeId& selected);
 	static Node CreateDirectryNodeTreeFromPath(const std::filesystem::path& path);
 private:
 	static void RecursivelyAddDirectoryNodes(Node& parent, std::filesystem::directory_iterator directory_iterator);
-	static void RecursivelyDisplayDirectoryNode(const Node& parent, State& current_state);
-	static void OnSelected(uint32_t mouse_button, const Node& node, State& current_state);
+	static void RecursivelyDisplayDirectoryNode(const Node& parent, Result& result, const NodeId& selected);
+	static void OnSelected(uint32_t mouse_button, const Node& node, Result& result);
 };

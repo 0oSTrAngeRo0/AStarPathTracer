@@ -11,5 +11,6 @@ public:
 		return std::make_tuple(current_state.is_leaf, current_state.id); 
 	}
 private:
-	TreeView::State current_state;
+	TreeView::Result last_result;
+	bool is_selection_changed;
 };

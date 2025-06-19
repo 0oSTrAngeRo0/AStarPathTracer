@@ -10,7 +10,8 @@
 
 class ResourcesPanel {
 private:
-	TreeView::State current_state;
+	bool is_selection_changed;
+	TreeView::Result last_result;
 	TreeView::Node root;
 	void DrawCreatePopup();
 	void DrawCraetePopupNode(const ResourceCreateMenuRegistry::Node& node);
@@ -18,7 +19,11 @@ public:
 	ResourcesPanel();
 	void DrawUi();
 	inline const std::tuple<const bool, const std::string> GetCurrentSelection() const { 
-		return std::tie(current_state.is_leaf, current_state.id);
+		if (!last_result.clicked) {
+			return std::tie<const bool, const std::string>(false, root.id);
+		}
+		auto result = last_result.clicked.value().get();
+		return std::tie(result.is_leaf, result.id);
 	}
-	inline const bool IsSelectionChanged() const { return current_state.is_changed; }
+	inline const bool IsSelectionChanged() const { return is_selection_changed; }
 };
