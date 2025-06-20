@@ -1,3 +1,4 @@
+#include <imgui.h>
 #include "Editor/EditorSelection.h"
 #include "Editor/UI/Inspectors/EditorInspector.h"
 #include "Editor/UI/Inspectors/ResourceInspector.h"
@@ -16,4 +17,12 @@ void EditorSelection::SelectResource(const std::string& path) {
 
 void EditorSelection::SelectEntity(entt::entity entity, entt::registry& registry) {
 	selected_inspector = std::make_shared<EntityInspector>(entity, registry);
+}
+
+void EditorSelection::DrawUi() {
+	ImGui::Begin("Inspector");
+	if (selected_inspector) {
+		selected_inspector->DrawInspector();
+	}
+	ImGui::End();
 }

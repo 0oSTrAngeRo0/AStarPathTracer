@@ -17,7 +17,7 @@ private:
 	void DrawCraetePopupNode(const ResourceCreateMenuRegistry::Node& node);
 public:
 	ResourcesPanel();
-	void DrawUi();
+	TreeView::Result DrawUi(const TreeView::NodeId& selected);
 	inline const std::tuple<const bool, const std::string> GetCurrentSelection() const { 
 		if (!last_result.clicked) {
 			return std::tie<const bool, const std::string>(false, root.id);

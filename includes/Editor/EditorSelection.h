@@ -13,5 +13,5 @@ public:
 	EditorSelection();
 	void SelectResource(const std::string& path);
 	void SelectEntity(entt::entity entity, entt::registry& registry);
-	EditorInspectorBase& GetSelectedInspector() const { return *selected_inspector; }
+	void DrawUi();
 };

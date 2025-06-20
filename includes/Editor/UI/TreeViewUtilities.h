@@ -6,13 +6,14 @@
 class TreeView {
 public:
 	using NodeId = std::string;
+	inline static NodeId InvalidNodeId = "";
 	struct Node {
 		NodeId id;
 		std::string name;
 		std::vector<Node> children;
 		bool is_leaf;
 		Node() = default;
-		Node(std::string id, std::string name, std::vector<Node> children, bool is_leaf) :
+		Node(NodeId id, std::string name, std::vector<Node> children, bool is_leaf) :
 			id(id), name(name), children(children), is_leaf(is_leaf) {}
 	};
 	struct Result {
@@ -22,8 +23,8 @@ public:
 		Result() : mouse_button(0), clicked(std::nullopt) {}
 	};
 
-	static Node CreateLeaf(std::string id, std::string name) { return Node(id, name, {}, true); }
-	static Node CreateNonLeaf(std::string id, std::string name, std::vector<Node> children = {}) { return Node(id, name, children, false); }
+	static Node CreateLeaf(NodeId id, std::string name) { return Node(id, name, {}, true); }
+	static Node CreateNonLeaf(NodeId id, std::string name, std::vector<Node> children = {}) { return Node(id, name, children, false); }
 	static Result DrawUi(const Node& root, const NodeId& selected);
 	static Result DrawUiNoRoot(const Node& root, const NodeId& selected);
 	static Node CreateDirectryNodeTreeFromPath(const std::filesystem::path& path);

@@ -34,7 +34,7 @@ void ResourcesPanel::DrawCreatePopup() {
 
 }
 
-void ResourcesPanel::DrawUi() {
+TreeView::Result ResourcesPanel::DrawUi(const TreeView::NodeId& selected) {
 	ImGui::Begin("Resources");
 	if (ImGui::Button("Import File")) {
 		IGFD::FileDialogConfig config;
@@ -42,11 +42,7 @@ void ResourcesPanel::DrawUi() {
 		config.countSelectionMax = 1;
 		ImGuiFileDialog::Instance()->OpenDialog("ChooseFileDlgKey", "Choose Resource File", ".*", config);
 	}
-	TreeView::NodeId id;
-	if (last_result.clicked) {
-		id = last_result.clicked.value().get().id;
-	}
-	auto result = TreeView::DrawUi(root, id);
+	auto result = TreeView::DrawUi(root, selected);
 	if (result.clicked) {
 		const TreeView::Node& node = result.clicked.value();
 		if (!node.is_leaf && result.mouse_button == ImGuiMouseButton_Right) {
@@ -58,9 +54,7 @@ void ResourcesPanel::DrawUi() {
 			}
 			ImGui::EndPopup();
 		}
-		is_selection_changed = node.id == id;
 	}
-	last_result = result;
 	DrawCreatePopup();
 	ImGui::End();
 
@@ -74,4 +68,6 @@ void ResourcesPanel::DrawUi() {
 		// close
 		ImGuiFileDialog::Instance()->Close();
 	}
+
+	return result;
 }

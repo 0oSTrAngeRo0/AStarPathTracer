@@ -55,7 +55,7 @@ void TreeView::RecursivelyDisplayDirectoryNode(const TreeView::Node& parent, Tre
 
 void TreeView::OnSelected(uint32_t mouse_button, const TreeView::Node& node, TreeView::Result& result) {
 	result.clicked = std::cref(node);
-	result.mouse_button = ImGuiMouseButton_Right;
+	result.mouse_button = mouse_button;
 }
 
 TreeView::Result TreeView::DrawUi(const TreeView::Node& root, const NodeId& selected) {

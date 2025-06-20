@@ -11,7 +11,7 @@
 EditorUIDrawer::EditorUIDrawer() {
     resources_panel = std::make_unique<ResourcesPanel>();
     selection = std::make_unique<EditorSelection>();
-    hierachies_panel = std::make_unique<HierachiesPanel>();
+    hierachies_panel = std::make_unique<HierarchiesPanel>();
 }
 
 void EditorUIDrawer::DrawUI(entt::registry& registry) {
@@ -19,9 +19,17 @@ void EditorUIDrawer::DrawUI(entt::registry& registry) {
 
     //ImGui::ShowDemoWindow();
 
-    resources_panel->DrawUi();
-    hierachies_panel->DrawUi(registry);
-    DrawInspetor(registry);
+    if (TryChangeSelection(resources_panel->DrawUi(TryGetSelectionID(SelectionType::eResources)), SelectionType::eResources)) {
+        if (is_selection_leaf) {
+            selection->SelectResource(selection_id);
+        }
+    }
+    if (TryChangeSelection(hierachies_panel->DrawUi(registry, TryGetSelectionID(SelectionType::eHierachies)), SelectionType::eHierachies)) {
+        TreeView::NodeId entity_str = selection_id;
+        entt::entity entity = static_cast<entt::entity>(std::stoul(entity_str));
+        selection->SelectEntity(entity, registry);
+    }
+    selection->DrawUi();
     // viewport_panel->DrawUi();
 
     if (ImGuiFileDialog::Instance()->Display("ChooseFileDlgKey")) {
@@ -48,23 +56,11 @@ void EditorUIDrawer::DrawUI(entt::registry& registry) {
 
 EditorUIDrawer::~EditorUIDrawer() {}
 
-void EditorUIDrawer::DrawInspetor(entt::registry& registry) {
-    ImGui::Begin("Inspector");
-    if (resources_panel->IsSelectionChanged()) {
-        auto [is_leaf, path] = resources_panel->GetCurrentSelection();
-        if (is_leaf) {
-            selection->SelectResource(path);
-        }
-        printf("Selection Changed: [%s]\n", path.c_str());
-    }
-    if (hierachies_panel->IsSelectionChanged()) {
-        auto [is_leaf, entity_str] = hierachies_panel->GetCurrentSelection();
-        if (is_leaf) {
-            entt::entity entity = static_cast<entt::entity>(std::stoul(entity_str));
-            selection->SelectEntity(entity, registry);
-        }
-        printf("Selection Changed: [%s]\n", entity_str.c_str());
-    }
-    selection->GetSelectedInspector().DrawInspector();
-    ImGui::End();
+bool EditorUIDrawer::TryChangeSelection(TreeView::Result result, EditorUIDrawer::SelectionType type) {
+    if (!result.clicked || result.mouse_button != ImGuiMouseButton_Left) return false;
+    selection_type = type;
+    selection_id = result.clicked.value().get().id;
+    is_selection_leaf = result.clicked.value().get().is_leaf;
+    ASTAR_PRINT("Selection Changed: [%s]\n", selection_id.c_str());
+    return true;
 }
